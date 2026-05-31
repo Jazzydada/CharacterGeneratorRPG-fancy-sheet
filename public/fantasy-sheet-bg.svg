@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1754" viewBox="0 0 1240 1754">
+  <defs>
+    <radialGradient id="warmGlow" cx="50%" cy="36%" r="55%">
+      <stop offset="0%" stop-color="#fff4cf" stop-opacity="0.82"/>
+      <stop offset="42%" stop-color="#d9b56a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#130f0b" stop-opacity="0.72"/>
+    </radialGradient>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#21180f"/>
+      <stop offset="0.42" stop-color="#6d5738"/>
+      <stop offset="0.7" stop-color="#d8bc7d"/>
+      <stop offset="1" stop-color="#ead7a4"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="8"/></filter>
+    <pattern id="grain" width="64" height="64" patternUnits="userSpaceOnUse">
+      <rect width="64" height="64" fill="#e8d3a0" opacity="0.04"/>
+      <path d="M7 15 C18 7 28 23 39 13 S59 19 64 8 M0 48 C16 36 31 56 44 44 S59 39 64 50" fill="none" stroke="#3b250d" stroke-opacity="0.08" stroke-width="1"/>
+      <circle cx="12" cy="52" r="1.4" fill="#2b1a08" opacity="0.10"/><circle cx="46" cy="21" r="1" fill="#fff2bd" opacity="0.14"/>
+    </pattern>
+  </defs>
+  <rect width="1240" height="1754" fill="url(#sky)"/>
+  <rect width="1240" height="1754" fill="url(#warmGlow)"/>
+  <rect width="1240" height="1754" fill="url(#grain)" opacity="0.85"/>
+
+  <!-- distant mountains -->
+  <g opacity="0.34" fill="#17110b">
+    <path d="M0 505 L95 330 L168 452 L256 235 L381 507 Z"/>
+    <path d="M115 515 L275 260 L357 395 L472 168 L650 520 Z"/>
+    <path d="M522 515 L690 255 L770 415 L900 190 L1055 515 Z"/>
+    <path d="M840 520 L1000 292 L1080 425 L1170 255 L1240 460 L1240 520 Z"/>
+  </g>
+  <g opacity="0.22" fill="#f6dc9a">
+    <path d="M275 260 L319 332 L303 322 L288 363 L357 395 Z"/>
+    <path d="M690 255 L732 330 L713 320 L704 365 L770 415 Z"/>
+    <path d="M1000 292 L1032 351 L1015 340 L1005 378 L1080 425 Z"/>
+  </g>
+
+  <!-- ruined city / castle silhouette around central portrait zone -->
+  <g opacity="0.24" fill="#100b07">
+    <path d="M770 610 h35 v-105 h24 v105 h28 v-164 h28 v164 h38 v-84 h21 v84 h34 v-132 h22 v132 h33 v-72 h25 v72 h44 v210 H770z"/>
+    <path d="M165 705 h28 v-96 h20 v96 h37 v-158 h25 v158 h44 v-74 h20 v74 h42 v160 H165z"/>
+    <path d="M1060 1010 h36 v-160 h26 v160 h28 v-95 h22 v95 h44 v130 h-156z"/>
+  </g>
+
+  <!-- magical sigils and map lines -->
+  <g fill="none" stroke="#1b150f" stroke-opacity="0.18">
+    <circle cx="642" cy="675" r="302" stroke-width="2"/>
+    <circle cx="642" cy="675" r="244" stroke-width="1.5" stroke-dasharray="8 9"/>
+    <circle cx="642" cy="675" r="180" stroke-width="1"/>
+    <path d="M642 385 L894 821 L390 821 Z" stroke-width="1.5"/>
+    <path d="M340 675 H944 M642 373 V975" stroke-width="1"/>
+    <path d="M118 1300 C300 1140 412 1290 545 1155 S805 1070 1040 1240" stroke-width="2"/>
+    <path d="M70 410 C250 360 410 430 540 356 S875 285 1160 390" stroke-width="1.5"/>
+  </g>
+
+  <g opacity="0.5" fill="#f7d56b">
+    <circle cx="1040" cy="710" r="2.5"/><circle cx="1008" cy="742" r="1.7"/><circle cx="1098" cy="672" r="1.9"/>
+    <circle cx="890" cy="470" r="2.1"/><circle cx="250" cy="620" r="1.8"/><circle cx="190" cy="1170" r="2.3"/>
+    <circle cx="1080" cy="1285" r="2"/><circle cx="735" cy="1030" r="1.8"/><circle cx="450" cy="430" r="1.5"/>
+  </g>
+
+  <!-- vertical edge vignette -->
+  <rect width="1240" height="1754" fill="none" stroke="#190f06" stroke-width="38" opacity="0.20"/>
+  <rect x="34" y="34" width="1172" height="1686" rx="18" fill="none" stroke="#c69a3f" stroke-width="2" opacity="0.45"/>
+  <rect x="48" y="48" width="1144" height="1658" rx="12" fill="none" stroke="#38230d" stroke-width="3" opacity="0.35"/>
+</svg>
