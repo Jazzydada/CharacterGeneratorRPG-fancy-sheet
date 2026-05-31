@@ -447,7 +447,20 @@ const BGS={
 };
 
 const STD=[15,14,13,12,10,8];
-const NAMES={Human:["Mara Thorn","Elias Vane","Sigrid Vale","Tomas Redwick"],Elf:["Aelion Duskleaf","Vaeris Moonbrook","Liarel Starling","Thalanil Greywind"],Dwarf:["Bruni Ironkeg","Hilda Stonehand","Dorin Emberbeard","Kara Deepdelve"],Halfling:["Pip Underbough","Mira Tealeaf","Tobbin Goodbarrel","Nessa Quickstep"],Orc:["Rogh Stonejaw","Mauga Ashhand","Urzha Bloodrain","Gorren Blacktusk"],Goliath:["Kava Stonewake","Thuun Skybreaker","Maku Flintstride","Agan Cloudscar"],Gnome:["Fizban Glimmer","Zook Sparkwhistle","Nyx Tinkbell","Bim Cogsworth"],Tiefling:["Zariel Ash","Mephi Vorne","Lilit Darkrose","Xan Hellbrand"],Dragonborn:["Balasar Flamescale","Sora Frostbreath","Kriv Ironscale","Thava Goldmaw"],Aasimar:["Solara Brightmantle","Aether Dawnveil","Lumis Grace","Celeste Halo"]};
+const NAMES={
+  Human:   {f:["Mara","Elias","Sigrid","Tomas","Brynn","Aldric","Isolde","Cedric","Rowena","Gareth","Lysa","Owen","Freya","Edric","Nora","Brennan","Sable","Hugo","Wren","Aldous"],l:["Thorn","Vane","Vale","Redwick","Ashford","Hollow","Crane","Dusk","Merrow","Fenn","Blackwell","Storme","Holt","Greystone","Aldgate","Fenwick","Dunmore","Rook","Wrath","Coldwell"]},
+  Elf:     {f:["Aelion","Vaeris","Liarel","Thalanil","Sylara","Eryn","Caladwen","Ithrien","Mirel","Faeron","Thessaly","Aerindel","Corin","Lirael","Vayne","Ilyana","Sorel","Thandor","Nymara","Elaris"],l:["Duskleaf","Moonbrook","Starling","Greywind","Silverbow","Dawnmere","Ashwhisper","Crystalveil","Twilightfall","Emberveil","Gladewatch","Moonshadow","Starbough","Willowsong","Misthollow","Faebranch","Silversong","Sunspire","Leafwhisper","Nightbloom"]},
+  Dwarf:   {f:["Bruni","Hilda","Dorin","Kara","Thordak","Mira","Baldur","Sigrun","Borgin","Helga","Dvalin","Inga","Thorvi","Omund","Ragna","Gimrak","Ulfhild","Balin","Skadi","Nori"],l:["Ironkeg","Stonehand","Emberbeard","Deepdelve","Forgehammer","Coppermantle","Stonebrew","Ironvault","Boulderback","Gravelfist","Deeprock","Anvilborn","Cragmantle","Stormforge","Goldseam","Ashpick","Ironhelm","Flintwall","Deepstone","Runebreak"]},
+  Halfling:{f:["Pip","Mira","Tobbin","Nessa","Calla","Merric","Lidda","Tam","Rosie","Beau","Daisy","Finnan","Willa","Corwin","Nell","Jasper","Portia","Rondo","Tansy","Bilbin"],l:["Underbough","Tealeaf","Goodbarrel","Quickstep","Thistledown","Hearthwick","Bramblefoot","Cloverhatch","Muddyboots","Sunpetal","Fernweave","Copperkettle","Woolhaven","Greenhill","Snugmeadow","Barleymalt","Dustyboot","Willowwick","Haystone","Pipworth"]},
+  Orc:     {f:["Rogh","Mauga","Urzha","Gorren","Kragg","Yelka","Thurak","Vorgha","Skrag","Bolga","Draka","Murzok","Sharva","Nuruk","Brega","Kolgha","Wroth","Targh","Mezra","Gruul"],l:["Stonejaw","Ashhand","Bloodrain","Blacktusk","Bonebreak","Ironhide","Skullscar","Grimfang","Ashfist","Thundertusk","Ravenclaw","Bloodmaw","Crushbone","Ironskull","Darkpelt","Stonefist","Blackbrand","Grimtooth","Warborn","Deathmarch"]},
+  Goliath: {f:["Kava","Thuun","Maku","Agan","Voro","Iliana","Nora","Tavrak","Brynn","Keothi","Pava","Torinn","Nala","Denara","Vamik","Ostin","Uthal","Hadak","Tora","Golen"],l:["Stonewake","Skybreaker","Flintstride","Cloudscar","Mountainborn","Glacierfist","Stormcrown","Peakwalker","Boulderborn","Ironridge","Cliffmantle","Coldpeak","Frostback","Stoneshout","Snowmantle","Avalanche","Granite","Iceborn","Rimestone","Highcrest"]},
+  Gnome:   {f:["Fizban","Zook","Nyx","Bim","Ellywick","Namfoodle","Waywocket","Dabbledob","Roondar","Vik","Carlin","Pock","Meren","Sindri","Alston","Dimble","Orla","Fonkin","Caramip","Seebo"],l:["Glimmer","Sparkwhistle","Tinkbell","Cogsworth","Brasswheel","Clocksprig","Sprocketwist","Gearglint","Tumblebolt","Whistlewick","Fizzlepop","Gadgetgrin","Coppercoil","Mirrorwink","Ratchetwhirl","Springsnap","Shimmerbell","Coppernib","Dazzlewick","Glintspring"]},
+  Tiefling:{f:["Zariel","Mephi","Lilit","Xan","Mordai","Raven","Caeus","Selene","Nox","Damaia","Kryx","Immarel","Akmenos","Nemeia","Skamos","Bryseis","Leucis","Kairon","Melech","Tanith"],l:["Ash","Vorne","Darkrose","Hellbrand","Emberveil","Shadowmantle","Cinderborn","Ashveil","Duskfire","Voidborn","Flamemark","Scornhide","Nightfall","Soulbrand","Grimhalo","Emberscar","Shadowveil","Dreadborn","Hellscar","Cursemark"]},
+  Dragonborn:{f:["Balasar","Sora","Kriv","Thava","Arjhan","Donaar","Ghesh","Mishann","Nadarr","Patrin","Rhogar","Shamash","Torinn","Uadjit","Vrynn","Heskan","Irkwood","Nala","Bharash","Akra"],l:["Flamescale","Frostbreath","Ironscale","Goldmaw","Emberclaw","Thunderwing","Ashmantle","Stormscale","Crimsonfang","Iceborn","Obsidianback","Copperflame","Bronzewing","Silverfang","Rubyspine","Shadowscale","Frostmantle","Emberfang","Ironclaw","Cinderborn"]},
+  Aasimar: {f:["Solara","Aether","Lumis","Celeste","Oryn","Seraphel","Aurel","Mirel","Dawniel","Elios","Caelum","Viriel","Althar","Soryn","Radiel","Vaelos","Lynara","Thyrin","Eorel","Zephira"],l:["Brightmantle","Dawnveil","Grace","Halo","Lightborn","Goldenheart","Dawnfire","Celestborn","Auraveil","Holymark","Starborn","Divinewing","Radianceborn","Purelight","Sacredsong","Haloborn","Gleamborn","Brightspire","Soulfire","Dawncrown"]},
+};
+function pickName(race){const n=NAMES[race];if(!n)return"Adventurer";const pick=a=>a[Math.floor(Math.random()*a.length)];return pick(n.f)+" "+pick(n.l);}
+// total combinations per race: 20 × 20 = 400 — across 10 races: 4 000 unique names
 
 const CASTER_TYPE={Bard:"full",Cleric:"full",Druid:"full",Sorcerer:"full",Wizard:"full",Paladin:"half",Ranger:"half",Warlock:"warlock"};
 const CTYPE=CASTER_TYPE;
@@ -944,7 +957,7 @@ export default function App(){
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
   const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):Array(9).fill(0);
-  const dispName=cname||(NAMES[sp]?NAMES[sp][0]:"Adventurer");
+  const dispName=cname||pickName(sp);
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
   const maxSL=Math.max(ct?maxSpellLevel(ct,lv1e):0,mc&&ct2?maxSpellLevel(ct2,lv2c):0);
   const avSp=useMemo(()=>{
@@ -1066,7 +1079,7 @@ export default function App(){
     const clsLocked=classLockedRef.current,spLocked=speciesLockedRef.current,lvLocked=levelLockedRef.current;
     const rs=pick(Object.keys(SPECIES)),rc=pick(Object.keys(CLASSES)),rb=pick(Object.keys(BGS));
     const rl=Math.ceil(Math.random()*20);
-    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pick(NAMES[rs]||["Adventurer"]));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
+    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pickName(rs));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
     else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pick(NAMES[spLocked?sp:rs]||["Adventurer"]));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
