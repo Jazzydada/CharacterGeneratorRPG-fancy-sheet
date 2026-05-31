@@ -502,9 +502,10 @@ function buildPortraitPromptFromSheet(sh){
   return `single fantasy rpg character portrait, ${bits}, full body character art, centered, transparent feeling light background, ornate fantasy illustration, detailed face, cinematic lighting, no text, no border, no character sheet, no UI`;
 }
 function pollinationsImageUrl(prompt,seed){
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1408&seed=${seed}&nologo=true&enhance=true&model=flux`;
 }
 function FancySheet({sh}){
+  const [portraitFailed,setPortraitFailed]=useState(false);
   const stats=sh.finalStats||{};
   const stat=(ab)=>stats[ab]??10;
   const mod=(ab)=>sgn(mf(stat(ab)));
@@ -513,8 +514,8 @@ function FancySheet({sh}){
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
   const ink="#281507";
   const gold="#6b4b16";
-  const paper="rgba(253,243,211,.93)";
-  const paperSoft="rgba(253,243,211,.82)";
+  const paper="rgba(253,243,211,.96)";
+  const paperSoft="rgba(253,243,211,.88)";
   const ornateText={fontFamily:"Georgia, 'Times New Roman', serif",color:ink,textShadow:"0 .25mm 0 rgba(255,255,255,.65)"};
   const smallLabel={fontFamily:"Georgia, serif",fontSize:"1.65mm",letterSpacing:".06em",textTransform:"uppercase",color:gold,fontWeight:700,lineHeight:1.05};
   const abs=(left,top,width,height,extra={})=>({position:"absolute",left,top,width,height,...extra});
@@ -528,7 +529,7 @@ function FancySheet({sh}){
   const compactFeatureLines=(sh.features||"").split("\n").filter(Boolean).slice(0,8).map(line=>line.replace(/:\s*/g,": "));
 
   return <div className="page fancy-sheet" style={{width:"210mm",height:"297mm",margin:"0 auto",position:"relative",overflow:"hidden",background:"#efe2c4",fontFamily:"Georgia,serif",boxSizing:"border-box"}}>
-    <img src="/character-sheet-template.jpg" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",zIndex:0}}/>
+    <img src="/character-sheet-template-clean.jpg" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",zIndex:0}}/>
 
     {/* parchment masks: these cover the old example text from the template */}
     {mask("11.2%","5.0%","24.6%","4.2%","2mm")}
@@ -539,8 +540,9 @@ function FancySheet({sh}){
     {mask("36.7%","72.5%","31.0%","20.2%","1.5mm")}
 
     {/* AI portrait: deliberately large enough to hide the original figure in the template */}
-    <div style={abs("31.0%","19.0%","49.5%","51.5%",{zIndex:3,overflow:"hidden",borderRadius:"46% 46% 9% 9%",background:"#f8efd9",boxShadow:"inset 0 0 13mm rgba(255,255,255,.9), 0 0 5mm rgba(83,54,10,.35)"})}>
-      <img src={portrait} crossOrigin="anonymous" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.04) contrast(1.03)"}}/>
+    <div style={abs("33.2%","20.0%","43.5%","49.5%",{zIndex:3,overflow:"hidden",borderRadius:"44% 44% 10% 10%",background:"linear-gradient(#f8efd9,#efe0c0)",boxShadow:"inset 0 0 10mm rgba(255,255,255,.75), 0 0 5mm rgba(83,54,10,.35)"})}>
+      {!portraitFailed&&<img src={portrait} onError={()=>setPortraitFailed(true)} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.05) contrast(1.03)"}}/>}
+      {portraitFailed&&<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",padding:"8mm",boxSizing:"border-box",textAlign:"center",fontSize:"3.2mm",lineHeight:1.35,color:"#6b4b16",fontWeight:700}}>AI portrait could not load. Generate again or check the image service.</div>}
     </div>
 
     {textBox("11.5%","5.25%","24%","3.8%",<div style={{fontSize:"6.3mm",fontWeight:900,lineHeight:.95,textAlign:"center"}}>{sh.name}</div>)}
@@ -1146,7 +1148,7 @@ export default function App(){
   }
 
   if(view==="sheet"&&sheet){
-    return <div><div style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>Back</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>Print / PDF</button><span style={{fontSize:11,color:"#8a6a2a"}}>Set page margins to None. {sheet.isCaster?"2 pages":"1 page"}</span></div><FancySheet sh={sheet}/>{sheet.isCaster&&<Page2 sh={sheet}/>}<style>{`@media print{body>div>div:first-child{display:none!important}.page{page-break-after:always}@page{margin:0;size:A4 portrait}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>Back</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>Print / PDF</button><span style={{fontSize:11,color:"#8a6a2a"}}>Set page margins to None. {sheet.isCaster?"2 pages":"1 page"}</span></div><div className="print-area"><FancySheet sh={sheet}/>{sheet.isCaster&&<Page2 sh={sheet}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
