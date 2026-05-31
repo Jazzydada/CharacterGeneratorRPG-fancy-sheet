@@ -508,88 +508,80 @@ function FancySheet({sh}){
   const [portraitFailed,setPortraitFailed]=useState(false);
   const stats=sh.finalStats||{};
   const stat=(ab)=>stats[ab]??10;
-  const mod=(ab)=>sgn(mf(stat(ab)));
-  const skillBonus=(sk)=>sgn(mf(stat(sk.ab))+(sh.skills?.includes(sk.name)?sh.profBonus:0));
-  const saveBonus=(ab)=>sgn(mf(stat(ab))+(sh.saves?.includes(ab)?sh.profBonus:0));
+  const statMod=(ab)=>mf(stat(ab));
+  const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0));
+  const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
-  const ink="#281507";
-  const gold="#6b4b16";
-  const paper="rgba(253,243,211,.96)";
-  const paperSoft="rgba(253,243,211,.88)";
-  const ornateText={fontFamily:"Georgia, 'Times New Roman', serif",color:ink,textShadow:"0 .25mm 0 rgba(255,255,255,.65)"};
-  const smallLabel={fontFamily:"Georgia, serif",fontSize:"1.65mm",letterSpacing:".06em",textTransform:"uppercase",color:gold,fontWeight:700,lineHeight:1.05};
-  const abs=(left,top,width,height,extra={})=>({position:"absolute",left,top,width,height,...extra});
-  const mask=(left,top,width,height,r="2mm")=><div style={abs(left,top,width,height,{zIndex:2,background:paper,borderRadius:r,boxShadow:"inset 0 0 5mm rgba(255,255,255,.65)"})}/>;
-  const textBox=(left,top,width,height,children,extra={})=><div style={abs(left,top,width,height,{zIndex:5,...ornateText,...extra})}>{children}</div>;
-  const scoreBadge=(left,top,ab)=>textBox(left,top,"9.5%","6.7%",<>
-    <div style={{fontSize:"8.1mm",fontWeight:900,lineHeight:0.92,textAlign:"center"}}>{stat(ab)}</div>
-    <div style={{fontSize:"2.1mm",fontWeight:900,letterSpacing:".035em",textTransform:"uppercase",textAlign:"center",lineHeight:1.1}}>{AB_FULL[ab]||ab}</div>
-    <div style={{position:"absolute",left:"-7%",top:"-9%",width:"6.2mm",height:"6.2mm",borderRadius:"50%",background:"#f8edd1",border:".35mm solid #826020",fontSize:"2.6mm",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>{mod(ab)}</div>
-  </>);
-  const compactFeatureLines=(sh.features||"").split("\n").filter(Boolean).slice(0,8).map(line=>line.replace(/:\s*/g,": "));
+  const featureLines=(sh.features||"").split("\n").filter(Boolean).map(x=>x.replace(/:\s*/g,": ")).slice(0,10);
+  const skillRows=SKILL_LIST;
+  const weaponRows=(sh.weapons||[]).slice(0,4);
+  const lang=(sh.profLangs||"").replace(/^Languages:\s*/i,"").replace(/^.*Languages:\s*/i,"");
+  const cls=(sh.classLevel||"").split(" ")[0]||"Adventurer";
 
-  return <div className="page fancy-sheet" style={{width:"210mm",height:"297mm",margin:"0 auto",position:"relative",overflow:"hidden",background:"#efe2c4",fontFamily:"Georgia,serif",boxSizing:"border-box"}}>
-    <img src="/character-sheet-template-clean.jpg" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",zIndex:0}}/>
+  function StatCard({ab,className}){return <div className={"pro-stat "+className}>
+    <div className="pro-mod">{sgn(statMod(ab))}</div>
+    <div className="pro-score">{stat(ab)}</div>
+    <div className="pro-label">{AB_FULL[ab]||ab}</div>
+  </div>;}
+  function SavePip({ab}){return <div className="save-pip"><b>{saveBonus(ab)}</b><span>{ab}</span></div>;}
 
-    {/* parchment masks: these cover the old example text from the template */}
-    {mask("11.2%","5.0%","24.6%","4.2%","2mm")}
-    {mask("41.1%","3.6%","48.4%","7.8%","1.5mm")}
-    {mask("4.9%","24.2%","27.8%","31.5%","3mm")}
-    {mask("7.8%","70.3%","26.8%","21.8%","1.5mm")}
-    {mask("69.7%","67.9%","26.8%","24.3%","1.5mm")}
-    {mask("36.7%","72.5%","31.0%","20.2%","1.5mm")}
+  return <div className="page pro-sheet">
+    <style>{`
+      .pro-sheet{width:210mm;height:297mm;margin:0 auto;position:relative;overflow:hidden;box-sizing:border-box;background:#efe2c5;color:#221509;font-family:Georgia,'Times New Roman',serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      .pro-sheet *{box-sizing:border-box;}
+      .pro-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 36%,rgba(255,255,255,.86) 0 19%,rgba(255,255,255,.28) 20%,rgba(255,255,255,0) 45%),linear-gradient(90deg,rgba(105,60,13,.13),transparent 12%,transparent 88%,rgba(105,60,13,.13)),linear-gradient(#f5ead1,#e8d2a7);}
+      .pro-bg:before{content:"";position:absolute;inset:8mm;border:1.4mm double rgba(101,63,18,.72);border-radius:5mm;box-shadow:inset 0 0 0 1mm rgba(255,248,220,.55),inset 0 0 20mm rgba(110,72,23,.18),0 0 0 1mm rgba(70,43,16,.18);}
+      .pro-bg:after{content:"✦ ✧ ✦";position:absolute;left:0;right:0;top:139mm;text-align:center;font-size:95mm;line-height:0;color:rgba(87,67,40,.055);letter-spacing:7mm;transform:rotate(-8deg);}
+      .arcane-ring{position:absolute;left:56mm;top:48mm;width:100mm;height:100mm;border-radius:50%;border:1mm solid rgba(96,77,54,.2);box-shadow:inset 0 0 0 2mm rgba(255,255,255,.23),0 0 0 8mm rgba(127,92,38,.045);}
+      .arcane-ring:before,.arcane-ring:after{content:"";position:absolute;inset:12mm;border-radius:50%;border:.35mm dashed rgba(74,62,45,.22);}.arcane-ring:after{inset:24mm;transform:rotate(24deg);border-style:solid;border-color:rgba(74,62,45,.13)}
+      .pro-title{position:absolute;left:14mm;top:9mm;width:62mm;height:18mm;border:1mm solid #7b5118;border-radius:3mm;background:linear-gradient(#fff7df,#e8d4a7);box-shadow:0 1.2mm 4mm rgba(35,18,0,.25), inset 0 0 0 .6mm rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;text-align:center;padding:1mm 4mm;}
+      .pro-title b{font-size:8.3mm;line-height:.9;letter-spacing:-.03em;}
+      .brand{position:absolute;left:15mm;top:5.2mm;font-family:system-ui,sans-serif;font-size:2.4mm;font-weight:900;letter-spacing:.16em;color:#51350e;text-transform:uppercase;}
+      .top-scroll{position:absolute;left:82mm;top:8mm;width:111mm;height:26mm;padding:4mm 7mm;background:linear-gradient(90deg,#ead2a0,#fff0c7 12%,#f6e2b4 88%,#d2a96d);border:.7mm solid rgba(97,60,19,.6);border-radius:2mm;box-shadow:0 1mm 4mm rgba(30,16,0,.25),inset 0 0 0 .6mm rgba(255,255,255,.45);display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm 6mm;}
+      .field .value{font-size:4.5mm;font-weight:900;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.field .label{font:700 1.8mm/1 system-ui,sans-serif;color:#6e4a17;text-transform:uppercase;letter-spacing:.06em;margin-top:.8mm}
+      .small-token{position:absolute;background:linear-gradient(#fff8dd,#e9d6a8);border:.7mm solid rgba(96,62,18,.68);border-radius:8mm;box-shadow:0 .9mm 2.3mm rgba(43,26,6,.22),inset 0 0 0 .5mm rgba(255,255,255,.54);display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:900;z-index:6;}
+      .small-token b{font-size:5.1mm;line-height:.9}.small-token span{font:800 1.7mm/1 system-ui,sans-serif;color:#6e4a17;text-transform:uppercase;margin-top:.6mm;letter-spacing:.05em}
+      .inspiration{left:35mm;top:34mm;width:13mm;height:13mm}.prof{left:67mm;top:34mm;width:13mm;height:13mm}.init{left:161mm;top:34mm;width:13mm;height:13mm}.ac{right:17mm;top:35mm;width:17mm;height:22mm}.speed{right:20mm;top:152mm;width:24mm;height:10mm;border-radius:3mm;}
+      .save-row{position:absolute;left:13mm;top:55mm;width:59mm;height:13mm;display:flex;gap:1.5mm;z-index:5}.save-pip{flex:1;border:.6mm solid rgba(96,62,18,.65);border-radius:5mm;background:linear-gradient(#fff6d7,#dec08a);text-align:center;padding-top:1mm;box-shadow:inset 0 0 0 .4mm rgba(255,255,255,.45)}.save-pip b{font-size:3.2mm;display:block;line-height:1}.save-pip span{font:900 1.7mm/1 system-ui,sans-serif;color:#7a2419;}
+      .portrait-wrap{position:absolute;left:74mm;top:63mm;width:63mm;height:113mm;z-index:3;border-radius:31mm 31mm 5mm 5mm;overflow:hidden;background:radial-gradient(circle at 50% 12%,#fff9e8,#e6d0a6);box-shadow:0 1.5mm 5mm rgba(35,20,6,.32),inset 0 0 6mm rgba(255,255,255,.85);border:.7mm solid rgba(113,80,30,.35)}
+      .portrait-wrap img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:saturate(1.08) contrast(1.03)}.portrait-fail{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:8mm;color:#6b4b16;font-weight:900;font-size:3.2mm;line-height:1.35;}
+      .pro-stat{position:absolute;width:23mm;height:23mm;border-radius:50%;background:radial-gradient(circle,#fffaf0 0 45%,#ead4a8 78%);border:.9mm solid rgba(107,75,22,.72);box-shadow:0 1mm 3mm rgba(40,23,4,.24),inset 0 0 0 .7mm rgba(255,255,255,.54);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5}.pro-score{font-size:8mm;font-weight:900;line-height:.82}.pro-label{font:900 2mm/1 system-ui,sans-serif;letter-spacing:.03em;color:#4c3210;text-transform:uppercase;margin-top:1mm}.pro-mod{position:absolute;left:-2mm;top:-2mm;width:8mm;height:8mm;border-radius:50%;background:#fff7dc;border:.55mm solid #84621f;display:flex;align-items:center;justify-content:center;font-size:3mm;font-weight:900}.str{left:81mm;top:48mm}.dex{left:111mm;top:42mm}.con{left:143mm;top:51mm}.int{left:170mm;top:71mm}.wis{left:176mm;top:105mm}.cha{left:176mm;top:133mm}
+      .panel{position:absolute;z-index:6;background:rgba(255,246,215,.91);border:.65mm solid rgba(107,75,22,.6);box-shadow:0 1mm 3.5mm rgba(42,25,5,.16),inset 0 0 0 .5mm rgba(255,255,255,.55);border-radius:3mm;padding:4mm;overflow:hidden}.panel h2{margin:0 0 3mm;text-align:center;font-size:7mm;line-height:.9}.panel table{width:100%;border-collapse:collapse}.panel td{border-bottom:.25mm solid rgba(107,75,22,.24);font-size:2.85mm;line-height:1.12;padding:.65mm 0}.panel td:last-child{text-align:right;font-weight:900}.skills{left:14mm;top:72mm;width:57mm;height:93mm}.attacks{left:14mm;bottom:31mm;width:62mm;height:62mm}.hp{left:79mm;bottom:30mm;width:58mm;height:61mm;text-align:center}.traits{right:15mm;bottom:31mm;width:58mm;height:88mm}.traits li{font-size:3.1mm;line-height:1.17;margin-bottom:1.6mm}.traits ul{margin:0;padding-left:4.5mm}.attack-row{display:grid;grid-template-columns:1fr 11mm 20mm;gap:1mm;border-bottom:.25mm solid rgba(107,75,22,.25);padding:1.4mm 0;font-size:3mm;line-height:1.05}.attack-row b{font-size:3.1mm}.hp-top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2mm;align-items:end;border-bottom:.4mm solid rgba(107,75,22,.35);padding-bottom:3mm;margin-bottom:13mm}.hp-num{font-size:13mm;font-weight:900;line-height:.8}.hp-lab{font:800 2mm/1 system-ui,sans-serif;text-transform:uppercase;color:#6e4a17}.hp-current{height:32mm;border-bottom:.5mm solid rgba(107,75,22,.42);display:flex;align-items:center;justify-content:center;color:rgba(70,43,16,.18);font-size:7mm;font-weight:900}.death{display:flex;justify-content:center;gap:6mm;margin-top:4mm}.death span{width:5mm;height:5mm;border-radius:50%;border:.55mm solid #7b5118;background:#fff4d3;display:inline-block;margin:0 .6mm}.langs{position:absolute;left:83mm;bottom:18mm;width:51mm;text-align:center;font-size:3.2mm;z-index:7;color:#241305}.subtle-caption{font:800 1.9mm/1 system-ui,sans-serif;color:#6e4a17;text-transform:uppercase;letter-spacing:.08em}.corner-dragon{position:absolute;right:8mm;top:5mm;font-size:18mm;color:rgba(72,42,9,.42);z-index:2}.corner-sword{position:absolute;left:6mm;bottom:23mm;font-size:44mm;color:rgba(85,43,11,.25);z-index:2;transform:rotate(-8deg)}
+      @media print{.pro-sheet{margin:0!important;box-shadow:none!important}.portrait-wrap img{display:block!important}}
+    `}</style>
+    <div className="pro-bg"/><div className="arcane-ring"/><div className="corner-dragon">♜</div><div className="corner-sword">†</div>
+    <div className="brand">Asaheim Fantasy Sheet</div>
+    <div className="pro-title"><b>{sh.name}</b></div>
+    <div className="top-scroll">
+      <div className="field"><div className="value">{sh.classLevel}</div><div className="label">Class & Level</div></div>
+      <div className="field"><div className="value">{sh.background}</div><div className="label">Background</div></div>
+      <div className="field"><div className="value">Kaos</div><div className="label">Player</div></div>
+      <div className="field"><div className="value">{sh.species}</div><div className="label">Race</div></div>
+      <div className="field"><div className="value">{sh.alignment}</div><div className="label">Alignment</div></div>
+      <div className="field"><div className="value">0</div><div className="label">Experience</div></div>
+    </div>
+    <div className="small-token inspiration"><b>0</b><span>Inspiration</span></div>
+    <div className="small-token prof"><b>{sh.profBonus}</b><span>Prof</span></div>
+    <div className="small-token init"><b>{sgn(sh.initiative)}</b><span>Init</span></div>
+    <div className="small-token ac"><b>{sh.ac}</b><span>AC</span></div>
+    <div className="small-token speed"><b>{sh.speed} ft</b><span>Speed</span></div>
+    <div className="save-row">{AB.map(ab=><SavePip key={ab} ab={ab}/>)}</div>
 
-    {/* AI portrait: deliberately large enough to hide the original figure in the template */}
-    <div style={abs("33.2%","20.0%","43.5%","49.5%",{zIndex:3,overflow:"hidden",borderRadius:"44% 44% 10% 10%",background:"linear-gradient(#f8efd9,#efe0c0)",boxShadow:"inset 0 0 10mm rgba(255,255,255,.75), 0 0 5mm rgba(83,54,10,.35)"})}>
-      {!portraitFailed&&<img src={portrait} onError={()=>setPortraitFailed(true)} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.05) contrast(1.03)"}}/>}
-      {portraitFailed&&<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",padding:"8mm",boxSizing:"border-box",textAlign:"center",fontSize:"3.2mm",lineHeight:1.35,color:"#6b4b16",fontWeight:700}}>AI portrait could not load. Generate again or check the image service.</div>}
+    <StatCard ab="STR" className="str"/><StatCard ab="DEX" className="dex"/><StatCard ab="CON" className="con"/><StatCard ab="INT" className="int"/><StatCard ab="WIS" className="wis"/><StatCard ab="CHA" className="cha"/>
+
+    <div className="portrait-wrap">
+      {!portraitFailed&&<img src={portrait} crossOrigin="anonymous" onError={()=>setPortraitFailed(true)} />}
+      {portraitFailed&&<div className="portrait-fail">AI portrait could not load.<br/>Generate again or check the image service.</div>}
     </div>
 
-    {textBox("11.5%","5.25%","24%","3.8%",<div style={{fontSize:"6.3mm",fontWeight:900,lineHeight:.95,textAlign:"center"}}>{sh.name}</div>)}
-    {textBox("41.9%","3.9%","15.5%","3.4%",<><div style={{fontSize:"3.0mm",fontWeight:800,lineHeight:1.05}}>{sh.classLevel}</div><div style={smallLabel}>Class & Level</div></>)}
-    {textBox("41.9%","7.4%","15.5%","3.3%",<><div style={{fontSize:"3.0mm",fontWeight:800,lineHeight:1.05}}>{sh.species}</div><div style={smallLabel}>Race</div></>)}
-    {textBox("59.8%","3.9%","14.5%","3.4%",<><div style={{fontSize:"3.0mm",fontWeight:800,lineHeight:1.05}}>{sh.background}</div><div style={smallLabel}>Background</div></>)}
-    {textBox("59.8%","7.4%","14.5%","3.3%",<><div style={{fontSize:"3.0mm",fontWeight:800,lineHeight:1.05}}>{sh.alignment}</div><div style={smallLabel}>Alignment</div></>)}
-    {textBox("75.3%","3.9%","13.2%","3.4%",<><div style={{fontSize:"3.0mm",fontWeight:800,lineHeight:1.05}}>Kaos</div><div style={smallLabel}>Player Name</div></>)}
+    <div className="panel skills"><h2>Skills</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{marginTop:"2mm",paddingTop:"2mm",borderTop:".3mm solid rgba(107,75,22,.25)",fontSize:"2.8mm"}}>Passive Perception <b>{sh.passivePerc}</b></div></div>
 
-    {textBox("14.6%","14.45%","5.3%","3.5%",<div style={{fontSize:"6.1mm",fontWeight:900,textAlign:"center"}}>0</div>)}
-    {textBox("29.1%","14.45%","5.3%","3.5%",<div style={{fontSize:"6.1mm",fontWeight:900,textAlign:"center"}}>{sh.profBonus}</div>)}
+    <div className="panel attacks"><h2>Attacks &<br/>Spellcasting</h2>{weaponRows.map(w=><div key={w.name} className="attack-row"><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
 
-    {AB.map((ab,i)=>textBox(["5.0%","10.4%","15.7%","21.1%","26.4%","31.75%"][i],"21.65%","4.2%","3.1%",<div style={{fontSize:"3.6mm",fontWeight:900,textAlign:"center"}}>{saveBonus(ab)}</div>))}
+    <div className="panel hp"><div className="hp-top"><div><div style={{fontSize:"4mm",fontWeight:900}}>{sh.hitDice}</div><div className="hp-lab">Hit Dice</div></div><div><div className="hp-lab">Hit Point<br/>Maximum</div></div><div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">CURRENT HP</div><div className="death"><div><div className="subtle-caption">Successes</div><span/><span/><span/></div><div><div className="subtle-caption">Failures</div><span/><span/><span/></div></div></div>
 
-    {scoreBadge("41.5%","18.8%","STR")}
-    {scoreBadge("51.7%","14.9%","DEX")}
-    {scoreBadge("65.5%","18.5%","CON")}
-    {scoreBadge("79.2%","24.6%","INT")}
-    {scoreBadge("86.0%","36.0%","WIS")}
-    {scoreBadge("88.3%","47.4%","CHA")}
-    {textBox("88.4%","13.9%","8.2%","7.0%",<><div style={{fontSize:"7.0mm",fontWeight:900,textAlign:"center",lineHeight:.9}}>{sh.ac}</div><div style={{fontSize:"3.0mm",fontWeight:900,textAlign:"center"}}>AC</div></>)}
-    {textBox("75.2%","14.0%","7.5%","3.4%",<div style={{fontSize:"6.4mm",fontWeight:900,textAlign:"center"}}>{sgn(sh.initiative)}</div>)}
-    {textBox("82.1%","56.3%","10.5%","3.2%",<div style={{fontSize:"3.4mm",fontWeight:900,textAlign:"center"}}>{sh.speed} ft</div>)}
-
-    <div style={abs("5.7%","25.1%","26.5%","29.4%",{zIndex:5,padding:"5.5mm 4.3mm",boxSizing:"border-box",...ornateText})}>
-      <div style={{textAlign:"center",fontSize:"7.2mm",fontWeight:900,marginBottom:"2.2mm",lineHeight:1}}>Skills</div>
-      {SKILL_LIST.map(sk=><div key={sk.name} style={{display:"grid",gridTemplateColumns:"1fr 9mm",gap:"1.2mm",fontSize:"2.65mm",lineHeight:1.18,color:ink,fontFamily:"Georgia,serif"}}><span>{sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</span><b style={{textAlign:"right"}}>{skillBonus(sk)}</b></div>)}
-      <div style={{fontSize:"2.45mm",marginTop:"1.7mm",borderTop:".25mm solid rgba(107,75,22,.35)",paddingTop:"1.2mm"}}>Passive Perception <b>{sh.passivePerc}</b></div>
-    </div>
-
-    <div style={abs("8.4%","70.8%","25.5%","20.4%",{zIndex:5,padding:"3.8mm",boxSizing:"border-box",...ornateText})}>
-      <div style={{fontSize:"5.2mm",fontWeight:900,textAlign:"center",marginBottom:"2.2mm",lineHeight:1.05}}>Attacks &<br/>Spellcasting</div>
-      {(sh.weapons||[]).slice(0,5).map(w=><div key={w.name} style={{display:"grid",gridTemplateColumns:"1fr 8mm 1fr",borderBottom:".25mm solid rgba(107,75,22,.35)",padding:"1.0mm 0",fontSize:"2.65mm",lineHeight:1.12}}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}
-    </div>
-
-    {textBox("35.2%","73.4%","8.2%","3.1%",<div style={{fontSize:"2.7mm",fontWeight:900,textAlign:"center"}}>{sh.hitDice}</div>)}
-    {textBox("47.4%","73.2%","14.5%","3.4%",<div style={{fontSize:"2.55mm",fontWeight:900,textAlign:"center",lineHeight:1.05}}>Hit Point<br/>Maximum</div>)}
-    {textBox("61.5%","72.9%","8.2%","4.0%",<div style={{fontSize:"8.0mm",fontWeight:900,textAlign:"center",lineHeight:1}}>{sh.hpMax}</div>)}
-    {textBox("39.0%","88.7%","28.0%","5.5%",<div style={{fontSize:"2.85mm",lineHeight:1.28,textAlign:"center"}}>{sh.profLangs?.split("Languages: ")[1]||"Common"}</div>)}
-
-    <div style={abs("70.8%","68.8%","25.5%","22.3%",{zIndex:5,padding:"4.2mm",boxSizing:"border-box",...ornateText})}>
-      <div style={{fontSize:"5.3mm",fontWeight:900,textAlign:"center",marginBottom:"2.2mm",lineHeight:1.05}}>Features<br/>& Traits</div>
-      {compactFeatureLines.map((line,i)=><div key={i} style={{fontSize:"3.05mm",lineHeight:1.22,marginBottom:".9mm"}}>• {line.length>48?line.slice(0,48)+"…":line}</div>)}
-    </div>
-
-    {/* a subtle veil around the portrait keeps text readable while preserving the magic-circle template */}
-    <div style={abs("34%","18%","48%","52%",{zIndex:4,pointerEvents:"none",boxShadow:"inset 0 0 12mm rgba(255,248,230,.22)",borderRadius:"45% 45% 8% 8%"})}/>
+    <div className="panel traits"><h2>Features<br/>& Traits</h2><ul>{featureLines.map((line,i)=><li key={i}>{line.length>52?line.slice(0,52)+"…":line}</li>)}</ul></div>
+    <div className="langs">{lang||"Common"}</div>
   </div>;
 }
 
