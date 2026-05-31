@@ -532,7 +532,7 @@ function FancySheet({sh}){
       .ornate-sheet *{box-sizing:border-box;}
       .orn-bg{position:absolute;inset:0;overflow:hidden;background:
         linear-gradient(rgba(244,224,170,.34),rgba(244,224,170,.34)),
-        url('/fantasy-sheet-bg.svg');background-size:cover;background-position:center;}
+        url('/fantasy-sheet-bg.jpg');background-size:cover;background-position:center;}
       .orn-bg:before{content:"";position:absolute;inset:0;background:
         radial-gradient(circle at 52% 42%,rgba(255,241,188,.84) 0 15%,rgba(255,221,134,.25) 30%,rgba(16,10,5,0) 47%),
         radial-gradient(circle at 18% 76%,rgba(255,166,73,.22),transparent 18%),
