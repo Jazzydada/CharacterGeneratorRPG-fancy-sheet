@@ -558,7 +558,7 @@ function FancySheet({sh}){
   const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0));
   const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
-  const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>x.replace(/:\s*/g,": ")).slice(0,8);
+  const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>x.replace(/:\s*/g,": ")).slice(0,13);
   const skillRows=SKILL_LIST;
   const weaponRows=(sh.weapons||[]).slice(0,4);
   const lang=(sh.profLangs||"").replace(/^Languages:\s*/i,"").replace(/^.*Languages:\s*/i,"");
@@ -1195,7 +1195,7 @@ export default function App(){
     const subclassLine=sub?sub+": "+((SUBCLASSES[cn]||{})[sub]||"Subclass features from level 3."):"";
     const originFeatLine=bgo.feat+" (Origin): "+(ALL_FEATS[bgo.feat]?.desc||"");
     const featsList=[originFeatLine,...activeFeats.map(f=>{const fd=ALL_FEATS[f];return fd?f+": "+fd.desc:f;})].join("\n");
-    const classFeaturesTxt=(cls.features||[]).join("\n");
+    const classFeaturesTxt=(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).join("\n");
     const racialTraitsTxt=(speciesData.traits||[]).join("\n");
     const combinedFeatures=[subclassLine,featsList,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+bgo.tools+"\nLanguages: "+(speciesData?.languages||["Common"]).join(", ");
