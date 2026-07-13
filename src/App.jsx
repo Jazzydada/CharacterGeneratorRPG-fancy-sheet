@@ -1,5 +1,6 @@
 import React,{useMemo,useState,useRef,useCallback}from"react";
 import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVertical,Package,Lock,Unlock,RefreshCw}from"lucide-react";
+import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
 
 const RULES_VERSION="2024";
 
@@ -69,6 +70,7 @@ const DA={
   General:"Generel",
   Granted:"Tildelt",
   Racial:"Race",
+  Cast:"Casting",Range:"Rækkevidde",Duration:"Varighed",
   // notes
   "Subclass features, magic items, other notes...":"Underklasse-evner, magiske genstande, andre noter...",
   // sheet button bar
@@ -101,6 +103,8 @@ const DA={
 };
 function t(s){return CURRENT_LANG==="da"?(DA[s]??s):s;}
 function setLang(l){CURRENT_LANG=l;try{localStorage.setItem("cg_lang",l);}catch(e){}}
+// Returns a spell's data, translated to Danish when the language is DA (names stay English — they are the keys).
+function spellD(name){const d=SD[name];if(!d)return d;if(CURRENT_LANG!=="da")return d;return{...d,sc:trSchool(d.sc),cast:trCast(d.cast),range:trRange(d.range),dur:trDur(d.dur),desc:SDD[name]||d.desc};}
 
 const BG_PERSONALITY={
   Acolyte:{traits:["I quote sacred texts in everyday conversation.","I am calm and patient, even in chaos.","I keep a small shrine wherever I sleep."],ideals:["Faith. I trust in powers greater than myself.","Compassion. Mercy can change what violence cannot.","Duty. Some burdens must be carried because no one else will."],bonds:["My temple is in danger and I cannot ignore it.","I carry a holy relic that must be protected.","I failed a sacred duty once and will not fail again."],flaws:["I am intolerant of those who follow different gods.","I hold grudges against those who insulted my faith.","I sometimes choose doctrine over wisdom."]},
@@ -866,7 +870,7 @@ function SPopup({name,d,onClose}){
         <div><div style={{fontWeight:800,fontSize:"1.05rem",color:"#f1f5f9"}}>{name}</div>{d.sc&&<div style={{fontSize:"0.7rem",color:"#fcd34d",marginTop:"0.15rem",textTransform:"uppercase"}}>{d.sc}</div>}</div>
         <button onClick={onClose} style={{background:"none",border:"none",color:G.dim,cursor:"pointer",fontSize:"1.2rem",lineHeight:1,padding:"0 4px"}}>x</button>
       </div>
-      <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"0.7rem"}}>{[["Cast",d.cast],["Range",d.range],["Duration",d.dur]].filter(([,v])=>v).map(([l,v])=><div key={l} style={{background:"#1e293b",borderRadius:"0.4rem",padding:"0.2rem 0.5rem",fontSize:"0.68rem"}}><span style={{color:G.dim}}>{l}: </span><span style={{color:"#e2e8f0",fontWeight:600}}>{v}</span></div>)}</div>
+      <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"0.7rem"}}>{[[t("Cast"),d.cast],[t("Range"),d.range],[t("Duration"),d.dur]].filter(([,v])=>v).map(([l,v])=><div key={l} style={{background:"#1e293b",borderRadius:"0.4rem",padding:"0.2rem 0.5rem",fontSize:"0.68rem"}}><span style={{color:G.dim}}>{l}: </span><span style={{color:"#e2e8f0",fontWeight:600}}>{v}</span></div>)}</div>
       <div style={{fontSize:"0.85rem",color:"#94a3b8",lineHeight:1.65}}>{d.desc}</div>
     </div>
   </div>);
@@ -887,7 +891,7 @@ function MasteryBtn({name}){
 
 function SBtn({name,sel,prep,onToggle,onPrep}){
   const [open,setOpen]=useState(false);
-  const d=SD[name];
+  const d=spellD(name);
   return(<>
     <div style={{display:"flex",alignItems:"stretch",borderRadius:"0.65rem",overflow:"hidden",border:"1px solid "+(sel?G.gold:"#334155"),minHeight:"3rem",flexShrink:0}}>
       <button onClick={e=>{e.stopPropagation();onToggle();}} style={{flex:1,padding:"0.6rem 1rem",fontSize:"0.9rem",border:"none",cursor:"pointer",background:sel?G.gold:"transparent",color:sel?G.bg:"#f1f5f9",fontWeight:sel?700:400,textAlign:"left",whiteSpace:"normal",wordBreak:"break-word",lineHeight:1.4}}>{name}</button>
@@ -1287,7 +1291,7 @@ export default function App(){
   function togCollapsed(id){setCollapsed(c=>({...c,[id]:!c[id]}));}
   function onDragStart(id){setDraggingPanel(id);}
   function onDrop(targetId){if(!draggingPanel||draggingPanel===targetId)return;setPanelOrder(prev=>{const o=[...prev];const fi=o.indexOf(draggingPanel),ti=o.indexOf(targetId);o.splice(fi,1);o.splice(ti,0,draggingPanel);return o;});setDraggingPanel(null);}
-  function buildSBL(){const res={};Object.entries(selSp).forEach(([lv,names])=>{const li=Number(lv);res[li]=(names||[]).map(name=>{const d=SD[name]||{};return{name,desc:d.desc||""};});});return res;}
+  function buildSBL(){const res={};Object.entries(selSp).forEach(([lv,names])=>{const li=Number(lv);res[li]=(names||[]).map(name=>{const d=spellD(name)||{};return{name,desc:d.desc||""};});});return res;}
 
   function genSheet(){
     const nextPortraitSeed=Math.floor(Math.random()*1000000);
