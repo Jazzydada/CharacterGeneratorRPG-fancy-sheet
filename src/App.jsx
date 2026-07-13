@@ -3,6 +3,105 @@ import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVer
 
 const RULES_VERSION="2024";
 
+// ─── i18n ─────────────────────────────────────
+// Module-level current language so every component (incl. the sheet) can call t()
+// without prop-threading. App sets CURRENT_LANG at the top of each render.
+let CURRENT_LANG=(typeof localStorage!=="undefined"&&localStorage.getItem("cg_lang"))||"da";
+const DA={
+  // header
+  "D&D 2024-inspired quick builder":"D&D 2024 hurtig karakterbygger",
+  "Generate and customize your RPG character with stats, spells and gear — in seconds.":"Byg og tilpas din RPG-karakter med stats, spells og udstyr — på få sekunder.",
+  "Made by":"Lavet af",
+  Randomize:"Tilfældig",
+  "Generate Sheet":"Lav karakterark",
+  Save:"Gem",
+  Load:"Indlæs",
+  "Level Up":"Level op",
+  // topbar / locks
+  "Lock class":"Lås klasse","Class locked":"Klasse låst",
+  "Lock species":"Lås race","Species locked":"Race låst",
+  Lvl:"Niv","LVL":"NIV",
+  // group + panels
+  "Character Creator":"Karakterbygger",
+  "Combat Overview":"Kampoversigt",
+  Spells:"Spells",
+  "Equipment & Weapons":"Udstyr & våben",
+  "Personality & Notes":"Personlighed & noter",
+  Identity:"Identitet",
+  "Ability Scores & Skills":"Evner & færdigheder",
+  Feats:"Feats",
+  // identity fields
+  "Character Name":"Karakternavn",
+  "Auto-generated if empty":"Genereres automatisk hvis tom",
+  "Portrait Gender":"Portræt-køn",
+  male:"mand",female:"kvinde",
+  Alignment:"Sindelag",
+  Species:"Race",
+  "Species Traits":"Race-træk",
+  Class:"Klasse",
+  "Class Features":"Klasse-evner",
+  Multiclass:"Multiclass",
+  "Second class":"Anden klasse",
+  Levels:"Niveauer",
+  Subclass:"Underklasse",
+  "Subclass (available at level 3)":"Underklasse (fra niveau 3)",
+  "Unlocks at level 3...":"Låses op ved niveau 3...",
+  "Choose subclass...":"Vælg underklasse...",
+  Background:"Baggrund",
+  "Origin Feat":"Oprindelses-feat",
+  // stats panel
+  "Stat Method":"Metode til evner",
+  "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel",
+  "Roll 4d6":"Kast 4d6",
+  "Background Ability Boost":"Baggrunds-bonus til evner",
+  "Click to choose (2024 rules — pick from":"Klik for at vælge (2024-regler — vælg blandt",
+  "type your own dice rolls into the fields below, or use the digital roll button":"skriv dine egne terningkast i felterne nedenfor, eller brug den digitale kast-knap",
+  Total:"I alt",
+  Skills:"Færdigheder",
+  available:"tilgængelige",
+  "choose":"vælg",
+  // feats panel
+  "from ASI levels 4/8/12/16/19":"fra ASI-niveauer 4/8/12/16/19",
+  "Human bonus Origin Feat":"Human bonus oprindelses-feat",
+  "Fighting Style":"Kampstil",
+  free:"gratis",
+  Origin:"Oprindelse",
+  General:"Generel",
+  Granted:"Tildelt",
+  Racial:"Race",
+  // notes
+  "Subclass features, magic items, other notes...":"Underklasse-evner, magiske genstande, andre noter...",
+  // sheet button bar
+  Back:"Tilbage",
+  "Print / PDF":"Print / PDF",
+  "Set page margins to None.":"Sæt sidemargener til Ingen.",
+  "2 pages":"2 sider","1 page":"1 side",
+  // sheet static labels
+  "Class & Level":"Klasse & niveau",
+  "Player Name":"Spillernavn",
+  Race:"Race",
+  "Experience Points":"Erfaringspoint",
+  Inspiration:"Inspiration",
+  "Proficiency Bonus":"Færdighedsbonus",
+  Initiative:"Initiativ",
+  Speed:"Fart",
+  "Saving Throws":"Redningskast",
+  "Passive Perception":"Passiv opmærksomhed",
+  "Attacks & Spellcasting":"Angreb & magi",
+  "Hit Points":"Livspoint",
+  "Hit Dice":"Livsterninger",
+  "HP Max":"Maks HP",
+  "CURRENT HP":"NUVÆRENDE HP",
+  Successes:"Successer",
+  Failures:"Fejl",
+  "Features & Traits":"Evner & træk",
+  "Portrait could not load.":"Portræt kunne ikke indlæses.",
+  "Try Generate Sheet again.":"Prøv Lav karakterark igen.",
+  "Painting portrait…":"Maler portræt…",
+};
+function t(s){return CURRENT_LANG==="da"?(DA[s]??s):s;}
+function setLang(l){CURRENT_LANG=l;try{localStorage.setItem("cg_lang",l);}catch(e){}}
+
 const BG_PERSONALITY={
   Acolyte:{traits:["I quote sacred texts in everyday conversation.","I am calm and patient, even in chaos.","I keep a small shrine wherever I sleep."],ideals:["Faith. I trust in powers greater than myself.","Compassion. Mercy can change what violence cannot.","Duty. Some burdens must be carried because no one else will."],bonds:["My temple is in danger and I cannot ignore it.","I carry a holy relic that must be protected.","I failed a sacred duty once and will not fail again."],flaws:["I am intolerant of those who follow different gods.","I hold grudges against those who insulted my faith.","I sometimes choose doctrine over wisdom."]},
   Artisan:{traits:["I examine everything for quality and craftsmanship.","I believe every problem has a practical solution.","I am proud of my work and do not hide it."],ideals:["Ambition. I will build something no one can ignore.","Honor. A contract means something even when it costs you.","Beauty. Art and craft are worth defending."],bonds:["My masterwork was stolen and I want it back.","I owe my training to a guild that still expects loyalty.","I want to build something lasting before I die."],flaws:["I spend money on tools as soon as I earn it.","I am arrogant about the quality of my work.","I judge people by the quality of their equipment."]},
@@ -609,32 +708,32 @@ function FancySheet({sh}){
     <div className="brand">Asaheim Fantasy Sheet</div>
     <div className="name-plaque"><b>{sh.name}</b></div>
     <div className="top-scroll">
-      <div className="field"><div className="value">{sh.classLevel}</div><div className="label">Class & Level</div></div>
-      <div className="field"><div className="value">{sh.background}</div><div className="label">Background</div></div>
-      <div className="field"><div className="value">&nbsp;</div><div className="label">Player Name</div></div>
-      <div className="field"><div className="value">{sh.species}</div><div className="label">Race</div></div>
-      <div className="field"><div className="value">{sh.alignment}</div><div className="label">Alignment</div></div>
-      <div className="field"><div className="value">{xpForClassLevel(sh.classLevel)}</div><div className="label">Experience Points</div></div>
+      <div className="field"><div className="value">{sh.classLevel}</div><div className="label">{t("Class & Level")}</div></div>
+      <div className="field"><div className="value">{sh.background}</div><div className="label">{t("Background")}</div></div>
+      <div className="field"><div className="value">&nbsp;</div><div className="label">{t("Player Name")}</div></div>
+      <div className="field"><div className="value">{sh.species}</div><div className="label">{t("Race")}</div></div>
+      <div className="field"><div className="value">{sh.alignment}</div><div className="label">{t("Alignment")}</div></div>
+      <div className="field"><div className="value">{xpForClassLevel(sh.classLevel)}</div><div className="label">{t("Experience Points")}</div></div>
     </div>
-    <div className="ribbon insp-label">Inspiration</div><div className="small-token inspiration"><b>0</b></div>
-    <div className="ribbon prof-label">Proficiency Bonus</div><div className="small-token prof"><b>{sh.profBonus}</b></div>
-    <div className="ribbon init-label">Initiative</div><div className="small-token init"><b>{sgn(sh.initiative)}</b></div>
+    <div className="ribbon insp-label">{t("Inspiration")}</div><div className="small-token inspiration"><b>0</b></div>
+    <div className="ribbon prof-label">{t("Proficiency Bonus")}</div><div className="small-token prof"><b>{sh.profBonus}</b></div>
+    <div className="ribbon init-label">{t("Initiative")}</div><div className="small-token init"><b>{sgn(sh.initiative)}</b></div>
     <div className="small-token ac"><b>{sh.ac}</b><span>AC</span></div>
-    <div className="saving-title">Saving Throws</div>
+    <div className="saving-title">{t("Saving Throws")}</div>
     <div className="save-row">{AB.map(a=><SavePip key={a} ab={a}/>)}</div>
 
     <StatCard ab="STR" className="str"/><StatCard ab="DEX" className="dex"/><StatCard ab="CON" className="con"/><StatCard ab="INT" className="int"/><StatCard ab="WIS" className="wis"/><StatCard ab="CHA" className="cha"/>
 
-    <div className="portrait-frame"><div className="portrait-wrap">{portraitFailed?<div className="portrait-fail">Portrait could not load.<br/>Try Generate Sheet again.</div>:portraitLoading?<div className="portrait-loading"><span style={{fontSize:"6mm"}}>🎨</span><span>Painting portrait…</span></div>:null}{!portraitFailed&&<img src={portrait} onLoad={()=>setPortraitLoading(false)} onError={()=>{setPortraitFailed(true);setPortraitLoading(false);}} style={{display:portraitLoading?"none":"block",width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.08) contrast(1.04)"}}/>}</div></div><div className="portrait-cap"/>
+    <div className="portrait-frame"><div className="portrait-wrap">{portraitFailed?<div className="portrait-fail">{t("Portrait could not load.")}<br/>{t("Try Generate Sheet again.")}</div>:portraitLoading?<div className="portrait-loading"><span style={{fontSize:"6mm"}}>🎨</span><span>{t("Painting portrait…")}</span></div>:null}{!portraitFailed&&<img src={portrait} onLoad={()=>setPortraitLoading(false)} onError={()=>{setPortraitFailed(true);setPortraitLoading(false);}} style={{display:portraitLoading?"none":"block",width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.08) contrast(1.04)"}}/>}</div></div><div className="portrait-cap"/>
 
-    <div className="panel skills"><h2>Skills</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>Passive Perception <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
+    <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">Attacks & Spellcasting</div>{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
 
-    <div className="panel hp"><div className="panel-titlebar gold">Hit Points</div><div className="hp-top"><div><div className="hp-lab">Hit Dice</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">HP Max</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">CURRENT HP</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>Successes</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>Failures</div><div><span/><span/><span/></div></div></div></div>
+    <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
-    <div className="panel traits"><div className="panel-titlebar">Features & Traits</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>110?line.slice(0,110)+"…":line}</li>)}</ul></div>
-    <div className="small-token speed"><b>{sh.speed} ft.</b><span>Speed</span></div>
+    <div className="panel traits"><div className="panel-titlebar">{t("Features & Traits")}</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>110?line.slice(0,110)+"…":line}</li>)}</ul></div>
+    <div className="small-token speed"><b>{sh.speed} ft.</b><span>{t("Speed")}</span></div>
     <div className="langs">{lang||"Common"}</div>
   </div>;
 }
@@ -931,6 +1030,9 @@ export default function App(){
   const [sheet,setSheet]=useState(null);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState("male");
+  const [lang,setLangState]=useState(CURRENT_LANG);
+  CURRENT_LANG=lang;
+  const switchLang=l=>{setLang(l);setLangState(l);};
   const [featTab,setFeatTab]=useState("General");
   const [panelOrder,setPanelOrder]=useState(["overview","spells","equipment","notes"]);
   const [collapsed,setCollapsed]=useState({});
@@ -1209,7 +1311,7 @@ export default function App(){
   }
 
   if(view==="sheet"&&sheet){
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>Back</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>Print / PDF</button><span style={{fontSize:11,color:"#8a6a2a"}}>Set page margins to None. {sheet.isCaster?"2 pages":"1 page"}</span></div><div className="print-area"><FancySheet sh={sheet}/>{sheet.isCaster&&<Page2 sh={sheet}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {sheet.isCaster?t("2 pages"):t("1 page")}</span></div><div className="print-area"><FancySheet sh={sheet}/>{sheet.isCaster&&<Page2 sh={sheet}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
@@ -1264,11 +1366,11 @@ export default function App(){
     return(<div>
       {activeFeats.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",marginBottom:"0.75rem"}}>{activeFeats.map(f=>{const fd=ALL_FEATS[f];const c=CAT_LABEL_COLOR[fd?.cat]||G.muted;return <span key={f} style={{background:"#14532d",color:"#4ade80",borderRadius:"0.5rem",padding:"0.2rem 0.6rem",fontSize:"0.72rem",fontWeight:600}}>{f} <span style={{color:c,fontSize:"0.62rem"}}>({fd?.cat||""})</span></span>;})}</div>}
       <div style={{fontSize:"0.72rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",background:"#1e293b",borderRadius:"0.5rem",border:"1px solid "+(atBudget?"#f87171":"#334155"),color:"#f1f5f9"}}>
-        Feats: <strong style={{color:atBudget?"#f87171":G.gold}}>{selBudgetCount} / {featBudget}</strong>
-        <span style={{color:G.dim}}> (from ASI levels 4/8/12/16/19{sp==="Human"?" + Human bonus Origin Feat":""})</span>
-        {canFS&&<span style={{marginLeft:"0.5rem",color:"#f97316"}}>Fighting Style: {selFSCount}/1 (free)</span>}
+        {t("Feats")}: <strong style={{color:atBudget?"#f87171":G.gold}}>{selBudgetCount} / {featBudget}</strong>
+        <span style={{color:G.dim}}> ({t("from ASI levels 4/8/12/16/19")}{sp==="Human"?" + "+t("Human bonus Origin Feat"):""})</span>
+        {canFS&&<span style={{marginLeft:"0.5rem",color:"#f97316"}}>{t("Fighting Style")}: {selFSCount}/1 ({t("free")})</span>}
       </div>
-      <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap",marginBottom:"0.75rem"}}>{tabs.map(t=>{const catCol=CAT_LABEL_COLOR[t]||G.muted;const cnt=(t==="Species"?racialFeatSuggestions:t==="Class"?classFeatSuggestions:t==="Origin"?ORIGIN_FEATS:featsByTab[t]||[]).filter(n=>featMap[n]).length;const active=featTab===t;return <button key={t} onClick={()=>setFeatTab(t)} style={tabSt(active,catCol,"#020817")}>{t}{cnt>0?` (${cnt})`:""}</button>;})}</div>
+      <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap",marginBottom:"0.75rem"}}>{tabs.map(tb=>{const catCol=CAT_LABEL_COLOR[tb]||G.muted;const cnt=(tb==="Species"?racialFeatSuggestions:tb==="Class"?classFeatSuggestions:tb==="Origin"?ORIGIN_FEATS:featsByTab[tb]||[]).filter(n=>featMap[n]).length;const active=featTab===tb;return <button key={tb} onClick={()=>setFeatTab(tb)} style={tabSt(active,catCol,"#020817")}>{t(tb)}{cnt>0?` (${cnt})`:""}</button>;})}</div>
       {hints[featTab]&&<div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.5rem",padding:"0.35rem 0.65rem",background:"#2d1a00",borderRadius:"0.5rem",border:"1px solid #92400e"}}>{hints[featTab]}</div>}
       {featTab==="Origin"&&<div style={{fontSize:"0.72rem",color:"#4ade80",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",background:"#052e16",borderRadius:"0.5rem",border:"1px solid #14532d"}}>✓ <strong>{bgo.feat}</strong> is granted automatically by your {bg} background — it is already on your sheet.</div>}
       <div style={{display:"flex",flexDirection:"column",gap:"0.35rem",maxHeight:"380px",overflowY:"auto"}}>
@@ -1291,38 +1393,38 @@ export default function App(){
 
   const identityPanel=(
     <div>
-      <GFld label="Character Name"><input value={cname} onChange={e=>setCname(e.target.value)} placeholder="Auto-generated if empty" style={inp}/></GFld>
-      <GFld label="Portrait Gender"><div style={{display:"flex",gap:"0.5rem"}}>{["male","female"].map(g=><button key={g} onClick={()=>setGender(g)} style={{...tabSt(gender===g),flex:1,textTransform:"capitalize"}}>{g}</button>)}</div></GFld>
-      <GFld label="Alignment"><select value={align} onChange={e=>setAlign(e.target.value)} style={inp}>{["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"].map(a=><option key={a}>{a}</option>)}</select></GFld>
+      <GFld label={t("Character Name")}><input value={cname} onChange={e=>setCname(e.target.value)} placeholder={t("Auto-generated if empty")} style={inp}/></GFld>
+      <GFld label={t("Portrait Gender")}><div style={{display:"flex",gap:"0.5rem"}}>{["male","female"].map(g=><button key={g} onClick={()=>setGender(g)} style={{...tabSt(gender===g),flex:1,textTransform:"capitalize"}}>{t(g)}</button>)}</div></GFld>
+      <GFld label={t("Alignment")}><select value={align} onChange={e=>setAlign(e.target.value)} style={inp}>{["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"].map(a=><option key={a}>{a}</option>)}</select></GFld>
       <GFld label={"Level: "+level}><input type="range" min="1" max="20" value={level} onChange={e=>{setLevel(Number(e.target.value));levelLockedRef.current=true;setLevelLocked(true);}} style={{width:"100%",accentColor:G.gold}}/><div style={{display:"flex",justifyContent:"space-between",fontSize:"0.7rem",color:G.dim}}><span>1</span><span>10</span><span>20</span></div></GFld>
-      <GFld label="Species"><select value={sp} onChange={e=>{setSp(e.target.value);speciesLockedRef.current=true;setSpeciesLocked(true);}} style={inp}>{Object.keys(SPECIES).map(s=><option key={s}>{s}</option>)}</select>{speciesData&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>Species Traits</div>{speciesData.traits.map((t,i)=><div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.2rem"}}>- {t}</div>)}</div>}</GFld>
-      <GFld label="Class"><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>Class Features</div>{cls.features.map((f,i)=><div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.2rem"}}>- {f}</div>)}</div>}</GFld>
+      <GFld label={t("Species")}><select value={sp} onChange={e=>{setSp(e.target.value);speciesLockedRef.current=true;setSpeciesLocked(true);}} style={inp}>{Object.keys(SPECIES).map(s=><option key={s}>{s}</option>)}</select>{speciesData&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Species Traits")}</div>{speciesData.traits.map((t,i)=><div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.2rem"}}>- {t}</div>)}</div>}</GFld>
+      <GFld label={t("Class")}><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Class Features")}</div>{cls.features.map((f,i)=><div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.2rem"}}>- {f}</div>)}</div>}</GFld>
       <div style={{marginBottom:"0.85rem",background:G.card,borderRadius:"0.75rem",padding:"0.65rem 0.75rem",border:"1px solid "+(mc?G.gold:G.border)}}>
-        <label style={{display:"flex",alignItems:"center",gap:"0.5rem",cursor:"pointer",marginBottom:mc?"0.65rem":"0"}}><input type="checkbox" checked={mc} onChange={e=>setMc(e.target.checked)} style={{accentColor:G.gold,width:15,height:15}}/><span style={{fontSize:"0.8rem",fontWeight:600,color:mc?G.gold:"#e2e8f0"}}>Multiclass</span></label>
-        {mc&&level>1&&<div style={{display:"grid",gridTemplateColumns:"1fr 70px",gap:"0.5rem",alignItems:"end"}}><GFld label="Second class"><select value={cn2} onChange={e=>setCn2(e.target.value)} style={inp}>{Object.keys(CLASSES).filter(c=>c!==cn).map(c=><option key={c}>{c}</option>)}</select></GFld><GFld label="Levels"><select value={lv2c} onChange={e=>setLv2(Number(e.target.value))} style={inp}>{Array.from({length:Math.max(1,level-1)},(_,i)=>i+1).map(l=><option key={l}>{l}</option>)}</select></GFld></div>}
+        <label style={{display:"flex",alignItems:"center",gap:"0.5rem",cursor:"pointer",marginBottom:mc?"0.65rem":"0"}}><input type="checkbox" checked={mc} onChange={e=>setMc(e.target.checked)} style={{accentColor:G.gold,width:15,height:15}}/><span style={{fontSize:"0.8rem",fontWeight:600,color:mc?G.gold:"#e2e8f0"}}>{t("Multiclass")}</span></label>
+        {mc&&level>1&&<div style={{display:"grid",gridTemplateColumns:"1fr 70px",gap:"0.5rem",alignItems:"end"}}><GFld label={t("Second class")}><select value={cn2} onChange={e=>setCn2(e.target.value)} style={inp}>{Object.keys(CLASSES).filter(c=>c!==cn).map(c=><option key={c}>{c}</option>)}</select></GFld><GFld label={t("Levels")}><select value={lv2c} onChange={e=>setLv2(Number(e.target.value))} style={inp}>{Array.from({length:Math.max(1,level-1)},(_,i)=>i+1).map(l=><option key={l}>{l}</option>)}</select></GFld></div>}
       </div>
-      <GFld label={level<3?"Subclass (available at level 3)":"Subclass"}>
+      <GFld label={level<3?t("Subclass (available at level 3)"):t("Subclass")}>
         <select value={sub} onChange={e=>setSub(e.target.value)} disabled={level<3} style={{...inp,opacity:level<3?0.45:1}}>
-          <option value="">{level<3?"Unlocks at level 3...":"Choose subclass..."}</option>
+          <option value="">{level<3?t("Unlocks at level 3..."):t("Choose subclass...")}</option>
           {Object.keys(SUBCLASSES[cn]||{}).map(s=><option key={s} value={s}>{s}</option>)}
         </select>
         {sub&&SUBCLASSES[cn]?.[sub]&&<div style={{marginTop:"0.35rem",fontSize:"0.73rem",color:G.muted,fontStyle:"italic",padding:"0.35rem 0.5rem",background:G.card,borderRadius:"0.5rem"}}>{SUBCLASSES[cn][sub]}</div>}
       </GFld>
-      <GFld label="Background"><select value={bg} onChange={e=>setBg(e.target.value)} style={inp}>{Object.keys(BGS).map(b=><option key={b}>{b}</option>)}</select><div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.25rem",fontWeight:700}}>Origin Feat: {bgo.feat}</div><div style={{fontSize:"0.73rem",color:G.muted,fontStyle:"italic"}}>{bgo.flavor}</div></div></GFld>
+      <GFld label={t("Background")}><select value={bg} onChange={e=>setBg(e.target.value)} style={inp}>{Object.keys(BGS).map(b=><option key={b}>{b}</option>)}</select><div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.25rem",fontWeight:700}}>{t("Origin Feat")}: {bgo.feat}</div><div style={{fontSize:"0.73rem",color:G.muted,fontStyle:"italic"}}>{bgo.flavor}</div></div></GFld>
     </div>
   );
 
   const statsPanel=(
     <div>
       <div style={{display:"flex",gap:"0.5rem",alignItems:"flex-end",marginBottom:"0.85rem"}}>
-        <div style={{flex:1}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>Stat Method</div><select value={smode} onChange={e=>setSmode(e.target.value)} style={inp}><option>Standard Array</option><option>Rolled</option><option value="Manual">Manual</option></select></div>
-        <GBtn onClick={()=>{const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(cn,rolls);setRstats(ns);setMstats(ns);setSmode("Rolled");}} gold={smode==="Rolled"} small><RefreshCw size={12}/> Roll 4d6</GBtn>
+        <div style={{flex:1}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{t("Stat Method")}</div><select value={smode} onChange={e=>setSmode(e.target.value)} style={inp}><option value="Standard Array">{t("Standard Array")}</option><option value="Rolled">{t("Rolled")}</option><option value="Manual">{t("Manual")}</option></select></div>
+        <GBtn onClick={()=>{const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(cn,rolls);setRstats(ns);setMstats(ns);setSmode("Rolled");}} gold={smode==="Rolled"} small><RefreshCw size={12}/> {t("Roll 4d6")}</GBtn>
       </div>
-      <GFld label="Background Ability Boost">
+      <GFld label={t("Background Ability Boost")}>
         <select value={boost} onChange={e=>setBoost(e.target.value)} style={inp}><option value="+2/+1">+2/+1</option><option value="+1/+1/+1">+1/+1/+1</option></select>
         {boost==="+2/+1"?(
           <div style={{marginTop:"0.35rem",display:"flex",flexDirection:"column",gap:"0.3rem"}}>
-            <div style={{fontSize:"0.68rem",color:G.dim}}>Click to choose (2024 rules — pick from {bgo.ab.join(", ")}):</div>
+            <div style={{fontSize:"0.68rem",color:G.dim}}>{t("Click to choose (2024 rules — pick from")} {bgo.ab.join(", ")}):</div>
             <div style={{display:"flex",gap:"0.35rem",alignItems:"center",flexWrap:"wrap"}}>
               <span style={{fontSize:"0.72rem",color:"#4ade80",fontWeight:800,minWidth:"1.8rem"}}>+2</span>
               {bgo.ab.map(a=><button key={a} onClick={()=>{if(a===effB1)setBoost1(effB2);setBoost2(a);}} style={{padding:"0.15rem 0.55rem",borderRadius:"0.4rem",fontSize:"0.72rem",fontWeight:700,cursor:"pointer",border:"1px solid",background:a===effB2?G.gold:"#1e293b",color:a===effB2?G.bg:"#fcd34d",borderColor:a===effB2?G.gold:"#334155"}}>{a}</button>)}
@@ -1338,12 +1440,12 @@ export default function App(){
           </div>
         )}
       </GFld>
-      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>type your own dice rolls into the fields below, or use the digital roll button</span></div>}
+      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>{t("type your own dice rolls into the fields below, or use the digital roll button")}</span></div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
         {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{const v=Number(e.target.value);if(smode==="Rolled")setRstats(prev=>({...prev,[a]:v}));else setMstats(prev=>({...prev,[a]:v}));}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
-        <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Skills ({allSc.length} available - choose {maxSk})</div>
+        <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>{t("Skills")} ({allSc.length} {t("available")} - {t("choose")} {maxSk})</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{allSc.map(s=><button key={s} onClick={()=>togSk(s)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid",cursor:"pointer",background:selSk.includes(s)?G.gold:"transparent",color:selSk.includes(s)?G.bg:"#f1f5f9",borderColor:selSk.includes(s)?G.gold:"#334155",fontWeight:selSk.includes(s)?700:400}}>{s}</button>)}</div>
       </div>
     </div>
@@ -1410,28 +1512,31 @@ export default function App(){
     <GFld label="Ideals"><input value={ideals} onChange={e=>setIdeals(e.target.value)} placeholder="What does your character believe?" style={inp}/></GFld>
     <GFld label="Bonds"><input value={bonds} onChange={e=>setBonds(e.target.value)} placeholder="What ties your character to the world?" style={inp}/></GFld>
     <GFld label="Flaws"><input value={flaws} onChange={e=>setFlaws(e.target.value)} placeholder="What are your character weaknesses?" style={inp}/></GFld>
-    <GFld label="Subclass features, magic items, other notes..."><textarea value={anotes} onChange={e=>setAnotes(e.target.value)} style={{...inp,minHeight:"80px",resize:"vertical"}}/></GFld>
+    <GFld label={t("Subclass features, magic items, other notes...")}><textarea value={anotes} onChange={e=>setAnotes(e.target.value)} style={{...inp,minHeight:"80px",resize:"vertical"}}/></GFld>
   </div>);
 
   const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons}/>,notes:notesPanel};
-  const panelMeta={overview:{title:"Combat Overview",icon:<Shield size={15}/>},spells:{title:"Spells",icon:<Zap size={15}/>},equipment:{title:"Equipment & Weapons",icon:<Package size={15}/>},notes:{title:"Personality & Notes",icon:<BookOpen size={15}/>}};
+  const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
     <style>{`button:active{opacity:1!important}button:focus{outline:none}*{-webkit-tap-highlight-color:transparent}input,textarea,select{user-select:text!important;-webkit-user-select:text!important}`}</style>
     <div style={{maxWidth:"900px",margin:"0 auto"}}>
       <div style={{display:"flex",flexWrap:"wrap",alignItems:"flex-end",justifyContent:"space-between",gap:"1rem",marginBottom:"1.5rem"}}>
         <div>
-          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",color:G.gold,marginBottom:"0.5rem"}}><Dice5 size={22}/><span style={{fontSize:"0.7rem",letterSpacing:"0.15em",textTransform:"uppercase"}}>D&D 2024-inspired quick builder</span></div>
+          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",color:G.gold,marginBottom:"0.5rem"}}><Dice5 size={22}/><span style={{fontSize:"0.7rem",letterSpacing:"0.15em",textTransform:"uppercase"}}>{t("D&D 2024-inspired quick builder")}</span></div>
           <h1 style={{fontSize:"clamp(1.6rem,4vw,2.5rem)",fontWeight:900,margin:0,lineHeight:1.1}}>CharacterGeneratorRPG</h1>
-          <div style={{fontSize:"0.8rem",color:G.dim,marginTop:"0.3rem"}}>Generer og tilpas din RPG-karakter med stats, spells og udstyr — på få sekunder. Lavet af <a href="https://asaheim.dk" target="_blank" rel="noopener noreferrer" style={{color:G.gold,textDecoration:"underline"}}>asaheim.dk</a></div>
+          <div style={{fontSize:"0.8rem",color:G.dim,marginTop:"0.3rem"}}>{t("Generate and customize your RPG character with stats, spells and gear — in seconds.")} {t("Made by")} <a href="https://asaheim.dk" target="_blank" rel="noopener noreferrer" style={{color:G.gold,textDecoration:"underline"}}>asaheim.dk</a></div>
         </div>
-        <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap"}}>
-          <GBtn onClick={rand} gold><RotateCcw size={15}/> Randomize</GBtn>
-          <GBtn onClick={genSheet} amber><Printer size={15}/> Generate Sheet</GBtn>
-          <GBtn onClick={exportCharacter}><span>💾</span> Save</GBtn>
-          <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> Load</GBtn>
+        <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"flex-start"}}>
+          <div style={{display:"flex",border:"1px solid "+G.border,borderRadius:"0.6rem",overflow:"hidden"}}>
+            {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
+          </div>
+          <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
+          <GBtn onClick={genSheet} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
+          <GBtn onClick={exportCharacter}><span>💾</span> {t("Save")}</GBtn>
+          <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> {t("Load")}</GBtn>
           <input ref={fileInputRef} type="file" accept=".json" style={{display:"none"}} onChange={importCharacter}/>
-          <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> Level Up</GBtn>
+          <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
         </div>
       </div>
 
@@ -1446,30 +1551,30 @@ export default function App(){
         <div style={{display:"flex",gap:"0.75rem",alignItems:"center",flexWrap:"wrap"}}>
           <div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}>
             {/* START PATCH SPLIT-LOCK — separate class lock and species lock in topbar */}
-            <button onClick={toggleClassLock} title={classLocked?"Class locked":"Lock class"} style={{background:"none",border:"none",cursor:"pointer",color:classLocked?G.gold:G.dim,padding:"0 2px",display:"flex",alignItems:"center"}}>{classLocked?<Lock size={14}/>:<Unlock size={14}/>}</button>
+            <button onClick={toggleClassLock} title={classLocked?t("Class locked"):t("Lock class")} style={{background:"none",border:"none",cursor:"pointer",color:classLocked?G.gold:G.dim,padding:"0 2px",display:"flex",alignItems:"center"}}>{classLocked?<Lock size={14}/>:<Unlock size={14}/>}</button>
             <select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={{...inp,width:"auto",padding:"0.35rem 0.65rem",fontSize:"0.85rem",fontWeight:700,opacity:classLocked?0.45:1,borderRadius:"0.65rem"}}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>
-            <button onClick={toggleSpeciesLock} title={speciesLocked?"Species locked":"Lock species"} style={{background:"none",border:"none",cursor:"pointer",color:speciesLocked?G.gold:G.dim,padding:"0 2px",display:"flex",alignItems:"center",marginLeft:"0.2rem"}}>{speciesLocked?<Lock size={14}/>:<Unlock size={14}/>}</button>
+            <button onClick={toggleSpeciesLock} title={speciesLocked?t("Species locked"):t("Lock species")} style={{background:"none",border:"none",cursor:"pointer",color:speciesLocked?G.gold:G.dim,padding:"0 2px",display:"flex",alignItems:"center",marginLeft:"0.2rem"}}>{speciesLocked?<Lock size={14}/>:<Unlock size={14}/>}</button>
             <select value={sp} onChange={e=>{setSp(e.target.value);speciesLockedRef.current=true;setSpeciesLocked(true);}} style={{...inp,width:"auto",padding:"0.35rem 0.65rem",fontSize:"0.85rem",fontWeight:700,opacity:speciesLocked?0.45:1,borderRadius:"0.65rem"}}>{Object.keys(SPECIES).map(s=><option key={s}>{s}</option>)}</select>
             {/* END PATCH SPLIT-LOCK */}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flex:1,minWidth:"180px"}}>
             <button onClick={toggleLevelLock} style={{background:"none",border:"none",cursor:"pointer",color:levelLocked?G.gold:G.dim,padding:"0 2px",flexShrink:0,display:"flex",alignItems:"center"}}>{levelLocked?<Lock size={14}/>:<Unlock size={14}/>}</button>
-            <span style={{fontSize:"0.75rem",color:G.muted,flexShrink:0}}>Lvl</span>
+            <span style={{fontSize:"0.75rem",color:G.muted,flexShrink:0}}>{t("Lvl")}</span>
             <input type="range" min="1" max="20" value={level} onChange={e=>{setLevel(Number(e.target.value));levelLockedRef.current=true;setLevelLocked(true);}} style={{flex:1,accentColor:G.gold}}/>
-            <div style={{background:G.gold,color:G.bg,borderRadius:"0.5rem",padding:"0.2rem 0.5rem",textAlign:"center",flexShrink:0}}><div style={{fontSize:"0.5rem",textTransform:"uppercase",opacity:0.6,letterSpacing:"0.08em"}}>LVL</div><div style={{fontSize:"1rem",fontWeight:900,lineHeight:1}}>{level}</div></div>
+            <div style={{background:G.gold,color:G.bg,borderRadius:"0.5rem",padding:"0.2rem 0.5rem",textAlign:"center",flexShrink:0}}><div style={{fontSize:"0.5rem",textTransform:"uppercase",opacity:0.6,letterSpacing:"0.08em"}}>{t("LVL")}</div><div style={{fontSize:"1rem",fontWeight:900,lineHeight:1}}>{level}</div></div>
           </div>
         </div>
       </div>
 
       <div style={{marginBottom:"1rem"}}>
-        <PanelGroup title="Character Creator" icon={<Shield size={16}/>} collapsed={groupCollapsed.creator} onToggle={()=>setGroupCollapsed(g=>({...g,creator:!g.creator}))}>
+        <PanelGroup title={t("Character Creator")} icon={<Shield size={16}/>} collapsed={groupCollapsed.creator} onToggle={()=>setGroupCollapsed(g=>({...g,creator:!g.creator}))}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
-            <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>Identity</div>{identityPanel}</div>
+            <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Identity")}</div>{identityPanel}</div>
             <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
-              <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>Ability Scores & Skills</div>
+              <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Ability Scores & Skills")}</div>
               {statsPanel}
               <div style={{marginTop:"1rem",borderTop:"1px solid "+G.border,paddingTop:"1rem"}}>
-                <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>Feats</div>
+                <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Feats")}</div>
                 {buildFeatsPanel()}
               </div>
             </div>
