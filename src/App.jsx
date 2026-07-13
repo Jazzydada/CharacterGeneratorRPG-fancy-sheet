@@ -53,7 +53,8 @@ const DA={
   "Origin Feat":"Oprindelses-feat",
   // stats panel
   "Stat Method":"Metode til evner",
-  "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel",
+  "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
+  "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Roll 4d6":"Kast 4d6",
   "Background Ability Boost":"Baggrunds-bonus til evner",
   "Click to choose (2024 rules — pick from":"Klik for at vælge (2024-regler — vælg blandt",
@@ -479,6 +480,13 @@ function spellsKnown(cn,lvl,smod){
   if(prepared.includes(cn)){if(cn==="Wizard")return`${lvl+smod} prepared`;if(cn==="Paladin")return`${Math.max(1,Math.ceil(lvl/2)+smod)} prepared`;return`${Math.max(1,lvl+smod)} prepared`;}
   const t=tbl[cn];if(t)return`${t[Math.min(lvl,20)]} known`;return null;
 }
+// Cantrips known per class (2024 PHB): base at L1, +1 at L4, +1 at L10.
+const CANTRIPS_KNOWN={Bard:[2,3,4],Cleric:[3,4,5],Druid:[2,3,4],Sorcerer:[4,5,6],Warlock:[2,3,4],Wizard:[3,4,5]};
+function cantripsKnown(cn,lvl){const t=CANTRIPS_KNOWN[cn];if(!t)return 0;return lvl>=10?t[2]:lvl>=4?t[1]:t[0];}
+// Point Buy (2024): 27 points, scores 8–15.
+const PB_COST={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+const PB_BUDGET=27;
+function pointBuySpent(stats){return Object.values(stats).reduce((s,v)=>s+(PB_COST[v]??0),0);}
 
 const AB=["STR","DEX","CON","INT","WIS","CHA"];
 const AB_FULL={STR:"Strength",DEX:"Dexterity",CON:"Constitution",INT:"Intelligence",WIS:"Wisdom",CHA:"Charisma"};
@@ -1102,6 +1110,8 @@ export default function App(){
     return res;
   },[cn,cn2,mc,lv1e,lv2c]);
   const knownStr=ct?spellsKnown(cn,lv1e,smod):(mc&&ct2?spellsKnown(cn2,lv2c,smod):null);
+  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0);
+  const primaryAb=cls?.pri?.[0]||"STR";
   const racialFeatSuggestions=speciesData?.racialFeats||[];
   const classFeatSuggestions=cls?.classFeatChoices||[];
   const originFeatSuggestions=bgo?.feat?[bgo.feat]:[];
@@ -1252,6 +1262,7 @@ export default function App(){
         const spellLimit=Number.parseInt(knownStr,10)||0;
         if(spellLimit>0&&selectedLeveledCount>=spellLimit)return prev;
       }
+      if(!alreadySel&&lv===0&&cantripLimit>0&&cur.length>=cantripLimit)return prev;
       return{...prev,[lv]:alreadySel?cur.filter(n=>n!==name):[...cur,name]};
     });
   }
@@ -1426,7 +1437,7 @@ export default function App(){
   const statsPanel=(
     <div>
       <div style={{display:"flex",gap:"0.5rem",alignItems:"flex-end",marginBottom:"0.85rem"}}>
-        <div style={{flex:1}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{t("Stat Method")}</div><select value={smode} onChange={e=>setSmode(e.target.value)} style={inp}><option value="Standard Array">{t("Standard Array")}</option><option value="Rolled">{t("Rolled")}</option><option value="Manual">{t("Manual")}</option></select></div>
+        <div style={{flex:1}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{t("Stat Method")}</div><select value={smode} onChange={e=>{const m=e.target.value;if(m==="Manual"){setMstats(prev=>{const legal=Object.values(prev).every(v=>v>=8&&v<=15)&&pointBuySpent(prev)<=PB_BUDGET;return legal?prev:{STR:8,DEX:8,CON:8,INT:8,WIS:8,CHA:8};});}setSmode(m);}} style={inp}><option value="Standard Array">{t("Standard Array")}</option><option value="Rolled">{t("Rolled")}</option><option value="Manual">{t("Point Buy")}</option></select></div>
         <GBtn onClick={()=>{const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(cn,rolls);setRstats(ns);setMstats(ns);setSmode("Rolled");}} gold={smode==="Rolled"} small><RefreshCw size={12}/> {t("Roll 4d6")}</GBtn>
       </div>
       <GFld label={t("Background Ability Boost")}>
@@ -1449,9 +1460,10 @@ export default function App(){
           </div>
         )}
       </GFld>
-      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>{t("type your own dice rolls into the fields below, or use the digital roll button")}</span></div>}
+      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Total")}: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>{t("type your own dice rolls into the fields below, or use the digital roll button")}</span></div>}
+      {smode==="Manual"&&(()=>{const spent=pointBuySpent(mstats);const left=PB_BUDGET-spent;return <div style={{fontSize:"0.72rem",marginBottom:"0.5rem",padding:"0.3rem 0.6rem",borderRadius:"0.5rem",background:"#1e293b",border:"1px solid "+(left<0?"#f87171":"#334155"),color:"#f1f5f9"}}>{t("Point Buy")}: <strong style={{color:G.gold}}>{spent}/{PB_BUDGET}</strong> — <span style={{color:left===0?"#4ade80":G.dim}}>{t("Points left")}: {left}</span> <span style={{color:G.dim}}>({t("scores 8–15")})</span></div>;})()}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
-        {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{const v=Number(e.target.value);if(smode==="Rolled")setRstats(prev=>({...prev,[a]:v}));else setMstats(prev=>({...prev,[a]:v}));}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
+        {AB.map(a=>(<div key={a} style={{background:a===primaryAb?"#2d2400":G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+(a===primaryAb?G.gold:G.border),textAlign:"center",position:"relative"}}>{a===primaryAb&&<div style={{position:"absolute",top:"-0.55rem",left:"50%",transform:"translateX(-50%)",background:G.gold,color:G.bg,fontSize:"0.5rem",fontWeight:800,padding:"0.05rem 0.35rem",borderRadius:"0.3rem",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{t("Key ability")}</div>}<div style={{fontSize:"0.65rem",color:a===primaryAb?G.gold:G.dim,letterSpacing:"0.1em",fontWeight:a===primaryAb?800:400}}>{a}</div><input type="number" min={smode==="Manual"?8:3} max={smode==="Manual"?15:smode==="Rolled"?18:20} value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{let v=Number(e.target.value)||0;if(smode==="Rolled"){v=Math.max(3,Math.min(18,v));setRstats(prev=>({...prev,[a]:v}));}else{v=Math.max(8,Math.min(15,v));setMstats(prev=>{const next={...prev,[a]:v};if(pointBuySpent(next)>PB_BUDGET)return prev;return next;});}}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>{t("Skills")} ({allSc.length} {t("available")} - {t("choose")} {maxSk})</div>
@@ -1497,7 +1509,8 @@ export default function App(){
         </>);
       })()}
       {/* END PATCH B */}
-      <div style={{fontSize:"0.75rem",color:"#f1f5f9",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid #334155"}}><span style={{color:G.dim}}>Max level: </span><strong style={{color:G.gold}}>{maxSL||"—"}</strong></div>
+      {cantripLimit>0&&(()=>{const c=(selSp[0]||[]).length;const atMax=c>=cantripLimit;return <div style={{fontSize:"0.75rem",color:"#f1f5f9",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid "+(atMax?"#4ade80":"#334155")}}><span style={{color:G.dim}}>{t("Cantrips")}: </span><strong style={{color:atMax?"#4ade80":G.gold}}>{c} / {cantripLimit}</strong></div>;})()}
+      <div style={{fontSize:"0.75rem",color:"#f1f5f9",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid #334155"}}><span style={{color:G.dim}}>{t("Max level")}: </span><strong style={{color:G.gold}}>{maxSL||"—"}</strong></div>
       {isMcCaster&&<div style={{fontSize:"0.72rem",color:"#60a5fa",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid #60a5fa"}}>Multiclass slots</div>}
       <div style={{fontSize:"0.72rem",color:G.dim,background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid #334155"}}>Cantrips scale at <span style={{color:level>=5?G.gold:G.dimmer,fontWeight:level>=5?700:400}}>Lvl 5</span>, <span style={{color:level>=11?G.gold:G.dimmer,fontWeight:level>=11?700:400}}>11</span>, <span style={{color:level>=17?G.gold:G.dimmer,fontWeight:level>=17?700:400}}>17</span></div>
     </div>
@@ -1509,7 +1522,8 @@ export default function App(){
       const spellLimit=Number.parseInt(knownStr,10)||0;
       const selectedLeveledSpellCount=Object.entries(selSp).filter(([lv])=>Number(lv)>0).flatMap(([,ns])=>ns||[]).length;
       const atLimit=spellLimit>0&&selectedLeveledSpellCount>=spellLimit;
-      const blocked=!sel&&atLimit&&spTab>0;
+      const cantripAtLimit=spTab===0&&cantripLimit>0&&(selSp[0]||[]).length>=cantripLimit;
+      const blocked=!sel&&((atLimit&&spTab>0)||cantripAtLimit);
       return <div key={name} style={{opacity:blocked?0.4:1,pointerEvents:blocked?"none":"auto"}}><SBtn name={name} sel={sel} prep={prep} onToggle={()=>togSp(name,spTab)} onPrep={()=>togPrep(name)}/></div>;
     })}</div>
     {/* END PATCH C */}
