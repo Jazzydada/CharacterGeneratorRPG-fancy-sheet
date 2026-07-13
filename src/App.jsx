@@ -496,7 +496,7 @@ const r4d6=()=>Array.from({length:4},()=>Math.ceil(Math.random()*6)).sort((a,b)=
 const FALLBACK_ORDER=["CON","DEX","WIS","CHA","INT","STR"];
 function assignByPriority(cn,values){const pri=CLASSES[cn].pri;const sorted=[...values].sort((a,b)=>b-a);const res={};pri.forEach((ab,i)=>{res[ab]=sorted[i];});const remaining=sorted.slice(pri.length);const leftoverAbs=FALLBACK_ORDER.filter(ab=>!pri.includes(ab));leftoverAbs.forEach((ab,i)=>{res[ab]=remaining[i];});return res;}
 function assignArr(cn){return assignByPriority(cn,STD);}
-function applyBoosts(stats,bg,mode){const b={...stats},opts=BGS[bg].ab;if(mode==="+2/+1"){b[opts[0]]=(b[opts[0]]||10)+2;b[opts[1]]=(b[opts[1]]||10)+1;}else opts.forEach(a=>b[a]=(b[a]||10)+1);return b;}
+function applyBoosts(stats,bg,mode,pick2,pick1){const b={...stats},opts=BGS[bg].ab;if(mode==="+2/+1"){const p2=opts.includes(pick2)?pick2:opts[0];const p1=(opts.includes(pick1)&&pick1!==p2)?pick1:opts.find(a=>a!==p2);b[p2]=(b[p2]||10)+2;b[p1]=(b[p1]||10)+1;}else opts.forEach(a=>b[a]=(b[a]||10)+1);return b;}
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -883,6 +883,8 @@ export default function App(){
   const [cn,setCn]=useState("Fighter");
   const [bg,setBg]=useState("Soldier");
   const [boost,setBoost]=useState("+2/+1");
+  const [boost2,setBoost2]=useState(null);
+  const [boost1,setBoost1]=useState(null);
   const [smode,setSmode]=useState("Standard Array");
   const [mstats,setMstats]=useState(()=>assignArr("Fighter"));
   const [rstats,setRstats]=useState({STR:15,DEX:14,CON:13,INT:12,WIS:10,CHA:8});
@@ -934,7 +936,9 @@ export default function App(){
   const lv1e=mc?level-lv2c:level;
   const pb=pbf(level);
   const base=useMemo(()=>{if(smode==="Standard Array")return assignArr(cn);if(smode==="Rolled")return rstats;return mstats;},[smode,cn,mstats,rstats]);
-  const fin=useMemo(()=>applyBoosts(base,bg,boost),[base,bg,boost]);
+  const effB2=bgo.ab.includes(boost2)?boost2:bgo.ab[0];
+  const effB1=(bgo.ab.includes(boost1)&&boost1!==effB2)?boost1:bgo.ab.find(a=>a!==effB2);
+  const fin=useMemo(()=>applyBoosts(base,bg,boost,effB2,effB1),[base,bg,boost,effB2,effB1]);
   const dm=mf(fin.DEX),sm=mf(fin.STR),cm=mf(fin.CON),wm=mf(fin.WIS);
   const hasTough=activeFeats.includes("Tough");
   const hasMobile=activeFeats.includes("Mobile");
@@ -959,7 +963,8 @@ export default function App(){
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
   const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):Array(9).fill(0);
-  const dispName=cname||pickName(sp);
+  const autoName=useMemo(()=>pickName(sp),[sp]);
+  const dispName=cname||autoName;
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
   const maxSL=Math.max(ct?maxSpellLevel(ct,lv1e):0,mc&&ct2?maxSpellLevel(ct2,lv2c):0);
   const avSp=useMemo(()=>{
@@ -988,7 +993,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,level,sp,cn,bg,align,sub,anotes,boost,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,spPrep,usedSlots};
+    const data={version:1,cname,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -997,7 +1002,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1267,13 +1272,27 @@ export default function App(){
       </div>
       <GFld label="Background Ability Boost">
         <select value={boost} onChange={e=>setBoost(e.target.value)} style={inp}><option value="+2/+1">+2/+1</option><option value="+1/+1/+1">+1/+1/+1</option></select>
-        <div style={{marginTop:"0.35rem",display:"flex",gap:"0.35rem",flexWrap:"wrap"}}>
-          {(boost==="+2/+1"?[{ab:bgo.ab[0],val:"+2"},{ab:bgo.ab[1],val:"+1"}]:bgo.ab.map(a=>({ab:a,val:"+1"}))).map(({ab,val})=>(<span key={ab} style={{background:"#1e293b",border:"1px solid #fcd34d",borderRadius:"0.4rem",padding:"0.15rem 0.5rem",fontSize:"0.72rem",color:"#fcd34d",fontWeight:700}}>{ab} <span style={{color:"#4ade80"}}>{val}</span></span>))}
-        </div>
+        {boost==="+2/+1"?(
+          <div style={{marginTop:"0.35rem",display:"flex",flexDirection:"column",gap:"0.3rem"}}>
+            <div style={{fontSize:"0.68rem",color:G.dim}}>Click to choose (2024 rules — pick from {bgo.ab.join(", ")}):</div>
+            <div style={{display:"flex",gap:"0.35rem",alignItems:"center",flexWrap:"wrap"}}>
+              <span style={{fontSize:"0.72rem",color:"#4ade80",fontWeight:800,minWidth:"1.8rem"}}>+2</span>
+              {bgo.ab.map(a=><button key={a} onClick={()=>{if(a===effB1)setBoost1(effB2);setBoost2(a);}} style={{padding:"0.15rem 0.55rem",borderRadius:"0.4rem",fontSize:"0.72rem",fontWeight:700,cursor:"pointer",border:"1px solid",background:a===effB2?G.gold:"#1e293b",color:a===effB2?G.bg:"#fcd34d",borderColor:a===effB2?G.gold:"#334155"}}>{a}</button>)}
+            </div>
+            <div style={{display:"flex",gap:"0.35rem",alignItems:"center",flexWrap:"wrap"}}>
+              <span style={{fontSize:"0.72rem",color:"#4ade80",fontWeight:800,minWidth:"1.8rem"}}>+1</span>
+              {bgo.ab.map(a=><button key={a} disabled={a===effB2} onClick={()=>setBoost1(a)} style={{padding:"0.15rem 0.55rem",borderRadius:"0.4rem",fontSize:"0.72rem",fontWeight:700,cursor:a===effB2?"not-allowed":"pointer",opacity:a===effB2?0.3:1,border:"1px solid",background:a===effB1?G.gold:"#1e293b",color:a===effB1?G.bg:"#fcd34d",borderColor:a===effB1?G.gold:"#334155"}}>{a}</button>)}
+            </div>
+          </div>
+        ):(
+          <div style={{marginTop:"0.35rem",display:"flex",gap:"0.35rem",flexWrap:"wrap"}}>
+            {bgo.ab.map(a=><span key={a} style={{background:"#1e293b",border:"1px solid #fcd34d",borderRadius:"0.4rem",padding:"0.15rem 0.5rem",fontSize:"0.72rem",color:"#fcd34d",fontWeight:700}}>{a} <span style={{color:"#4ade80"}}>+1</span></span>)}
+          </div>
+        )}
       </GFld>
-      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong></div>}
+      {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>type your own dice rolls into the fields below, or use the digital roll button</span></div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
-        {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"||smode==="Rolled"} onChange={e=>setMstats({...mstats,[a]:Number(e.target.value)})} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
+        {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"} onChange={e=>{const v=Number(e.target.value);if(smode==="Rolled")setRstats(prev=>({...prev,[a]:v}));else setMstats(prev=>({...prev,[a]:v}));}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Skills ({allSc.length} available - choose {maxSk})</div>
