@@ -1292,7 +1292,7 @@ export default function App(){
       </GFld>
       {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>Total: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>type your own dice rolls into the fields below, or use the digital roll button</span></div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
-        {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"} onChange={e=>{const v=Number(e.target.value);if(smode==="Rolled")setRstats(prev=>({...prev,[a]:v}));else setMstats(prev=>({...prev,[a]:v}));}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
+        {AB.map(a=>(<div key={a} style={{background:G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+G.border,textAlign:"center"}}><div style={{fontSize:"0.65rem",color:G.dim,letterSpacing:"0.1em"}}>{a}</div><input type="number" min="3" max="20" value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{const v=Number(e.target.value);if(smode==="Rolled")setRstats(prev=>({...prev,[a]:v}));else setMstats(prev=>({...prev,[a]:v}));}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Skills ({allSc.length} available - choose {maxSk})</div>
@@ -1369,7 +1369,7 @@ export default function App(){
   const panelMeta={overview:{title:"Combat Overview",icon:<Shield size={15}/>},spells:{title:"Spells",icon:<Zap size={15}/>},equipment:{title:"Equipment & Weapons",icon:<Package size={15}/>},notes:{title:"Personality & Notes",icon:<BookOpen size={15}/>}};
 
   return(<div style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
-    <style>{`button:active{opacity:1!important}button:focus{outline:none}*{-webkit-tap-highlight-color:transparent}`}</style>
+    <style>{`button:active{opacity:1!important}button:focus{outline:none}*{-webkit-tap-highlight-color:transparent}input,textarea,select{user-select:text!important;-webkit-user-select:text!important}`}</style>
     <div style={{maxWidth:"900px",margin:"0 auto"}}>
       <div style={{display:"flex",flexWrap:"wrap",alignItems:"flex-end",justifyContent:"space-between",gap:"1rem",marginBottom:"1.5rem"}}>
         <div>
