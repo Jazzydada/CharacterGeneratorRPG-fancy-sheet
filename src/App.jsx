@@ -57,6 +57,7 @@ const DA={
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
   "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog",
+  "Who is playing this character?":"Hvem spiller denne karakter?",
   "Roll 4d6":"Kast 4d6",
   "Background Ability Boost":"Baggrunds-bonus til evner",
   "Click to choose (2024 rules — pick from":"Klik for at vælge (2024-regler — vælg blandt",
@@ -761,7 +762,7 @@ function FancySheet({sh}){
     <div className="top-scroll">
       <div className="field"><div className="value">{sh.classLevel}</div><div className="label">{t("Class & Level")}</div></div>
       <div className="field"><div className="value">{sh.background}</div><div className="label">{t("Background")}</div></div>
-      <div className="field"><div className="value">&nbsp;</div><div className="label">{t("Player Name")}</div></div>
+      <div className="field"><div className="value">{sh.playerName||"\u00a0"}</div><div className="label">{t("Player Name")}</div></div>
       <div className="field"><div className="value">{sh.species}</div><div className="label">{t("Race")}</div></div>
       <div className="field"><div className="value">{sh.alignment}</div><div className="label">{t("Alignment")}</div></div>
       <div className="field"><div className="value">{xpForClassLevel(sh.classLevel)}</div><div className="label">{t("Experience Points")}</div></div>
@@ -1064,6 +1065,7 @@ export default function App(){
   const [rstats,setRstats]=useState({STR:15,DEX:14,CON:13,INT:12,WIS:10,CHA:8});
   const [selSk,setSelSk]=useState(()=>CLASSES[initChar.cn].sc.slice(0,CLASSES[initChar.cn].ns));
   const [cname,setCname]=useState("");
+  const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
   const [anotes,setAnotes]=useState("");
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
@@ -1173,7 +1175,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1182,7 +1184,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1368,7 +1370,7 @@ export default function App(){
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
     const nextGender=nextGenderRoll||gender;
-    const nextSheet={name:dispName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
@@ -1458,6 +1460,7 @@ export default function App(){
   const identityPanel=(
     <div>
       <GFld label={t("Character Name")}><input value={cname} onChange={e=>setCname(e.target.value)} placeholder={t("Auto-generated if empty")} style={inp}/></GFld>
+      <GFld label={t("Player Name")}><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder={t("Who is playing this character?")} style={inp}/></GFld>
       <GFld label={t("Portrait")}><div style={{display:"flex",gap:"0.5rem"}}>{[["ai",t("AI image")],["blank",t("Draw your own")]].map(([m,lbl])=><button key={m} onClick={()=>setPortraitMode(m)} style={{...tabSt(portraitMode===m),flex:1}}>{lbl}</button>)}</div></GFld>
       {portraitMode==="ai"&&<GFld label={t("Portrait Gender")}><div style={{display:"flex",gap:"0.5rem"}}>{["male","female"].map(g=><button key={g} onClick={()=>setGender(g)} style={{...tabSt(gender===g),flex:1,textTransform:"capitalize"}}>{t(g)}</button>)}</div></GFld>}
       <GFld label={t("Alignment")}><select value={align} onChange={e=>setAlign(e.target.value)} style={inp}>{["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"].map(a=><option key={a}>{a}</option>)}</select></GFld>
