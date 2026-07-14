@@ -80,25 +80,25 @@ export const TRAIT_DA={
   "Resourceful":"Opfindsom",
   "Skillful":"Dygtig",
   "Stonecunning":"Stenkløgt",
-  "Tool Proficiency":"Værktøjsfærdighed",
+  "Tool Proficiency":"Tool Proficiency",
   "Trance":"Trance",
   "Versatile":"Alsidig",
 };
 
 export const FEATDESC_DA={
-  "Alert":"Læg Færdighedsbonus til Initiativ. Kan ikke overraskes når du er ved bevidsthed.",
-  "Crafter":"Færdighed i 3 håndværksværktøjer. Håndværk med 20% rabat.",
+  "Alert":"Læg Proficiency Bonus til Initiativ. Kan ikke overraskes når du er ved bevidsthed.",
+  "Crafter":"Proficiency i 3 håndværksværktøjer. Håndværk med 20% rabat.",
   "Healer":"Healer-kit: genopret 1d6+4+HD HP én gang pr. væsen pr. hvile.",
   "Lucky":"3 heldpoint pr. lang hvile. Kast en d20 om og vælg resultatet.",
   "Magic Initiate":"Lær 2 cantrips og 1 spell af 1. niveau fra en vilkårlig klasse.",
   "Savage Attacker":"Én gang pr. tur: kast nærkampsskade om og vælg resultatet.",
-  "Skilled":"Få færdighed i 3 valgfrie færdigheder eller værktøjer.",
+  "Skilled":"Få proficiency i 3 valgfrie færdigheder eller værktøjer.",
   "Tavern Brawler":"Ubevæbnede slag bruger d4+STR. Bonus-handling: gribe efter træf.",
   "Tough":"Maks HP +2 pr. niveau (med tilbagevirkende kraft).",
-  "War Caster":"Fordel på CON-koncentrationsredninger. Cast spells som lejlighedsangreb.",
+  "War Caster":"Fordel på CON concentration saves. Cast spells som lejlighedsangreb.",
   "Great Weapon Master":"Ved kritisk træf eller drab med tungt våben: bonusangreb. Valg: -5/+10.",
   "Mobile":"Fart +10 ft. Dash gennem vanskeligt terræn. Intet lejlighedsangreb fra dem du angriber.",
-  "Resilient":"Færdighed i én redningskast. +1 til den evne.",
+  "Resilient":"Proficiency i én saving throw. +1 til den evne.",
   "Sentinel":"Lejlighedsangreb sætter fart til 0. Lejlighedsangreb ved Disengage. Reaktion når en allieret angribes.",
   "Sharpshooter":"Ingen langdistancestraf. Ignorér halv/3/4 dækning. Valg: -5/+10.",
   "Inspiring Leader":"10-min tale: op til 6 allierede får midlertidige HP = niveau+CHA.",
@@ -126,8 +126,8 @@ export const FEATDESC_DA={
   "Dragon Hide":"(Dragonborn) +1 STR/CON/CHA. Naturlig AC 13+DEX, kløangreb.",
   "Fade Away":"(Gnom) +1 INT/DEX. Reaktion: bliv usynlig når du tager skade.",
   "Flames of Phlegethos":"(Tiefling) +1 INT/CHA. Kast ildskade om, ildskjolds-aura.",
-  "Infernal Constitution":"(Tiefling) +1 CON. Modstand mod kulde/gift, fordel på giftredninger.",
-  "Musician":"Færdighed med 3 instrumenter. Spil efter en hvile: allierede får Heroisk inspiration.",
+  "Infernal Constitution":"(Tiefling) +1 CON. Modstand mod kulde/gift, fordel på poison saves.",
+  "Musician":"Proficiency med 3 instrumenter. Spil efter en hvile: allierede får Heroisk inspiration.",
 };
 
 export const SUBCLASS_DESC_DA={
