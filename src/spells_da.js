@@ -3,6 +3,13 @@
 // poison=gift, acid=syre, force=kraft, psychic=psykisk, piercing=stik, bludgeoning=knusning, slashing=flæng.
 // "X save" -> "X save". advantage=fordel, disadvantage=ulempe.
 export const SDD={
+  "Mind Sliver":"INT save eller 1d6 psykisk og -1d4 på næste save.",
+  "Sorcerous Burst":"1d8 af en valgt skadetype; kan springe videre ved maks-kast.",
+  "Starry Wisp":"DEX save eller 1d8 strålende; målet gløder og kan ikke være usynligt.",
+  "Elementalism":"Mindre effekt af ild, vand, jord eller luft.",
+  "Resistance":"Én gang: læg 1d4 til én saving throw.",
+  "Spare the Dying":"Stabilisér et væsen på 0 HP.",
+  "Word of Radiance":"CON save eller 1d6 strålende til nære fjender.",
   "Fire Bolt":"Afstandsangreb med magi: 1d10 ild.",
   "Ray of Frost":"Ramt: 1d8 kulde, målets fart -10 ft.",
   "Shocking Grasp":"Fordel mod metalrustning. Ramt: 1d8 lyn, ingen reaktioner.",
