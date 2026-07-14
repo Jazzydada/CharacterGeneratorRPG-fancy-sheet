@@ -106,6 +106,39 @@ const DA={
 };
 function t(s){return CURRENT_LANG==="da"?(DA[s]??s):s;}
 function setLang(l){CURRENT_LANG=l;try{localStorage.setItem("cg_lang",l);}catch(e){}}
+// Short glossary: what each ability score does (tag = 2–4 words, desc = one line). Bilingual.
+const ABIL_INFO={
+  STR:{tag:["Melee & lifting","Nærkamp & at løfte"],desc:["Physical power: melee attacks, carrying and Athletics.","Fysisk styrke: nærkampsangreb, at bære og Athletics."]},
+  DEX:{tag:["Agility & AC","Adræthed & AC"],desc:["Agility: armor class, ranged/finesse attacks, Stealth and initiative.","Adræthed: armor class, afstands-/finesse-angreb, Stealth og initiativ."]},
+  CON:{tag:["Hit points & stamina","Livspoint & udholdenhed"],desc:["Toughness: sets your hit points and staying power.","Robusthed: bestemmer dine livspoint og din udholdenhed."]},
+  INT:{tag:["Knowledge & analysis","Viden & analyse"],desc:["Reasoning and memory: Arcana, History and Investigation.","Ræsonnement og hukommelse: Arcana, History og Investigation."]},
+  WIS:{tag:["Awareness & insight","Opmærksomhed & indsigt"],desc:["Perceptiveness: Perception, Insight and Medicine.","Opmærksomhed: Perception, Insight og Medicine."]},
+  CHA:{tag:["Presence & persuasion","Udstråling & overtalelse"],desc:["Force of personality: Persuasion, Deception and many spells.","Personlig udstråling: Persuasion, Deception og mange spells."]},
+};
+const abilTag=ab=>(ABIL_INFO[ab]?.tag[CURRENT_LANG==="da"?1:0])||"";
+const abilDesc=ab=>(ABIL_INFO[ab]?.desc[CURRENT_LANG==="da"?1:0])||"";
+// Short glossary: what each skill is used for. Bilingual [en, da].
+const SKILL_DESC={
+  "Acrobatics":["Balance, tumbling and keeping your feet.","Balance, akrobatik og at holde balancen."],
+  "Animal Handling":["Calming and reading animals.","At berolige og aflæse dyr."],
+  "Arcana":["Knowledge of magic and the arcane.","Viden om magi og det arkane."],
+  "Athletics":["Climbing, jumping, swimming and grappling.","At klatre, springe, svømme og gribe fat."],
+  "Deception":["Lying and misleading convincingly.","At lyve og vildlede overbevisende."],
+  "History":["Knowledge of past events and lore.","Viden om fortiden og historie."],
+  "Insight":["Reading intentions and detecting lies.","At aflæse hensigter og opdage løgne."],
+  "Intimidation":["Influencing through threats and menace.","At påvirke med trusler og skræk."],
+  "Investigation":["Finding clues and deducing details.","At finde spor og udlede detaljer."],
+  "Medicine":["Stabilising the dying and treating illness.","At stabilisere døende og behandle sygdom."],
+  "Nature":["Knowledge of terrain, plants and animals.","Viden om terræn, planter og dyr."],
+  "Perception":["Spotting, hearing and noticing things.","At se, høre og lægge mærke til ting."],
+  "Performance":["Entertaining an audience.","At underholde et publikum."],
+  "Persuasion":["Influencing others with tact and goodwill.","At overtale andre med takt og velvilje."],
+  "Religion":["Knowledge of gods and religious lore.","Viden om guder og religion."],
+  "Sleight of Hand":["Pickpocketing and manual trickery.","Fingerfærdighed og lommetyveri."],
+  "Stealth":["Moving unseen and unheard.","At bevæge sig uset og uhørt."],
+  "Survival":["Tracking, foraging and navigating the wild.","At spore, finde føde og navigere i naturen."],
+};
+const skillDesc=n=>(SKILL_DESC[n]?.[CURRENT_LANG==="da"?1:0])||"";
 // Returns a spell's data, translated to Danish when the language is DA (names stay English — they are the keys).
 function spellD(name){const d=SD[name];if(!d)return d;if(CURRENT_LANG!=="da")return d;return{...d,sc:trSchool(d.sc),cast:trCast(d.cast),range:trRange(d.range),dur:trDur(d.dur),desc:SDD[name]||d.desc};}
 
@@ -1470,11 +1503,12 @@ export default function App(){
       {smode==="Rolled"&&<div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Total")}: <strong style={{color:G.gold}}>{Object.values(rstats).reduce((s,v)=>s+v,0)}</strong> — <span style={{color:"#4ade80"}}>{t("type your own dice rolls into the fields below, or use the digital roll button")}</span></div>}
       {smode==="Manual"&&(()=>{const spent=pointBuySpent(mstats);const left=PB_BUDGET-spent;return <div style={{fontSize:"0.72rem",marginBottom:"0.5rem",padding:"0.3rem 0.6rem",borderRadius:"0.5rem",background:"#1e293b",border:"1px solid "+(left<0?"#f87171":"#334155"),color:"#f1f5f9"}}>{t("Point Buy")}: <strong style={{color:G.gold}}>{spent}/{PB_BUDGET}</strong> — <span style={{color:left===0?"#4ade80":G.dim}}>{t("Points left")}: {left}</span> <span style={{color:G.dim}}>({t("scores 8–15")})</span></div>;})()}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
-        {AB.map(a=>(<div key={a} style={{background:a===primaryAb?"#2d2400":G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+(a===primaryAb?G.gold:G.border),textAlign:"center",position:"relative"}}>{a===primaryAb&&<div style={{position:"absolute",top:"-0.55rem",left:"50%",transform:"translateX(-50%)",background:G.gold,color:G.bg,fontSize:"0.5rem",fontWeight:800,padding:"0.05rem 0.35rem",borderRadius:"0.3rem",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{t("Key ability")}</div>}<div style={{fontSize:"0.65rem",color:a===primaryAb?G.gold:G.dim,letterSpacing:"0.1em",fontWeight:a===primaryAb?800:400}}>{a}</div><input type="number" min={smode==="Manual"?8:3} max={smode==="Manual"?15:smode==="Rolled"?18:20} value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{let v=Number(e.target.value)||0;if(smode==="Rolled"){v=Math.max(3,Math.min(18,v));setRstats(prev=>({...prev,[a]:v}));}else{v=Math.max(8,Math.min(15,v));setMstats(prev=>{const next={...prev,[a]:v};if(pointBuySpent(next)>PB_BUDGET)return prev;return next;});}}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div></div>))}
+        {AB.map(a=>(<div key={a} style={{background:a===primaryAb?"#2d2400":G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+(a===primaryAb?G.gold:G.border),textAlign:"center",position:"relative"}}>{a===primaryAb&&<div style={{position:"absolute",top:"-0.55rem",left:"50%",transform:"translateX(-50%)",background:G.gold,color:G.bg,fontSize:"0.5rem",fontWeight:800,padding:"0.05rem 0.35rem",borderRadius:"0.3rem",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{t("Key ability")}</div>}<div style={{fontSize:"0.65rem",color:a===primaryAb?G.gold:G.dim,letterSpacing:"0.1em",fontWeight:a===primaryAb?800:400}}>{a}</div><input type="number" min={smode==="Manual"?8:3} max={smode==="Manual"?15:smode==="Rolled"?18:20} value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{let v=Number(e.target.value)||0;if(smode==="Rolled"){v=Math.max(3,Math.min(18,v));setRstats(prev=>({...prev,[a]:v}));}else{v=Math.max(8,Math.min(15,v));setMstats(prev=>{const next={...prev,[a]:v};if(pointBuySpent(next)>PB_BUDGET)return prev;return next;});}}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div><div title={abilDesc(a)} style={{fontSize:"0.55rem",color:G.dim,marginTop:"0.15rem",lineHeight:1.15}}>{abilTag(a)}</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>{t("Skills")} ({allSc.length} {t("available")} - {t("choose")} {maxSk})</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{allSc.map(s=><button key={s} onClick={()=>togSk(s)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid",cursor:"pointer",background:selSk.includes(s)?G.gold:"transparent",color:selSk.includes(s)?G.bg:"#f1f5f9",borderColor:selSk.includes(s)?G.gold:"#334155",fontWeight:selSk.includes(s)?700:400}}>{s}</button>)}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{allSc.map(s=><button key={s} title={skillDesc(s)} onClick={()=>togSk(s)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid",cursor:"pointer",background:selSk.includes(s)?G.gold:"transparent",color:selSk.includes(s)?G.bg:"#f1f5f9",borderColor:selSk.includes(s)?G.gold:"#334155",fontWeight:selSk.includes(s)?700:400}}>{s}</button>)}</div>
+        <div style={{marginTop:"0.5rem",fontSize:"0.62rem",color:G.dim,lineHeight:1.4,display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.15rem 0.75rem"}}>{allSc.map(s=><div key={s}><b style={{color:G.muted}}>{s}:</b> {skillDesc(s)}</div>)}</div>
       </div>
     </div>
   );
