@@ -1182,16 +1182,19 @@ export default function App(){
   const dispName=cname||autoName;
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
   const maxSL=Math.max(ct?maxSpellLevel(ct,lv1e):0,mc&&ct2?maxSpellLevel(ct2,lv2c):0);
+  const hasTome=selInv.includes("Pact of the Tome");
   const avSp=useMemo(()=>{
     const res={};
     [cn,...(mc&&CTYPE[cn2]?[cn2]:[])].forEach(c=>{
       const sd=CS[c]||{};const cct=CTYPE[c];const cMaxSL=cct?maxSpellLevel(cct,c===cn?lv1e:lv2c):0;
       Object.entries(sd).forEach(([l,ns])=>{const li=Number(l);if(li>cMaxSL)return;if(!res[li])res[li]=new Set();ns.forEach(n=>res[li].add(n));});
     });
+    // Pact of the Tome: 3 extra cantrips from ANY class list.
+    if(hasTome){if(!res[0])res[0]=new Set();Object.values(CS).forEach(sd=>(sd[0]||[]).forEach(n=>res[0].add(n)));}
     return res;
-  },[cn,cn2,mc,lv1e,lv2c]);
+  },[cn,cn2,mc,lv1e,lv2c,hasTome]);
   const knownStr=ct?spellsKnown(cn,lv1e,smod):(mc&&ct2?spellsKnown(cn2,lv2c,smod):null);
-  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0);
+  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0)+(hasTome?3:0);
   const primaryAb=cls?.pri?.[0]||"STR";
   const racialFeatSuggestions=speciesData?.racialFeats||[];
   const classFeatSuggestions=cls?.classFeatChoices||[];
