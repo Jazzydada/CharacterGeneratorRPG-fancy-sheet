@@ -58,6 +58,7 @@ const DA={
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
   "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog",
   "Who is playing this character?":"Hvem spiller denne karakter?",
+  "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner",
   "Roll 4d6":"Kast 4d6",
   "Background Ability Boost":"Baggrunds-bonus til evner",
   "Click to choose (2024 rules — pick from":"Klik for at vælge (2024-regler — vælg blandt",
@@ -526,6 +527,32 @@ function cantripsKnown(cn,lvl){const t=CANTRIPS_KNOWN[cn];if(!t)return 0;return 
 const PB_COST={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
 const PB_BUDGET=27;
 function pointBuySpent(stats){return Object.values(stats).reduce((s,v)=>s+(PB_COST[v]??0),0);}
+// Warlock Eldritch Invocations (2024). Names are canon (kept English); desc is [en, da].
+const ELDRITCH_INVOCATIONS={
+  "Agonizing Blast":["Add your CHA modifier to Eldritch Blast damage.","Læg din CHA-modifier til Eldritch Blast-skade.","Eldritch Blast cantrip"],
+  "Armor of Shadows":["Cast Mage Armor on yourself at will, without a spell slot.","Cast Mage Armor på dig selv frit, uden spell slot.",""],
+  "Ascendant Step":["Cast Levitate on yourself at will.","Cast Levitate på dig selv frit.","Level 9+"],
+  "Devil's Sight":["See normally in magical and nonmagical darkness within 120 ft.","Se normalt i magisk og ikke-magisk mørke inden for 120 ft.",""],
+  "Eldritch Mind":["Advantage on CON saves to keep concentration on spells.","Fordel på CON saves for at holde koncentration på spells.",""],
+  "Eldritch Spear":["Eldritch Blast's range becomes 300 ft.","Eldritch Blasts rækkevidde bliver 300 ft.","Eldritch Blast cantrip"],
+  "Fiendish Vigor":["Cast False Life on yourself at will for temp HP.","Cast False Life på dig selv frit for midlertidige HP.",""],
+  "Gaze of Two Minds":["Perceive through a willing creature's senses.","Sans gennem et villigt væsens sanser.",""],
+  "Gift of the Depths":["Breathe underwater and gain a swim speed.","Ånd under vand og få en svømmefart.",""],
+  "Lessons of the First Ones":["Gain one Origin feat of your choice.","Få én valgfri Origin feat.",""],
+  "Mask of Many Faces":["Cast Disguise Self at will.","Cast Disguise Self frit.",""],
+  "Misty Visions":["Cast Silent Image at will.","Cast Silent Image frit.",""],
+  "One with Shadows":["Become invisible while in dim light or darkness (until you move/act).","Bliv usynlig i svagt lys eller mørke (indtil du bevæger dig/handler).","Level 5+"],
+  "Otherworldly Leap":["Cast Jump on yourself at will.","Cast Jump på dig selv frit.","Level 5+"],
+  "Pact of the Blade":["Conjure a magic weapon you're proficient with; attack with CHA.","Fremkald et magisk våben du er proficient med; angrib med CHA.",""],
+  "Repelling Blast":["Push a creature 10 ft away with Eldritch Blast.","Skub et væsen 10 ft væk med Eldritch Blast.","Eldritch Blast cantrip"],
+  "Thirsting Blade":["Attack twice with your pact weapon (Extra Attack).","Angrib to gange med dit pagtsvåben (Extra Attack).","Level 5+, Pact of the Blade"],
+  "Eldritch Smite":["Spend a spell slot to deal extra force damage and knock prone.","Brug et spell slot for ekstra force-skade og slå omkuld.","Level 5+, Pact of the Blade"],
+  "Whispers of the Grave":["Cast Speak with Dead at will.","Cast Speak with Dead frit.","Level 9+"],
+  "Witch Sight":["See the true form of shapechangers and illusions within 30 ft.","Se den sande form af shapechangers og illusioner inden for 30 ft.","Level 15+"],
+};
+// 2024 Warlock: number of invocations known by level.
+const INV_KNOWN=[0,1,3,3,3,5,5,6,6,7,7,7,8,8,8,9,9,9,10,10,10];
+function invocationsKnown(lvl){return INV_KNOWN[Math.min(lvl,20)]||0;}
 
 const AB=["STR","DEX","CON","INT","WIS","CHA"];
 const AB_FULL={STR:"Strength",DEX:"Dexterity",CON:"Constitution",INT:"Intelligence",WIS:"Wisdom",CHA:"Charisma"};
@@ -1082,6 +1109,7 @@ export default function App(){
   const [flaws,setFlaws]=useState("");
   const [gp,setGp]=useState(0);
   const [selSp,setSelSp]=useState({});
+  const [selInv,setSelInv]=useState([]);
   const [spPrep,setSpPrep]=useState({});
   const [spTab,setSpTab]=useState(0);
   const [usedSlots,setUsedSlots]=useState({});
@@ -1139,6 +1167,10 @@ export default function App(){
   const sab=SAB[cn]||(mc?SAB[cn2]:"");
   const smod=sab?mf(fin[sab]):0;
   const ct=CTYPE[cn];
+  const isWarlock=cn==="Warlock"||(mc&&cn2==="Warlock");
+  const warlockLvl=cn==="Warlock"?lv1e:(mc&&cn2==="Warlock"?lv2c:0);
+  const invLimit=isWarlock?invocationsKnown(warlockLvl):0;
+  function togInv(name){setSelInv(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=invLimit)return prev;return[...prev,name];});}
   const ct2=mc?CTYPE[cn2]:null;
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
@@ -1165,7 +1197,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
+  function changeClass(newCn){setCn(newCn);setSub("");setSelInv([]);setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1175,7 +1207,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,selInv,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1184,7 +1216,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1281,7 +1313,7 @@ export default function App(){
     const chosen={};let left=asiCount;while(left>0&&pool.length){const f=pool.splice(Math.floor(Math.random()*pool.length),1)[0];if(!chosen[f]){chosen[f]=true;left--;}}
     const FS_UNLOCK_R={Fighter:1,Paladin:2,Ranger:2};
     if(FS_UNLOCK_R[useCn]&&rlvl>=FS_UNLOCK_R[useCn]){const fsPool=Object.keys(ALL_FEATS).filter(f=>ALL_FEATS[f].cat==="Fighting Style");chosen[pick(fsPool)]=true;}
-    setFeatMap(chosen);setSkilledSkills([]);setUsedSlots({});
+    setFeatMap(chosen);setSkilledSkills([]);setUsedSlots({});setSelInv([]);
     setSub(rlvl>=3?pick(Object.keys(SUBCLASSES[useCn]||{}))||"":"");
     const p=getPersonality(useBg);setTraits(p.trait);setIdeals(p.ideal);setBonds(p.bond);setFlaws(p.flaw);
     // START PATCH RAND-SPELLS-CALL — auto-pick spells for casters on randomize
@@ -1365,7 +1397,9 @@ export default function App(){
     const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return d?f+": "+d:f;})].join("\n");
     const classFeaturesTxt=(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}).join("\n");
     const racialTraitsTxt=(speciesData.traits||[]).map(tr=>da?(TRAIT_DA[tr]||tr):tr).join("\n");
-    const combinedFeatures=[subclassLine,featsList,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];return "• "+n+(d?": "+d:"");}).join("\n"):"";
+    const invBlock=invLine?(da?"Eldritch Invocations:\n":"Eldritch Invocations:\n")+invLine:"";
+    const combinedFeatures=[subclassLine,featsList,invBlock,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+bgo.tools+"\nLanguages: "+(speciesData?.languages||["Common"]).join(", ");
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
@@ -1521,7 +1555,23 @@ export default function App(){
     </div>
   );
 
+  const invLang=CURRENT_LANG==="da"?1:0;
+  const invocationsBlock=isWarlock?(<div style={{marginBottom:"1rem",background:"#1a1035",border:"1px solid #4c1d95",borderRadius:"1rem",padding:"0.85rem 1rem"}}>
+    <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>
+      <span style={{fontSize:"0.85rem",fontWeight:800,color:"#c4b5fd"}}>{t("Eldritch Invocations")}</span>
+      <span style={{fontSize:"0.75rem",fontWeight:700,color:selInv.length>=invLimit?"#4ade80":"#c4b5fd",background:"#2e1065",border:"1px solid #6d28d9",borderRadius:"0.5rem",padding:"0.15rem 0.5rem"}}>{selInv.length} / {invLimit}</span>
+      <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Warlocks choose special magical abilities")}</span>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:"0.3rem",maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
+      {Object.entries(ELDRITCH_INVOCATIONS).map(([name,info])=>{const sel=selInv.includes(name);const atMax=selInv.length>=invLimit;const blocked=!sel&&atMax;return(
+        <div key={name} onClick={()=>!blocked&&togInv(name)} style={{display:"flex",alignItems:"flex-start",gap:"0.5rem",padding:"0.4rem 0.6rem",borderRadius:"0.6rem",cursor:blocked?"not-allowed":"pointer",opacity:blocked?0.4:1,background:sel?"#4c1d9544":"transparent",border:"1px solid "+(sel?"#a78bfa":"#332255")}}>
+          <span style={{flexShrink:0,width:"1.1rem",height:"1.1rem",borderRadius:"0.3rem",border:"1px solid "+(sel?"#a78bfa":"#555"),background:sel?"#7c3aed":"transparent",color:"#fff",fontSize:"0.8rem",fontWeight:900,textAlign:"center",lineHeight:"1.05rem",marginTop:"1px"}}>{sel?"✓":""}</span>
+          <div><div style={{fontSize:"0.8rem",fontWeight:700,color:sel?"#e9d5ff":"#e2e8f0"}}>{name}{info[2]?<span style={{fontSize:"0.6rem",color:"#a78bfa",marginLeft:"0.4rem",border:"1px solid #6d28d9",borderRadius:"0.3rem",padding:"0 0.3rem"}}>{info[2]}</span>:""}</div><div style={{fontSize:"0.72rem",color:G.muted,lineHeight:1.35}}>{info[invLang]}</div></div>
+        </div>);})}
+    </div>
+  </div>):null;
   const spellsPanel=isCaster?(<div>
+    {invocationsBlock}
     <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.75rem",flexWrap:"wrap"}}>
       <div style={{display:"flex",gap:"0.5rem"}}>{[[sab||"—","Ability"],[sgn(smod+pb),"Spell Atk"],[String(8+smod+pb),"Save DC"]].map(([v,l])=>(<div key={l} style={{background:G.gold,color:G.bg,borderRadius:"0.75rem",padding:"0.4rem 0.7rem",textAlign:"center",minWidth:"70px"}}><div style={{fontSize:"0.6rem",textTransform:"uppercase",opacity:0.6}}>{l}</div><div style={{fontSize:"1.2rem",fontWeight:900,lineHeight:1}}>{v}</div></div>))}</div>
       <span style={{marginLeft:"auto",fontSize:"0.65rem",color:"#4ade80",fontWeight:700,border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.15rem 0.5rem"}}>{RULES_VERSION} Rules</span>
