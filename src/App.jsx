@@ -73,6 +73,7 @@ const DA={
   General:"Generel",
   Granted:"Tildelt",
   Racial:"Race",
+  "Active Feats":"Aktive feats",
   Cast:"Casting",Range:"Rækkevidde",Duration:"Varighed",
   // notes
   "Subclass features, magic items, other notes...":"Underklasse-evner, magiske genstande, andre noter...",
@@ -139,6 +140,8 @@ const SKILL_DESC={
   "Survival":["Tracking, foraging and navigating the wild.","At spore, finde føde og navigere i naturen."],
 };
 const skillDesc=n=>(SKILL_DESC[n]?.[CURRENT_LANG==="da"?1:0])||"";
+// Feat description in the current language (falls back to the English desc). Name stays the key.
+const featDescL=(name,fallback)=>CURRENT_LANG==="da"?(FEATDESC_DA[name]||fallback||""):(fallback||"");
 // Returns a spell's data, translated to Danish when the language is DA (names stay English — they are the keys).
 function spellD(name){const d=SD[name];if(!d)return d;if(CURRENT_LANG!=="da")return d;return{...d,sc:trSchool(d.sc),cast:trCast(d.cast),range:trRange(d.range),dur:trDur(d.dur),desc:SDD[name]||d.desc};}
 
@@ -960,9 +963,9 @@ function FeatCard({name,feat,sel,onToggle,children}){
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:"0.4rem",flexWrap:"wrap"}}>
           <span style={{fontSize:"0.8rem",fontWeight:600,color:sel?"#4ade80":"#e2e8f0"}}>{name}</span>
-          <span style={{fontSize:"0.58rem",textTransform:"uppercase",letterSpacing:"0.08em",color:catColor,fontWeight:700,border:"1px solid",borderColor:catColor,borderRadius:"0.3rem",padding:"0 0.3rem"}}>{feat.cat}</span>
+          <span style={{fontSize:"0.58rem",textTransform:"uppercase",letterSpacing:"0.08em",color:catColor,fontWeight:700,border:"1px solid",borderColor:catColor,borderRadius:"0.3rem",padding:"0 0.3rem"}}>{t(feat.cat)}</span>
         </div>
-        <div style={{fontSize:"0.72rem",color:G.muted,marginTop:"1px",lineHeight:1.4}}>{feat.desc}</div>
+        <div style={{fontSize:"0.72rem",color:G.muted,marginTop:"1px",lineHeight:1.4}}>{featDescL(name,feat.desc)}</div>
       </div>
     </div>
     {children}
@@ -1397,7 +1400,7 @@ export default function App(){
         </div>
         <div style={{marginTop:"0.4rem",fontSize:"0.65rem",color:G.dim}}>Passive Perception: <strong style={{color:"#f1f5f9"}}>{passPerc}</strong> - Prof. Bonus: <strong style={{color:G.gold}}>{sgn(pb)}</strong></div>
       </div>
-      {activeFeats.length>0&&(<div><div style={{fontSize:"0.72rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>Active Feats</div><div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>{activeFeats.map(f=>{const fd=ALL_FEATS[f];const catColor=CAT_LABEL_COLOR[fd?.cat]||G.muted;return(<div key={f} style={{background:G.card,borderRadius:"0.65rem",padding:"0.45rem 0.75rem",border:"1px solid "+G.border}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem",flexWrap:"wrap",marginBottom:"0.2rem"}}><span style={{fontSize:"0.82rem",fontWeight:700,color:"#4ade80"}}>{f}</span>{fd?.cat&&<span style={{fontSize:"0.58rem",textTransform:"uppercase",letterSpacing:"0.08em",color:catColor,fontWeight:700,border:"1px solid",borderColor:catColor,borderRadius:"0.3rem",padding:"0 0.3rem"}}>{fd.cat}</span>}</div>{fd&&<div style={{fontSize:"0.72rem",color:G.muted,lineHeight:1.4}}>{fd.desc}</div>}</div>);})}</div></div>)}
+      {activeFeats.length>0&&(<div><div style={{fontSize:"0.72rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>{t("Active Feats")}</div><div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>{activeFeats.map(f=>{const fd=ALL_FEATS[f];const catColor=CAT_LABEL_COLOR[fd?.cat]||G.muted;return(<div key={f} style={{background:G.card,borderRadius:"0.65rem",padding:"0.45rem 0.75rem",border:"1px solid "+G.border}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem",flexWrap:"wrap",marginBottom:"0.2rem"}}><span style={{fontSize:"0.82rem",fontWeight:700,color:"#4ade80"}}>{f}</span>{fd?.cat&&<span style={{fontSize:"0.58rem",textTransform:"uppercase",letterSpacing:"0.08em",color:catColor,fontWeight:700,border:"1px solid",borderColor:catColor,borderRadius:"0.3rem",padding:"0 0.3rem"}}>{t(fd.cat)}</span>}</div>{fd&&<div style={{fontSize:"0.72rem",color:G.muted,lineHeight:1.4}}>{featDescL(f,fd.desc)}</div>}</div>);})}</div></div>)}
     </div>);
   };
 
@@ -1435,7 +1438,7 @@ export default function App(){
       <div style={{display:"flex",flexDirection:"column",gap:"0.35rem",maxHeight:"380px",overflowY:"auto"}}>
         {sorted.map(name=>{
           const feat=ALL_FEATS[name];if(!feat)return null;
-          if(featTab==="Origin"&&name===bgo.feat)return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>Granted</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{name}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{feat.desc}</div></div>);
+          if(featTab==="Origin"&&name===bgo.feat)return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>{t("Granted")}</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{name}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{featDescL(name,feat.desc)}</div></div>);
           const sel=!!featMap[name];const sugg=suggested.includes(name);const allowed=featAllowed(name);
           return(<div key={name} style={{outline:sugg?"1px solid #fbbf2444":"none",outlineOffset:"-1px",borderRadius:"0.65rem",opacity:allowed?1:0.35,pointerEvents:allowed?"auto":"none"}}>
             <FeatCard name={name} feat={feat} sel={sel} onToggle={()=>allowed&&togFeat(name)}>
