@@ -56,6 +56,7 @@ const DA={
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
+  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog",
   "Roll 4d6":"Kast 4d6",
   "Background Ability Boost":"Baggrunds-bonus til evner",
   "Click to choose (2024 rules — pick from":"Klik for at vælge (2024-regler — vælg blandt",
@@ -710,7 +711,7 @@ function FancySheet({sh}){
   const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>x.replace(/:\s*/g,": ")).slice(0,13);
   const skillRows=SKILL_LIST;
   const weaponRows=(sh.weapons||[]).slice(0,4);
-  const lang=(sh.profLangs||"").replace(/^Languages:\s*/i,"").replace(/^.*Languages:\s*/i,"");
+  const lang=((sh.profLangs||"").split(/Languages:\s*/i).pop()||"").trim();
 
   function StatCard({ab,className}){return <div className={"orn-stat "+className}>
     <div className="orn-mod">{sgn(statMod(ab))}</div>
@@ -784,7 +785,7 @@ function FancySheet({sh}){
 
     <div className="panel traits"><div className="panel-titlebar">{t("Features & Traits")}</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>110?line.slice(0,110)+"…":line}</li>)}</ul></div>
     <div className="small-token speed"><b>{sh.speed} ft.</b><span>{t("Speed")}</span></div>
-    <div className="langs">{lang||"Common"}</div>
+    <div className="langs">{sh.weaponProf?`⚔ ${sh.weaponProf}  ·  `:""}{t("Languages")}: {lang||"Common"}</div>
   </div>;
 }
 
@@ -986,7 +987,7 @@ function EquipmentPanel({cn,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeap
   const weaponRows=Object.entries(WD).filter(([n])=>n!=="Unarmed strike").filter(([n])=>{if(q&&!n.toLowerCase().includes(q))return false;if(!showNonProf&&!canUseWeapon(n))return false;return true;}).map(([wn,w])=>{
     const isProf=canUseWeapon(wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;const bonus=isProf?am+pb:am;const isEq=equipped.weapon===wn;
     return(<div key={wn} style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 64px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:4}}>
-      <div><span style={{fontSize:"0.82rem",color:isEq?"#4ade80":"#e2e8f0",fontWeight:isEq?700:400}}>{wn}</span>{!isProf&&<span style={{fontSize:"0.6rem",color:"#f87171",marginLeft:5,border:"1px solid #f87171",borderRadius:3,padding:"0 3px"}}>non-prof</span>}<div style={{fontSize:"0.65rem",color:G.dimmer,marginTop:1}}>{w.pr}</div></div>
+      <div><span style={{fontSize:"0.82rem",color:isEq?"#4ade80":"#e2e8f0",fontWeight:isEq?700:400}}>{wn}</span>{isProf?<span style={{fontSize:"0.6rem",color:"#4ade80",marginLeft:5,border:"1px solid #4ade80",borderRadius:3,padding:"0 3px",fontWeight:700}}>prof</span>:<span style={{fontSize:"0.6rem",color:"#f87171",marginLeft:5,border:"1px solid #f87171",borderRadius:3,padding:"0 3px"}}>non-prof</span>}<div style={{fontSize:"0.65rem",color:G.dimmer,marginTop:1}}>{w.pr}</div></div>
       <span style={{fontSize:"0.9rem",fontWeight:800,color:G.gold,textAlign:"center"}}>{sgn(bonus)}</span>
       <span style={{fontSize:"0.78rem",color:G.muted,textAlign:"center"}}>{w.dmg}</span>
       <span style={{fontSize:"0.65rem",color:G.dimmer,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em"}}>{w.type}</span>
@@ -1021,6 +1022,7 @@ function EquipmentPanel({cn,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeap
       {eqTab!=="starting"&&<><input value={eqSearch} onChange={e=>setEqSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"110px",padding:"0.25rem 0.6rem",fontSize:"0.78rem",marginLeft:"auto"}}/><label style={{display:"flex",alignItems:"center",gap:"0.3rem",fontSize:"0.72rem",color:G.muted,cursor:"pointer",whiteSpace:"nowrap"}}><input type="checkbox" checked={showNonProf} onChange={e=>setShowNonProf(e.target.checked)} style={{accentColor:G.gold}}/>Non-prof</label></>}
     </div>
     {eqTab==="weapons"&&(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
+      <div style={{fontSize:"0.75rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",borderRadius:"0.5rem",background:"#14532d22",border:"1px solid #4ade8055",color:"#e2e8f0"}}><span style={{color:"#4ade80",fontWeight:800}}>✓ Proficient:</span> {CLASSES[cn].weapons} <span style={{color:G.dim}}>— {t("green = proficient, red = not proficient")}</span></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 64px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Atk","Dmg","Type","Mastery",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{h}</div>)}</div>
       {weaponRows.length?weaponRows:<div style={{fontSize:"0.82rem",color:G.dim,fontStyle:"italic",padding:"0.5rem"}}>No weapons match.</div>}
       {(MASTERY_SLOTS[cn]||0)>0&&(()=>{const slots=MASTERY_SLOTS[cn];const eligible=Object.entries(WD).filter(([,w])=>w.mastery&&w.mastery!=="—"&&(WEAPON_PROF[cn]||[]).includes(w.type));return(<div style={{marginTop:"0.75rem",padding:"0.65rem",background:"#1e293b",borderRadius:"0.75rem",border:"1px solid #334155"}}><div style={{fontSize:"0.72rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>Weapon Mastery - choose {slots} ({masteredWeapons.length}/{slots})</div><div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{eligible.map(([wn,w])=>{const sel=masteredWeapons.includes(wn);const atMax=masteredWeapons.length>=slots;return(<button key={wn} onClick={()=>setMasteredWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):prev.length>=slots?prev:[...prev,wn])} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid",cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?"#581c87":"transparent",color:sel?"#e9d5ff":"#f1f5f9",borderColor:sel?"#a78bfa":"#334155",fontWeight:sel?700:400}}>{wn} <span style={{color:"#a78bfa",fontSize:"0.65rem"}}>{w.mastery}</span></button>);})}</div></div>);})()} 
@@ -1366,7 +1368,7 @@ export default function App(){
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
     const nextGender=nextGenderRoll||gender;
-    const nextSheet={name:dispName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode};
+    const nextSheet={name:dispName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
