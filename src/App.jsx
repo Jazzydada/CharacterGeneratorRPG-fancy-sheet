@@ -566,16 +566,18 @@ function invocationsKnown(lvl){return INV_KNOWN[Math.min(lvl,20)]||0;}
 // 2024 level-1 "Order" choices. Each option: [name, en desc, da desc, extraCantrips].
 const CLASS_ORDER={
   Cleric:{label:"Divine Order",options:[
-    ["Protector",["Proficiency with Martial weapons and Heavy armor.","Færdighed med kampvåben og tung rustning."],0],
-    ["Thaumaturge",["+1 Cleric cantrip; add WIS to Religion/Arcana checks.","+1 Cleric-cantrip; læg WIS til Religion/Arcana-tjek."],1],
+    ["Protector",["Proficiency with Martial weapons and Heavy armor.","Færdighed med kampvåben og tung rustning."],0,[]],
+    ["Thaumaturge",["+1 Cleric cantrip; add WIS to Religion/Arcana checks.","+1 Cleric-cantrip; læg WIS til Religion/Arcana-tjek."],1,["Arcana","Religion"]],
   ]},
   Druid:{label:"Primal Order",options:[
-    ["Magician",["+1 Druid cantrip; add WIS to Arcana/Nature checks.","+1 Druid-cantrip; læg WIS til Arcana/Nature-tjek."],1],
-    ["Warden",["Proficiency with Martial weapons and Medium armor.","Færdighed med kampvåben og medium rustning."],0],
+    ["Magician",["+1 Druid cantrip; add WIS to Arcana/Nature checks.","+1 Druid-cantrip; læg WIS til Arcana/Nature-tjek."],1,["Arcana","Nature"]],
+    ["Warden",["Proficiency with Martial weapons and Medium armor.","Færdighed med kampvåben og medium rustning."],0,[]],
   ]},
 };
 function defaultOrder(cn){return CLASS_ORDER[cn]?CLASS_ORDER[cn].options[0][0]:"";}
-function orderCantripBonus(cn,order){const o=CLASS_ORDER[cn];if(!o)return 0;const m=o.options.find(x=>x[0]===order);return m?m[2]:0;}
+function orderOption(cn,order){const o=CLASS_ORDER[cn];return o?o.options.find(x=>x[0]===order):null;}
+function orderCantripBonus(cn,order){const m=orderOption(cn,order);return m?m[2]:0;}
+function orderWisSkills(cn,order){const m=orderOption(cn,order);return m?(m[3]||[]):[];}
 // Level-1 Ritual spells (any class) — the 2 you learn with Pact of the Tome.
 const RITUAL_L1=["Alarm","Comprehend Languages","Detect Magic","Detect Poison and Disease","Find Familiar","Identify","Purify Food and Drink","Speak with Animals","Unseen Servant"];
 
@@ -758,7 +760,7 @@ function FancySheet({sh}){
   const stats=sh.finalStats||{};
   const stat=(ab)=>stats[ab]??10;
   const statMod=(ab)=>mf(stat(ab));
-  const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0));
+  const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0)+((sh.wisSkills||[]).includes(sk.name)?(sh.wisMod||0):0));
   const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
   // Page 1 shows just the feature NAMES (compact). Full descriptions live on page 2.
@@ -1450,7 +1452,7 @@ export default function App(){
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
     const nextGender=nextGenderRoll||gender;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:buildW(),spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",gp,equipment:EQUIP[cn].join("\n"),portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS)};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
@@ -1462,7 +1464,8 @@ export default function App(){
 
   const buildOverview=()=>{
     const abilRows=AB.map(a=>{const score=fin[a],mod=mf(score),saveProf=saves.includes(a),saveBonus=mod+(saveProf?pb:0);return{ab:a,score,mod,saveProf,saveBonus};});
-    const skillRows=SKILL_LIST.map(sk=>{const prof=skProfs.includes(sk.name),bonus=mf(fin[sk.ab])+(prof?pb:0);return{...sk,prof,bonus};});
+    const orderWis=orderWisSkills(cn,classOrder);const wm2=mf(fin.WIS);
+    const skillRows=SKILL_LIST.map(sk=>{const prof=skProfs.includes(sk.name),bonus=mf(fin[sk.ab])+(prof?pb:0)+(orderWis.includes(sk.name)?wm2:0);return{...sk,prof,bonus};});
     const weaponDisplay=buildW();
     return(<div>
       <div style={{marginBottom:"1rem"}}>
