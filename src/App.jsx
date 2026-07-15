@@ -56,7 +56,7 @@ const DA={
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
-  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...",
+  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...",
   "Who is playing this character?":"Hvem spiller denne karakter?",
   "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner","Ritual spells (Pact of the Tome)":"Ritual spells (Pact of the Tome)","Extra cantrips (Pact of the Tome)":"Ekstra cantrips (Pact of the Tome)","from any class":"fra en vilkårlig klasse",
   "Roll 4d6":"Kast 4d6",
@@ -1381,18 +1381,13 @@ export default function App(){
     // END PATCH RAND-SPELLS-CALL
   }
 
-  function togSk(s){setSelSk(cur=>{if(cur.includes(s))return cur.filter(x=>x!==s);if(cur.length>=maxSk)return[...cur.slice(1),s];return[...cur,s];});}
+  // Skills/spells may be selected beyond the RAW limit (marked in the builder only).
+  function togSk(s){setSelSk(cur=>cur.includes(s)?cur.filter(x=>x!==s):[...cur,s]);}
   // START PATCH A — togSp: enforce leveled spell budget (cantrips lv=0 always free)
   function togSp(name,lv){
     setSelSp(prev=>{
       const cur=prev[lv]||[];
       const alreadySel=cur.includes(name);
-      if(!alreadySel&&lv>0){
-        const selectedLeveledCount=Object.entries(prev).filter(([l])=>Number(l)>0).flatMap(([,ns])=>ns||[]).length;
-        const spellLimit=Number.parseInt(knownStr,10)||0;
-        if(spellLimit>0&&selectedLeveledCount>=spellLimit)return prev;
-      }
-      if(!alreadySel&&lv===0&&cantripLimit>0&&cur.length>=cantripLimit)return prev;
       return{...prev,[lv]:alreadySel?cur.filter(n=>n!==name):[...cur,name]};
     });
   }
@@ -1606,8 +1601,8 @@ export default function App(){
         {AB.map(a=>(<div key={a} style={{background:a===primaryAb?"#2d2400":G.card,borderRadius:"0.75rem",padding:"0.6rem",border:"1px solid "+(a===primaryAb?G.gold:G.border),textAlign:"center",position:"relative"}}>{a===primaryAb&&<div style={{position:"absolute",top:"-0.55rem",left:"50%",transform:"translateX(-50%)",background:G.gold,color:G.bg,fontSize:"0.5rem",fontWeight:800,padding:"0.05rem 0.35rem",borderRadius:"0.3rem",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{t("Key ability")}</div>}<div style={{fontSize:"0.65rem",color:a===primaryAb?G.gold:G.dim,letterSpacing:"0.1em",fontWeight:a===primaryAb?800:400}}>{a}</div><input type="number" min={smode==="Manual"?8:3} max={smode==="Manual"?15:smode==="Rolled"?18:20} value={base[a]||8} disabled={smode==="Standard Array"} onFocus={e=>e.target.select()} onChange={e=>{let v=Number(e.target.value)||0;if(smode==="Rolled"){v=Math.max(3,Math.min(18,v));setRstats(prev=>({...prev,[a]:v}));}else{v=Math.max(8,Math.min(15,v));setMstats(prev=>{const next={...prev,[a]:v};if(pointBuySpent(next)>PB_BUDGET)return prev;return next;});}}} style={{...inp,textAlign:"center",padding:"0.3rem",marginTop:"0.25rem",fontSize:"1.1rem",fontWeight:700}}/><div style={{fontSize:"0.7rem",color:G.gold,marginTop:"0.2rem"}}>{fin[a]} ({sgn(mf(fin[a]))})</div><div title={abilDesc(a)} style={{fontSize:"0.55rem",color:G.dim,marginTop:"0.15rem",lineHeight:1.15}}>{abilTag(a)}</div></div>))}
       </div>
       <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
-        <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>{t("Skills")} ({allSc.length} {t("available")} - {t("choose")} {maxSk})</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{allSc.map(s=><button key={s} title={skillDesc(s)} onClick={()=>togSk(s)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid",cursor:"pointer",background:selSk.includes(s)?G.gold:"transparent",color:selSk.includes(s)?G.bg:"#f1f5f9",borderColor:selSk.includes(s)?G.gold:"#334155",fontWeight:selSk.includes(s)?700:400}}>{s}</button>)}</div>
+        <div style={{fontSize:"0.75rem",color:selSk.length>maxSk?"#f97316":G.muted,marginBottom:"0.5rem"}}>{t("Skills")} ({allSc.length} {t("available")} - {t("choose")} {maxSk}){selSk.length>maxSk?<span style={{fontWeight:700}}> · {selSk.length-maxSk} {t("over the rules")} ⚠</span>:""}</div>
+        {(()=>{const extraSk=new Set(selSk.slice(maxSk));return <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{allSc.map(s=>{const sel=selSk.includes(s);const extra=extraSk.has(s);return <button key={s} title={extra?skillDesc(s)+" — "+t("over the rules"):skillDesc(s)} onClick={()=>togSk(s)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid",cursor:"pointer",background:sel?(extra?"#f97316":G.gold):"transparent",color:sel?"#020817":"#f1f5f9",borderColor:sel?(extra?"#f97316":G.gold):"#334155",fontWeight:sel?700:400}}>{extra?"⚠ ":""}{s}</button>;})}</div>;})()}
         <div style={{marginTop:"0.5rem",fontSize:"0.62rem",color:G.dim,lineHeight:1.4,display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.15rem 0.75rem"}}>{allSc.map(s=><div key={s}><b style={{color:G.muted}}>{s}:</b> {skillDesc(s)}</div>)}</div>
       </div>
     </div>
@@ -1696,16 +1691,13 @@ export default function App(){
     </div>
     <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>{[0,1,2,3,4,5,6,7,8,9].filter(lv=>lv===0||lv<=maxSL).map(lv=>{const has=avSp[lv]&&avSp[lv].size>0;const cnt=(selSp[lv]||[]).length;if(!has&&lv>0)return null;const active=spTab===lv;return <button key={lv} onClick={()=>setSpTab(lv)} style={tabSt(active)}>{lv===0?"Cantrips":"Lvl "+lv}{cnt>0?" ("+cnt+")":""}</button>;})}</div>
     {/* START PATCH C — dim unavailable leveled spells at budget limit */}
-    <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"60vh",overflowY:"auto",paddingRight:"0.5rem",marginTop:"0.5rem"}}>{[...(avSp[spTab]||[])].map(name=>{
+    {(()=>{const spellLimit=Number.parseInt(knownStr,10)||0;const flatLeveled=[1,2,3,4,5,6,7,8,9].flatMap(l=>(selSp[l]||[]));const extraLeveled=new Set(spellLimit>0?flatLeveled.slice(spellLimit):[]);const extraCantrips=new Set(cantripLimit>0?(selSp[0]||[]).slice(cantripLimit):[]);
+    return <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"60vh",overflowY:"auto",paddingRight:"0.5rem",marginTop:"0.5rem"}}>{[...(avSp[spTab]||[])].map(name=>{
       const sel=(selSp[spTab]||[]).includes(name);
       const prep=spPrep[name]!==false;
-      const spellLimit=Number.parseInt(knownStr,10)||0;
-      const selectedLeveledSpellCount=Object.entries(selSp).filter(([lv])=>Number(lv)>0).flatMap(([,ns])=>ns||[]).length;
-      const atLimit=spellLimit>0&&selectedLeveledSpellCount>=spellLimit;
-      const cantripAtLimit=spTab===0&&cantripLimit>0&&(selSp[0]||[]).length>=cantripLimit;
-      const blocked=!sel&&((atLimit&&spTab>0)||cantripAtLimit);
-      return <div key={name} style={{opacity:blocked?0.4:1,pointerEvents:blocked?"none":"auto"}}><SBtn name={name} sel={sel} prep={prep} onToggle={()=>togSp(name,spTab)} onPrep={()=>togPrep(name)}/></div>;
-    })}</div>
+      const isExtra=sel&&(spTab===0?extraCantrips.has(name):extraLeveled.has(name));
+      return <div key={name} style={{borderRadius:"0.7rem",...(isExtra?{outline:"2px solid #f97316",outlineOffset:"-1px"}:{})}}><SBtn name={name} sel={sel} prep={prep} onToggle={()=>togSp(name,spTab)} onPrep={()=>togPrep(name)}/>{isExtra&&<div style={{fontSize:"0.6rem",color:"#f97316",fontWeight:700,padding:"0.05rem 0.4rem"}}>⚠ {t("over the rules")}</div>}</div>;
+    })}</div>;})()}
     {/* END PATCH C */}
     {Object.values(selSp).flat().length>0&&<div style={{marginTop:"0.5rem",fontSize:"0.72rem",color:G.muted}}>Selected: {Object.values(selSp).flat().join(", ")}</div>}
   </div>):<div style={{fontSize:"0.85rem",color:G.muted,fontStyle:"italic"}}>This class is not a spellcaster.</div>;
