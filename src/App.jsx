@@ -1129,7 +1129,7 @@ export default function App(){
   const [sheet,setSheet]=useState(null);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState(initChar.gender);
-  const [portraitMode,setPortraitMode]=useState("ai");
+  const [portraitMode,setPortraitMode]=useState("blank");
   const [lang,setLangState]=useState(CURRENT_LANG);
   CURRENT_LANG=lang;
   const switchLang=l=>{setLang(l);setLangState(l);};
