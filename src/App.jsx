@@ -563,6 +563,19 @@ const ELDRITCH_INVOCATIONS={
 // 2024 Warlock: number of invocations known by level.
 const INV_KNOWN=[0,1,3,3,3,5,5,6,6,7,7,7,8,8,8,9,9,9,10,10,10];
 function invocationsKnown(lvl){return INV_KNOWN[Math.min(lvl,20)]||0;}
+// 2024 level-1 "Order" choices. Each option: [name, en desc, da desc, extraCantrips].
+const CLASS_ORDER={
+  Cleric:{label:"Divine Order",options:[
+    ["Protector",["Proficiency with Martial weapons and Heavy armor.","Færdighed med kampvåben og tung rustning."],0],
+    ["Thaumaturge",["+1 Cleric cantrip; add WIS to Religion/Arcana checks.","+1 Cleric-cantrip; læg WIS til Religion/Arcana-tjek."],1],
+  ]},
+  Druid:{label:"Primal Order",options:[
+    ["Magician",["+1 Druid cantrip; add WIS to Arcana/Nature checks.","+1 Druid-cantrip; læg WIS til Arcana/Nature-tjek."],1],
+    ["Warden",["Proficiency with Martial weapons and Medium armor.","Færdighed med kampvåben og medium rustning."],0],
+  ]},
+};
+function defaultOrder(cn){return CLASS_ORDER[cn]?CLASS_ORDER[cn].options[0][0]:"";}
+function orderCantripBonus(cn,order){const o=CLASS_ORDER[cn];if(!o)return 0;const m=o.options.find(x=>x[0]===order);return m?m[2]:0;}
 // Level-1 Ritual spells (any class) — the 2 you learn with Pact of the Tome.
 const RITUAL_L1=["Alarm","Comprehend Languages","Detect Magic","Detect Poison and Disease","Find Familiar","Identify","Purify Food and Drink","Speak with Animals","Unseen Servant"];
 
@@ -1130,6 +1143,7 @@ export default function App(){
   const [gp,setGp]=useState(0);
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
+  const [classOrder,setClassOrder]=useState(()=>defaultOrder(initChar.cn));
   const [selRituals,setSelRituals]=useState([]);
   const [selTomeCantrips,setSelTomeCantrips]=useState([]);
   const [spPrep,setSpPrep]=useState({});
@@ -1216,7 +1230,7 @@ export default function App(){
   // All cantrips from any class — only used for the Pact of the Tome extra-cantrip picker.
   const allCantrips=useMemo(()=>[...new Set(Object.values(CS).flatMap(sd=>sd[0]||[]))].sort(),[]);
   const knownStr=ct?spellsKnown(cn,lv1e,smod):(mc&&ct2?spellsKnown(cn2,lv2c,smod):null);
-  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0);
+  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0)+orderCantripBonus(cn,classOrder);
   const primaryAb=cls?.pri?.[0]||"STR";
   const racialFeatSuggestions=speciesData?.racialFeats||[];
   const classFeatSuggestions=cls?.classFeatChoices||[];
@@ -1225,7 +1239,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1235,7 +1249,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,selInv,selRituals,selTomeCantrips,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1244,7 +1258,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1419,6 +1433,8 @@ export default function App(){
     const da=CURRENT_LANG==="da";
     const featDesc=n=>da?(FEATDESC_DA[n]||ALL_FEATS[n]?.desc||""):(ALL_FEATS[n]?.desc||"");
     const subDesc=(SUBCLASSES[cn]||{})[sub]||"Subclass features from level 3.";
+    const orderInfo=CLASS_ORDER[cn]?CLASS_ORDER[cn].options.find(o=>o[0]===classOrder):null;
+    const orderLine=orderInfo?CLASS_ORDER[cn].label+": "+orderInfo[0]+" — "+orderInfo[1][da?1:0]:"";
     const subclassLine=sub?sub+": "+(da?(SUBCLASS_DESC_DA[sub]||subDesc):subDesc):"";
     const originWord=da?"Oprindelse":"Origin";
     const originFeatLine=bgo.feat+" ("+originWord+"): "+featDesc(bgo.feat);
@@ -1429,7 +1445,7 @@ export default function App(){
     const tomeCantripLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selTomeCantrips.length)?selTomeCantrips.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const invBlock=[invLine?"Eldritch Invocations:\n"+invLine:"",tomeCantripLine?"Tome cantrips:\n"+tomeCantripLine:"",ritualLine?"Ritual spells (Tome):\n"+ritualLine:""].filter(Boolean).join("\n");
-    const combinedFeatures=[subclassLine,featsList,invBlock,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+bgo.tools+"\nLanguages: "+(speciesData?.languages||["Common"]).join(", ");
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
@@ -1530,7 +1546,8 @@ export default function App(){
       <GFld label={t("Alignment")}><select value={align} onChange={e=>setAlign(e.target.value)} style={inp}>{["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"].map(a=><option key={a}>{a}</option>)}</select></GFld>
       <GFld label={"Level: "+level}><input type="range" min="1" max="20" value={level} onChange={e=>{setLevel(Number(e.target.value));levelLockedRef.current=true;setLevelLocked(true);}} style={{width:"100%",accentColor:G.gold}}/><div style={{display:"flex",justifyContent:"space-between",fontSize:"0.7rem",color:G.dim}}><span>1</span><span>10</span><span>20</span></div></GFld>
       <GFld label={t("Species")}><select value={sp} onChange={e=>{setSp(e.target.value);speciesLockedRef.current=true;setSpeciesLocked(true);}} style={inp}>{Object.keys(SPECIES).map(s=><option key={s}>{s}</option>)}</select>{speciesData&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Species Traits")}</div>{speciesData.traits.map((tr,i)=><div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.2rem"}}>- {CURRENT_LANG==="da"?(TRAIT_DA[tr]||tr):tr}</div>)}</div>}</GFld>
-      <GFld label={t("Class")}><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Class Features")}</div>{cls.features.map((f,i)=>{const da=CURRENT_LANG==="da";const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return <div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.25rem"}}>- <b style={{color:"#cbd5e1"}}>{label}</b>{d?<span style={{color:G.dim}}> — {d}</span>:""}</div>;})}</div>}</GFld>
+      <GFld label={t("Class")}><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Class Features")}</div>{cls.features.map((f,i)=>{const da=CURRENT_LANG==="da";const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return <div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.25rem"}}>- <b style={{color:"#cbd5e1"}}>{label}</b>{d?<span style={{color:G.dim}}> — {d}</span>:""}</div>;})}</div>}
+        {CLASS_ORDER[cn]&&<div style={{marginTop:"0.5rem"}}><div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.3rem",fontWeight:700}}>{CLASS_ORDER[cn].label} <span style={{color:G.dim,fontWeight:400}}>({t("choose")})</span></div><div style={{display:"flex",flexDirection:"column",gap:"0.35rem"}}>{CLASS_ORDER[cn].options.map(([nm,desc,cantrip])=>{const sel=classOrder===nm;return <button key={nm} onClick={()=>setClassOrder(nm)} style={{textAlign:"left",padding:"0.4rem 0.6rem",borderRadius:"0.6rem",border:"1px solid "+(sel?G.gold:"#334155"),background:sel?"#2d2400":"transparent",cursor:"pointer"}}><div style={{fontSize:"0.78rem",fontWeight:700,color:sel?G.gold:"#e2e8f0"}}>{nm}{cantrip?<span style={{fontSize:"0.6rem",marginLeft:"0.4rem",color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.3rem",padding:"0 0.3rem"}}>+{cantrip} cantrip</span>:""}</div><div style={{fontSize:"0.7rem",color:G.muted,marginTop:"1px"}}>{desc[CURRENT_LANG==="da"?1:0]}</div></button>;})}</div></div>}</GFld>
       <div style={{marginBottom:"0.85rem",background:G.card,borderRadius:"0.75rem",padding:"0.65rem 0.75rem",border:"1px solid "+(mc?G.gold:G.border)}}>
         <label style={{display:"flex",alignItems:"center",gap:"0.5rem",cursor:"pointer",marginBottom:mc?"0.65rem":"0"}}><input type="checkbox" checked={mc} onChange={e=>setMc(e.target.checked)} style={{accentColor:G.gold,width:15,height:15}}/><span style={{fontSize:"0.8rem",fontWeight:600,color:mc?G.gold:"#e2e8f0"}}>{t("Multiclass")}</span></label>
         {mc&&level>1&&<div style={{display:"grid",gridTemplateColumns:"1fr 70px",gap:"0.5rem",alignItems:"end"}}><GFld label={t("Second class")}><select value={cn2} onChange={e=>setCn2(e.target.value)} style={inp}>{Object.keys(CLASSES).filter(c=>c!==cn).map(c=><option key={c}>{c}</option>)}</select></GFld><GFld label={t("Levels")}><select value={lv2c} onChange={e=>setLv2(Number(e.target.value))} style={inp}>{Array.from({length:Math.max(1,level-1)},(_,i)=>i+1).map(l=><option key={l}>{l}</option>)}</select></GFld></div>}
