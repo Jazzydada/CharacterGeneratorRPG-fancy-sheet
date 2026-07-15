@@ -1214,7 +1214,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setSelInv([]);setSelRituals([]);setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
+  function changeClass(newCn){setCn(newCn);setSub("");setSelInv([]);setSelRituals([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
