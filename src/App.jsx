@@ -84,7 +84,7 @@ const DA={
   Back:"Tilbage",
   "Print / PDF":"Print / PDF",
   "Set page margins to None.":"Sæt sidemargener til Ingen.",
-  "2 pages":"2 sider","1 page":"1 side",
+  "2 pages":"2 sider","1 page":"1 side","Features & Spells":"Evner, træk & magi","Descriptions on page 2":"Beskrivelser på side 2",
   // sheet static labels
   "Class & Level":"Klasse & niveau",
   "Player Name":"Spillernavn",
@@ -748,7 +748,8 @@ function FancySheet({sh}){
   const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0));
   const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
-  const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>x.replace(/:\s*/g,": ")).slice(0,13);
+  // Page 1 shows just the feature NAMES (compact). Full descriptions live on page 2.
+  const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>{const c=x.indexOf(":");return (c>0?x.slice(0,c):x).replace(/^•\s*/,"").trim();}).slice(0,16);
   const skillRows=SKILL_LIST;
   const weaponRows=(sh.weapons||[]).slice(0,4);
   const lang=((sh.profLangs||"").split(/Languages:\s*/i).pop()||"").trim();
@@ -823,7 +824,7 @@ function FancySheet({sh}){
 
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
-    <div className="panel traits"><div className="panel-titlebar">{t("Features & Traits")}</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>110?line.slice(0,110)+"…":line}</li>)}</ul></div>
+    <div className="panel traits"><div className="panel-titlebar">{t("Features & Traits")}</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul><div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div></div>
     <div className="small-token speed"><b>{sh.speed} ft.</b><span>{t("Speed")}</span></div>
     <div className="langs">{sh.weaponProf?`⚔ ${sh.weaponProf}  ·  `:""}{t("Languages")}: {lang||"Common"}</div>
   </div>;
@@ -887,14 +888,20 @@ function Page1({sh}){
 }
 
 function Page2({sh}){
-  if(!sh.isCaster)return null;
-  const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel}=sh;
+  const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
   const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
+  // Parse the features text into readable entries (bold the label before the colon).
+  const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
   return(<div className="page" style={pgStyle}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:6}}>{classLevel} - Spell Reference</div></div>
-      <div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:5.5,textAlign:"center"}}>{l}</div></div>)}</div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:6}}>{classLevel} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
+      {isCaster&&<div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:5.5,textAlign:"center"}}>{l}</div></div>)}</div>}
     </div>
+    <div style={{marginBottom:8}}>
+      <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
+      <div style={{columnCount:2,columnGap:14}}>{featEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:7.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
+    </div>
+    {isCaster&&<>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:8}}>
       <div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>Spell Slots</div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${spellSlots.filter(s=>s>0).length||1},1fr)`,gap:4,textAlign:"center"}}>
@@ -902,6 +909,7 @@ function Page2({sh}){
       </div>
     </div>
     {LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(115px,1fr))",gap:5}}>{spells.map((sp,i)=><div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}><div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:2}}>{sp.name}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div></div>)}</div></div>;})}
+    </>}
     <div style={{marginTop:7,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of 2</span></div>
   </div>);
 }
@@ -1433,7 +1441,7 @@ export default function App(){
   }
 
   if(view==="sheet"&&sheet){
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {sheet.isCaster?t("2 pages"):t("1 page")}</span></div><div className="print-area"><FancySheet sh={sheet}/>{sheet.isCaster&&<Page2 sh={sheet}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {t("2 pages")}</span></div><div className="print-area"><FancySheet sh={sheet}/><Page2 sh={sheet}/></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
