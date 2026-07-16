@@ -615,6 +615,14 @@ const WILDSHAPE_BEASTS={
 };
 // 2024 Druid Wild Shape gating by level: max CR and whether a Fly speed is allowed.
 function wildShapeLimit(level){if(level>=8)return{cr:1,fly:true};if(level>=4)return{cr:0.5,fly:false};return{cr:0.25,fly:false};}
+// 2024 Barbarian Rage table (PHB p.52): uses and bonus damage scale with level; recharges 1/Short Rest, all/Long Rest.
+function barbarianRage(level){const rages=level>=17?6:level>=12?5:level>=6?4:level>=3?3:2;const dmg=level>=16?4:level>=9?3:2;return{rages,dmg};}
+// 2024 Weapon Mastery slot counts by class and level (PHB feature tables) — confirmed against the book.
+function weaponMasterySlots(cn,level){
+  if(cn==="Barbarian")return level>=10?4:level>=4?3:2;
+  if(cn==="Fighter")return level>=16?6:level>=10?5:level>=4?4:3;
+  return MASTERY_SLOTS[cn]||0; // other classes: not yet confirmed against the book, keep the flat value
+}
 const STANDARD_LANGUAGES=["Common","Common Sign Language","Draconic","Dwarvish","Elvish","Giant","Gnomish","Goblin","Halfling","Orc"];
 const RARE_LANGUAGES=["Abyssal","Celestial","Deep Speech","Druidic","Infernal","Primordial","Sylvan","Thieves' Cant","Undercommon"];
 
@@ -651,11 +659,11 @@ const MASTERY_DESC={
 const CLASS_DEFAULTS={Barbarian:{armor:null,shield:false,weapon:"Greataxe"},Bard:{armor:"Leather armor",shield:false,weapon:"Rapier"},Cleric:{armor:"Chain shirt",shield:true,weapon:"Mace"},Druid:{armor:"Leather armor",shield:true,weapon:"Scimitar"},Fighter:{armor:"Chain mail",shield:true,weapon:"Longsword"},Monk:{armor:null,shield:false,weapon:"Shortsword"},Paladin:{armor:"Chain mail",shield:true,weapon:"Longsword"},Ranger:{armor:"Scale mail",shield:false,weapon:"Shortsword"},Rogue:{armor:"Leather armor",shield:false,weapon:"Rapier"},Sorcerer:{armor:null,shield:false,weapon:"Dagger"},Warlock:{armor:"Leather armor",shield:false,weapon:"Dagger"},Wizard:{armor:null,shield:false,weapon:"Quarterstaff"}};
 
 const CLASSES={
-  Barbarian:{hd:12,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"Light, medium, shields",weapons:"Simple and martial",sc:["Animal Handling","Athletics","Intimidation","Nature","Perception","Survival"],ns:2,role:"Frontline bruiser",features:["Rage (2/long rest)","Unarmored Defense AC=10+DEX+CON","Weapon Mastery x2","Reckless Attack Lvl2","Danger Sense Lvl2","Subclass Lvl3"],classFeatChoices:["Great Weapon Master","Tough","Sentinel","Tavern Brawler","Alert"]},
+  Barbarian:{hd:12,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"Light, medium, shields",weapons:"Simple and martial",sc:["Animal Handling","Athletics","Intimidation","Nature","Perception","Survival"],ns:2,role:"Frontline bruiser",features:["Unarmored Defense AC=10+DEX+CON","Weapon Mastery","Reckless Attack Lvl2","Danger Sense Lvl2","Primal Knowledge Lvl3","Subclass Lvl3"],classFeatChoices:["Great Weapon Master","Tough","Sentinel","Tavern Brawler","Alert"]},
   Bard:{hd:8,pri:["CHA","DEX","CON"],saves:["DEX","CHA"],armor:"Light",weapons:"Simple",sc:SKILL_LIST.map(s=>s.name),ns:3,role:"Social caster and support",features:["Bardic Inspiration CHA mod/long rest","Expertise Lvl3","Jack of All Trades Lvl2","Subclass Lvl3"],classFeatChoices:["War Caster","Resilient","Lucky","Inspiring Leader","Skilled"]},
   Cleric:{hd:8,pri:["WIS","CON","STR"],saves:["WIS","CHA"],armor:"Light, medium, shields",weapons:"Simple",sc:["History","Insight","Medicine","Persuasion","Religion"],ns:2,role:"Divine caster and healer",features:["Divine Order Lvl1","Subclass Lvl3","Channel Divinity","Blessed Strikes Lvl7"],classFeatChoices:["War Caster","Resilient","Lucky","Inspiring Leader","Sentinel"]},
   Druid:{hd:8,pri:["WIS","CON","INT"],saves:["INT","WIS"],armor:"Light, medium, shields (no metal)",weapons:"Simple",sc:["Animal Handling","Arcana","Insight","Medicine","Nature","Perception","Religion","Survival"],ns:2,role:"Nature caster and controller",features:["Druidic language","Primal Order Lvl1","Wild Shape Lvl2","Subclass Lvl3"],classFeatChoices:["War Caster","Resilient","Tough","Lucky","Mobile"]},
-  Fighter:{hd:10,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Acrobatics","Animal Handling","Athletics","History","Insight","Intimidation","Perception","Survival"],ns:2,role:"Weapon specialist",features:["Fighting Style Lvl1","Second Wind 1/short rest","Weapon Mastery x3","Action Surge Lvl2","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Great Weapon Master","Sharpshooter","Sentinel","War Caster","Alert","Tough","Mobile"]},
+  Fighter:{hd:10,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Acrobatics","Animal Handling","Athletics","History","Insight","Intimidation","Perception","Survival"],ns:2,role:"Weapon specialist",features:["Fighting Style Lvl1","Second Wind 2-4x/short or long rest","Weapon Mastery","Action Surge Lvl2","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Great Weapon Master","Sharpshooter","Sentinel","War Caster","Alert","Tough","Mobile"]},
   Monk:{hd:8,pri:["DEX","WIS","CON"],saves:["STR","DEX"],armor:"None",weapons:"Simple and monk weapons",sc:["Acrobatics","Athletics","History","Insight","Religion","Stealth"],ns:2,role:"Mobile martial artist",features:["Martial Arts Lvl1","Unarmored Defense AC=10+DEX+WIS","Weapon Mastery x2","Monks Focus Lvl2","Subclass Lvl3","Stunning Strike Lvl5"],classFeatChoices:["Mobile","Alert","War Caster","Tough","Resilient"]},
   Paladin:{hd:10,pri:["STR","CHA","CON"],saves:["WIS","CHA"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Athletics","Insight","Intimidation","Medicine","Persuasion","Religion"],ns:2,role:"Holy warrior",features:["Lay on Hands 5x level HP","Spellcasting CHA Lvl1","Weapon Mastery x2","Divine Smite Lvl2","Subclass Lvl3","Aura of Protection Lvl6"],classFeatChoices:["Sentinel","War Caster","Great Weapon Master","Inspiring Leader","Tough"]},
   Ranger:{hd:10,pri:["DEX","WIS","CON"],saves:["STR","DEX"],armor:"Light, medium, shields",weapons:"Simple and martial",sc:["Animal Handling","Athletics","Insight","Investigation","Nature","Perception","Stealth","Survival"],ns:3,role:"Scout and striker",features:["Spellcasting WIS Lvl1","Weapon Mastery x2","Deft Explorer Lvl1","Favored Enemy Lvl1","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Sharpshooter","Alert","Mobile","Resilient","Tough"]},
@@ -1123,7 +1131,7 @@ function FeatCard({name,feat,sel,onToggle,children}){
   </div>);
 }
 
-function EquipmentPanel({cn,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeapons,setMasteredWeapons}){
+function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeapons,setMasteredWeapons}){
   const [eqTab,setEqTab]=useState("weapons");
   const [eqSearch,setEqSearch]=useState("");
   const [showNonProf,setShowNonProf]=useState(false);
@@ -1175,7 +1183,7 @@ function EquipmentPanel({cn,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeap
       <div style={{fontSize:"0.75rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",borderRadius:"0.5rem",background:"#14532d22",border:"1px solid #4ade8055",color:"#e2e8f0"}}><span style={{color:"#4ade80",fontWeight:800}}>✓ Proficient:</span> {CLASSES[cn].weapons} <span style={{color:G.dim}}>— {t("green = proficient, red = not proficient")}</span></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 64px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Atk","Dmg","Type","Mastery",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{h}</div>)}</div>
       {weaponRows.length?weaponRows:<div style={{fontSize:"0.82rem",color:G.dim,fontStyle:"italic",padding:"0.5rem"}}>No weapons match.</div>}
-      {(MASTERY_SLOTS[cn]||0)>0&&(()=>{const slots=MASTERY_SLOTS[cn];const eligible=Object.entries(WD).filter(([,w])=>w.mastery&&w.mastery!=="—"&&(WEAPON_PROF[cn]||[]).includes(w.type));return(<div style={{marginTop:"0.75rem",padding:"0.65rem",background:"#1e293b",borderRadius:"0.75rem",border:"1px solid #334155"}}><div style={{fontSize:"0.72rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>Weapon Mastery - choose {slots} ({masteredWeapons.length}/{slots})</div><div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{eligible.map(([wn,w])=>{const sel=masteredWeapons.includes(wn);const atMax=masteredWeapons.length>=slots;return(<button key={wn} onClick={()=>setMasteredWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):prev.length>=slots?prev:[...prev,wn])} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid",cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?"#581c87":"transparent",color:sel?"#e9d5ff":"#f1f5f9",borderColor:sel?"#a78bfa":"#334155",fontWeight:sel?700:400}}>{wn} <span style={{color:"#a78bfa",fontSize:"0.65rem"}}>{w.mastery}</span></button>);})}</div></div>);})()} 
+      {weaponMasterySlots(cn,level)>0&&(()=>{const slots=weaponMasterySlots(cn,level);const eligible=Object.entries(WD).filter(([,w])=>w.mastery&&w.mastery!=="—"&&(WEAPON_PROF[cn]||[]).includes(w.type));return(<div style={{marginTop:"0.75rem",padding:"0.65rem",background:"#1e293b",borderRadius:"0.75rem",border:"1px solid #334155"}}><div style={{fontSize:"0.72rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>Weapon Mastery - choose {slots} ({masteredWeapons.length}/{slots})</div><div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{eligible.map(([wn,w])=>{const sel=masteredWeapons.includes(wn);const atMax=masteredWeapons.length>=slots;return(<button key={wn} onClick={()=>setMasteredWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):prev.length>=slots?prev:[...prev,wn])} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid",cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?"#581c87":"transparent",color:sel?"#e9d5ff":"#f1f5f9",borderColor:sel?"#a78bfa":"#334155",fontWeight:sel?700:400}}>{wn} <span style={{color:"#a78bfa",fontSize:"0.65rem"}}>{w.mastery}</span></button>);})}</div></div>);})()} 
     </div>)}
     {eqTab==="armor"&&(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 52px 60px 60px 64px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","AC","Cat","DEX",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{h}</div>)}</div>
@@ -1502,7 +1510,7 @@ export default function App(){
     setFeatMap(prev=>({...prev,[name]:!prev[name]}));
   }
   function defaultMasteredWeaponsForClass(cn){
-    const slots=MASTERY_SLOTS[cn]||0;
+    const slots=weaponMasterySlots(cn,level);
     if(!slots)return[];
     const defaults=[CLASS_DEFAULTS[cn]?.weapon,...(CW[cn]||[])].filter(Boolean);
     return[...new Set(defaults)].filter(w=>WD[w]?.mastery&&WD[w].mastery!=="—").slice(0,slots);
@@ -1568,7 +1576,8 @@ export default function App(){
     const subclassSpellList=(sub&&level>=3)?(isCircleLand?circleLandSpellsAtLevel(landType,level):subclassSpellsAtLevel(cn,sub,level)):[];
     const subclassSpellLabel=isCircleLand?sub+" ("+landType+")":sub;
     const subclassSpellLine=subclassSpellList.length?subclassSpellLabel+" Spells (always prepared, free):\n"+subclassSpellList.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
-    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,wildShapeLine,subclassSpellLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const rageLine=cn==="Barbarian"?(()=>{const r=barbarianRage(level);return "Rage: "+r.rages+" uses (regain 1 per Short Rest, all per Long Rest), +"+r.dmg+" damage on Strength-based hits";})():"";
+    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,subclassSpellLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const allTools=[bgo.tools,...skilledTools].filter(Boolean).join(", ");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
@@ -1884,7 +1893,7 @@ export default function App(){
     <GFld label={t("Backstory")}><textarea value={backstory} onChange={e=>setBackstory(e.target.value)} placeholder={t("Where did your character come from? What happened before the adventure began?")} style={{...inp,minHeight:"100px",resize:"vertical"}}/></GFld>
   </div>);
 
-  const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons}/>,notes:notesPanel};
+  const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons}/>,notes:notesPanel};
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
