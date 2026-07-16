@@ -1232,7 +1232,7 @@ export default function App(){
   const miForcedMatch=featBaseName(bgo.feat)==="Magic Initiate"?bgo.feat.match(/\(([^)]+)\)/):null;
   const miForcedClass=miForcedMatch?miForcedMatch[1]:"";
   const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"];
-  const miClassEff=miForcedClass||miClass||MAGIC_INITIATE_CLASSES[0];
+  const miClassEff=miClass||miForcedClass||MAGIC_INITIATE_CLASSES[0];
   const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
   const init=dm+(hasAlert?pb:0);
   const speed=(speciesData?.speed||30)+(hasMobile?10:0);
@@ -1555,7 +1555,7 @@ export default function App(){
       const spellList=CS[miClassEff]?.[1]||[];
       return(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
         <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose a class")} (Cleric, Druid, {t("or")} Wizard):</div>
-        <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>{MAGIC_INITIATE_CLASSES.map(c=>(<button key={c} disabled={!!miForcedClass} onClick={()=>chooseMiClass(c)} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(miClassEff===c?G.gold:"#334155"),cursor:miForcedClass?"default":"pointer",background:miClassEff===c?G.gold:"transparent",color:miClassEff===c?"#020817":"#f1f5f9",fontWeight:miClassEff===c?700:400,opacity:miForcedClass&&miClassEff!==c?0.35:1}}>{c}</button>))}</div>
+        <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>{MAGIC_INITIATE_CLASSES.map(c=>(<button key={c} onClick={()=>chooseMiClass(c)} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(miClassEff===c?G.gold:"#334155"),cursor:"pointer",background:miClassEff===c?G.gold:"transparent",color:miClassEff===c?"#020817":"#f1f5f9",fontWeight:miClassEff===c?700:400}}>{c}</button>))}</div>
         <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Cantrips")} ({miCantrips.length}/2):</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{cantripList.map(name=>{const sel=miCantrips.includes(name);const atMax=miCantrips.length>=2;return <button key={name} disabled={atMax&&!sel} onClick={()=>togMiCantrip(name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
         <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level spell")}:</div>
