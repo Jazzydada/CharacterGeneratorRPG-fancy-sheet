@@ -56,7 +56,7 @@ const DA={
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
-  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell","Draconic Ancestry":"Drage-afstamning","Breath Weapon":"Åndevåben","Damage type":"Skadetype","Backstory":"Baggrundshistorie","Where did your character come from? What happened before the adventure began?":"Hvor kommer din karakter fra? Hvad skete der før eventyret begyndte?","Wild Shape Forms":"Wild Shape-former","choose up to":"vælg op til","Max CR":"Maks CR","Fly allowed":"Flyvning tilladt","No fly":"Ingen flyvning","uses per short or long rest":"anvendelser pr. kort eller lang hvile","Tools":"Værktøj","Choose 3 additional skills or tools":"Vælg 3 ekstra færdigheder eller værktøjer","DEX save vs. your save DC, half damage on success. Choose a 15-ft Cone or a 30-by-5-ft Line each time. Usable Proficiency Bonus times per Long Rest.":"DEX save mod din save DC, halv skade ved succes. Vælg en 15 ft kegle eller en 30x5 ft linje hver gang. Kan bruges Proficiency Bonus gange pr. lang hvile.","Circle of the Land — Land Type":"Circle of the Land — Landtype","chosen anew each Long Rest":"vælges igen efter hver lang hvile",
+  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell","Draconic Ancestry":"Drage-afstamning","Breath Weapon":"Åndevåben","Damage type":"Skadetype","Backstory":"Baggrundshistorie","Where did your character come from? What happened before the adventure began?":"Hvor kommer din karakter fra? Hvad skete der før eventyret begyndte?","Wild Shape Forms":"Wild Shape-former","choose up to":"vælg op til","Max CR":"Maks CR","Fly allowed":"Flyvning tilladt","No fly":"Ingen flyvning","uses per short or long rest":"anvendelser pr. kort eller lang hvile","Tools":"Værktøj","Choose 3 additional skills or tools":"Vælg 3 ekstra færdigheder eller værktøjer","DEX save vs. your save DC, half damage on success. Choose a 15-ft Cone or a 30-by-5-ft Line each time. Usable Proficiency Bonus times per Long Rest.":"DEX save mod din save DC, halv skade ved succes. Vælg en 15 ft kegle eller en 30x5 ft linje hver gang. Kan bruges Proficiency Bonus gange pr. lang hvile.","Circle of the Land — Land Type":"Circle of the Land — Landtype","chosen anew each Long Rest":"vælges igen efter hver lang hvile","Attack":"Angreb","Traits":"Evner",
   "Who is playing this character?":"Hvem spiller denne karakter?",
   "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner","Ritual spells (Pact of the Tome)":"Ritual spells (Pact of the Tome)","Extra cantrips (Pact of the Tome)":"Ekstra cantrips (Pact of the Tome)","from any class":"fra en vilkårlig klasse",
   "Roll 4d6":"Kast 4d6",
@@ -84,7 +84,7 @@ const DA={
   Back:"Tilbage",
   "Print / PDF":"Print / PDF",
   "Set page margins to None.":"Sæt sidemargener til Ingen.",
-  "2 pages":"2 sider","1 page":"1 side","Features & Spells":"Evner, træk & magi","Descriptions on page 2":"Beskrivelser på side 2",
+  "2 pages":"2 sider","1 page":"1 side","pages":"sider","Features & Spells":"Evner, træk & magi","Descriptions on page 2":"Beskrivelser på side 2",
   // sheet static labels
   "Class & Level":"Klasse & niveau",
   "Player Name":"Spillernavn",
@@ -599,44 +599,44 @@ const RITUAL_L1=["Alarm","Comprehend Languages","Detect Magic","Detect Poison an
 const TOOL_LIST=["Alchemist's Supplies","Brewer's Supplies","Calligrapher's Supplies","Carpenter's Tools","Cartographer's Tools","Cobbler's Tools","Cook's Utensils","Glassblower's Tools","Jeweler's Tools","Leatherworker's Tools","Mason's Tools","Painter's Supplies","Potter's Tools","Smith's Tools","Tinker's Tools","Weaver's Tools","Woodcarver's Tools","Disguise Kit","Forgery Kit","Gaming Set","Herbalism Kit","Musical Instrument","Navigator's Tools","Thieves' Tools"];
 // The exact Beast options from the 2024 PHB Appendix B (CR 1 or lower), the pool Wild Shape draws from by default.
 const WILDSHAPE_BEASTS={
-  Cat:{cr:0,ac:12,hp:2,speed:"40 ft, climb 40 ft",fly:false,traits:"Jumper (jump uses DEX)"},
-  Crab:{cr:0,ac:11,hp:3,speed:"20 ft, swim 20 ft",fly:false,traits:"Amphibious"},
-  Frog:{cr:0,ac:11,hp:1,speed:"20 ft, swim 20 ft",fly:false,traits:"Amphibious, Standing Leap"},
-  Goat:{cr:0,ac:10,hp:4,speed:"40 ft, climb 30 ft",fly:false,traits:"Ram (charge)"},
-  Hawk:{cr:0,ac:13,hp:1,speed:"10 ft, fly 60 ft",fly:true,traits:"Keen sight"},
-  Lizard:{cr:0,ac:10,hp:2,speed:"20 ft, climb 20 ft",fly:false,traits:"Spider Climb"},
-  Octopus:{cr:0,ac:12,hp:3,speed:"5 ft, swim 30 ft",fly:false,traits:"Water Breathing, Ink Cloud (1/day)"},
-  Owl:{cr:0,ac:11,hp:1,speed:"5 ft, fly 60 ft",fly:true,traits:"Flyby"},
-  Rat:{cr:0,ac:10,hp:1,speed:"20 ft",fly:false,traits:"Agile (no OA when leaving reach)"},
-  Raven:{cr:0,ac:12,hp:2,speed:"10 ft, fly 50 ft",fly:true,traits:"Mimicry"},
-  Scorpion:{cr:0,ac:11,hp:1,speed:"10 ft",fly:false,traits:"Sting (poison)"},
-  Spider:{cr:0,ac:12,hp:1,speed:"20 ft, climb 20 ft",fly:false,traits:"Spider Climb, Web Walker"},
-  Weasel:{cr:0,ac:13,hp:1,speed:"30 ft, climb 30 ft",fly:false,traits:""},
-  Camel:{cr:0.125,ac:10,hp:17,speed:"50 ft",fly:false,traits:""},
-  "Giant Crab":{cr:0.125,ac:15,hp:13,speed:"30 ft, swim 30 ft",fly:false,traits:"Amphibious, two claws can grapple"},
-  "Giant Weasel":{cr:0.125,ac:13,hp:9,speed:"40 ft, climb 30 ft",fly:false,traits:""},
-  Mastiff:{cr:0.125,ac:12,hp:5,speed:"40 ft",fly:false,traits:"Bite knocks Prone"},
-  Mule:{cr:0.125,ac:10,hp:11,speed:"40 ft",fly:false,traits:"Beast of Burden"},
-  Pony:{cr:0.125,ac:10,hp:11,speed:"40 ft",fly:false,traits:""},
-  "Venomous Snake":{cr:0.125,ac:12,hp:5,speed:"30 ft, swim 30 ft",fly:false,traits:"Bite poison"},
-  Boar:{cr:0.25,ac:11,hp:13,speed:"40 ft",fly:false,traits:"Bloodied Fury"},
-  "Constrictor Snake":{cr:0.25,ac:13,hp:13,speed:"30 ft, swim 30 ft",fly:false,traits:"Constrict"},
-  "Draft Horse":{cr:0.25,ac:10,hp:15,speed:"40 ft",fly:false,traits:""},
-  Elk:{cr:0.25,ac:10,hp:11,speed:"50 ft",fly:false,traits:"Charge"},
-  "Giant Badger":{cr:0.25,ac:13,hp:15,speed:"30 ft, burrow 10 ft",fly:false,traits:"Resistance to Poison"},
-  Panther:{cr:0.25,ac:12,hp:13,speed:"50 ft, climb 40 ft",fly:false,traits:"Pounce, Prowl"},
-  "Riding Horse":{cr:0.25,ac:11,hp:13,speed:"60 ft",fly:false,traits:""},
-  Wolf:{cr:0.25,ac:12,hp:11,speed:"40 ft",fly:false,traits:"Pack Tactics"},
-  Crocodile:{cr:0.5,ac:12,hp:13,speed:"20 ft, swim 30 ft",fly:false,traits:"Hold Breath"},
-  "Giant Goat":{cr:0.5,ac:11,hp:19,speed:"40 ft, climb 30 ft",fly:false,traits:"Charge"},
-  "Giant Seahorse":{cr:0.5,ac:14,hp:16,speed:"5 ft, swim 40 ft",fly:false,traits:"Water Breathing"},
-  "Reef Shark":{cr:0.5,ac:12,hp:22,speed:"5 ft, swim 30 ft",fly:false,traits:"Pack Tactics, Water Breathing"},
-  Warhorse:{cr:0.5,ac:11,hp:19,speed:"60 ft",fly:false,traits:"Charge"},
-  "Brown Bear":{cr:1,ac:11,hp:22,speed:"40 ft, climb 30 ft",fly:false,traits:"Multiattack"},
-  "Dire Wolf":{cr:1,ac:14,hp:22,speed:"50 ft",fly:false,traits:"Pack Tactics"},
-  "Giant Spider":{cr:1,ac:14,hp:26,speed:"30 ft, climb 30 ft",fly:false,traits:"Web, Spider Climb, Poison Bite"},
-  Lion:{cr:1,ac:12,hp:22,speed:"50 ft",fly:false,traits:"Pack Tactics, Multiattack, Roar"},
-  Tiger:{cr:1,ac:13,hp:22,speed:"40 ft",fly:false,traits:"Pounce, Prowl"},
+  Cat:{cr:0,ac:12,hp:2,speed:"40 ft, climb 40 ft",fly:false,traits:"Jumper (jump uses DEX)",stats:[3,15,10,3,12,7],atk:"Scratch +4, 1 slashing"},
+  Crab:{cr:0,ac:11,hp:3,speed:"20 ft, swim 20 ft",fly:false,traits:"Amphibious",stats:[6,11,12,1,8,2],atk:"Claw +2, 1 bludgeoning"},
+  Frog:{cr:0,ac:11,hp:1,speed:"20 ft, swim 20 ft",fly:false,traits:"Amphibious, Standing Leap",stats:[1,13,8,1,8,3],atk:"Bite +3, 1 piercing"},
+  Goat:{cr:0,ac:10,hp:4,speed:"40 ft, climb 30 ft",fly:false,traits:"Ram (charge)",stats:[11,10,11,2,10,5],atk:"Ram +2, 1 bludgeoning (2, 1d4 on charge)"},
+  Hawk:{cr:0,ac:13,hp:1,speed:"10 ft, fly 60 ft",fly:true,traits:"Keen sight",stats:[5,16,8,2,14,6],atk:"Talons +5, 1 slashing"},
+  Lizard:{cr:0,ac:10,hp:2,speed:"20 ft, climb 20 ft",fly:false,traits:"Spider Climb",stats:[2,11,10,1,8,3],atk:"Bite +2, 1 piercing"},
+  Octopus:{cr:0,ac:12,hp:3,speed:"5 ft, swim 30 ft",fly:false,traits:"Water Breathing, Ink Cloud (1/day)",stats:[4,15,11,3,10,4],atk:"Tentacles +4, 1 bludgeoning"},
+  Owl:{cr:0,ac:11,hp:1,speed:"5 ft, fly 60 ft",fly:true,traits:"Flyby",stats:[3,13,8,2,12,7],atk:"Talons +3, 1 slashing"},
+  Rat:{cr:0,ac:10,hp:1,speed:"20 ft",fly:false,traits:"Agile (no OA when leaving reach)",stats:[2,11,9,2,10,4],atk:"Bite +2, 1 piercing"},
+  Raven:{cr:0,ac:12,hp:2,speed:"10 ft, fly 50 ft",fly:true,traits:"Mimicry",stats:[2,14,10,5,13,6],atk:"Beak +4, 1 piercing"},
+  Scorpion:{cr:0,ac:11,hp:1,speed:"10 ft",fly:false,traits:"Sting (poison)",stats:[2,11,8,1,8,2],atk:"Sting +2, 1 piercing + 3 (1d6) poison"},
+  Spider:{cr:0,ac:12,hp:1,speed:"20 ft, climb 20 ft",fly:false,traits:"Spider Climb, Web Walker",stats:[2,14,8,1,10,2],atk:"Bite +4, 1 piercing + 2 (1d4) poison"},
+  Weasel:{cr:0,ac:13,hp:1,speed:"30 ft, climb 30 ft",fly:false,traits:"",stats:[3,16,8,2,12,3],atk:"Bite +5, 1 piercing"},
+  Camel:{cr:0.125,ac:10,hp:17,speed:"50 ft",fly:false,traits:"",stats:[15,8,17,2,11,5],atk:"Bite +4, 4 (1d4+2) bludgeoning"},
+  "Giant Crab":{cr:0.125,ac:15,hp:13,speed:"30 ft, swim 30 ft",fly:false,traits:"Amphibious, two claws can grapple",stats:[13,13,11,1,9,3],atk:"Claw +3, 4 (1d6+1) bludgeoning, grapple DC 11"},
+  "Giant Weasel":{cr:0.125,ac:13,hp:9,speed:"40 ft, climb 30 ft",fly:false,traits:"",stats:[11,17,10,4,12,5],atk:"Bite +5, 5 (1d4+3) piercing"},
+  Mastiff:{cr:0.125,ac:12,hp:5,speed:"40 ft",fly:false,traits:"Bite knocks Prone",stats:[13,14,12,3,12,7],atk:"Bite +3, 4 (1d6+1) piercing, Prone"},
+  Mule:{cr:0.125,ac:10,hp:11,speed:"40 ft",fly:false,traits:"Beast of Burden",stats:[14,10,13,2,10,5],atk:"Hooves +4, 4 (1d4+2) bludgeoning"},
+  Pony:{cr:0.125,ac:10,hp:11,speed:"40 ft",fly:false,traits:"",stats:[15,10,13,2,11,7],atk:"Hooves +4, 4 (1d4+2) bludgeoning"},
+  "Venomous Snake":{cr:0.125,ac:12,hp:5,speed:"30 ft, swim 30 ft",fly:false,traits:"Bite poison",stats:[2,15,11,1,10,3],atk:"Bite +4, 4 (1d4+2) piercing + 3 (1d6) poison"},
+  Boar:{cr:0.25,ac:11,hp:13,speed:"40 ft",fly:false,traits:"Bloodied Fury",stats:[13,11,14,2,9,5],atk:"Gore +3, 4 (1d6+1) piercing (+3, 1d6 on charge)"},
+  "Constrictor Snake":{cr:0.25,ac:13,hp:13,speed:"30 ft, swim 30 ft",fly:false,traits:"Constrict",stats:[15,14,12,1,10,3],atk:"Bite +4, 6 (1d8+2) piercing; Constrict DC 12, 7 (3d4) bludgeoning + grapple"},
+  "Draft Horse":{cr:0.25,ac:10,hp:15,speed:"40 ft",fly:false,traits:"",stats:[18,10,15,2,11,7],atk:"Hooves +6, 6 (1d4+4) bludgeoning"},
+  Elk:{cr:0.25,ac:10,hp:11,speed:"50 ft",fly:false,traits:"Charge",stats:[16,10,11,2,10,6],atk:"Ram +5, 6 (1d6+3) bludgeoning (+3, 1d6 on charge)"},
+  "Giant Badger":{cr:0.25,ac:13,hp:15,speed:"30 ft, burrow 10 ft",fly:false,traits:"Resistance to Poison",stats:[13,10,17,2,12,5],atk:"Bite +3, 6 (2d4+1) piercing"},
+  Panther:{cr:0.25,ac:12,hp:13,speed:"50 ft, climb 40 ft",fly:false,traits:"Pounce, Prowl",stats:[14,15,10,3,14,7],atk:"Pounce +4, 4 (1d4+2) slashing (7, 2d4+2 with advantage)"},
+  "Riding Horse":{cr:0.25,ac:11,hp:13,speed:"60 ft",fly:false,traits:"",stats:[16,13,12,2,11,7],atk:"Hooves +5, 7 (1d8+3) bludgeoning"},
+  Wolf:{cr:0.25,ac:12,hp:11,speed:"40 ft",fly:false,traits:"Pack Tactics",stats:[14,15,12,3,12,6],atk:"Bite +4, 5 (1d6+2) piercing, Prone"},
+  Crocodile:{cr:0.5,ac:12,hp:13,speed:"20 ft, swim 30 ft",fly:false,traits:"Hold Breath",stats:[15,10,13,2,10,5],atk:"Bite +4, 6 (1d8+2) piercing, grapple"},
+  "Giant Goat":{cr:0.5,ac:11,hp:19,speed:"40 ft, climb 30 ft",fly:false,traits:"Charge",stats:[17,13,12,3,12,6],atk:"Ram +5, 6 (1d6+3) bludgeoning (+5, 2d4 on charge)"},
+  "Giant Seahorse":{cr:0.5,ac:14,hp:16,speed:"5 ft, swim 40 ft",fly:false,traits:"Water Breathing",stats:[15,12,11,2,12,5],atk:"Ram +4, 9 (2d6+2) bludgeoning (11, 2d8+2 on charge)"},
+  "Reef Shark":{cr:0.5,ac:12,hp:22,speed:"5 ft, swim 30 ft",fly:false,traits:"Pack Tactics, Water Breathing",stats:[14,15,13,1,10,4],atk:"Bite +4, 7 (2d4+2) piercing"},
+  Warhorse:{cr:0.5,ac:11,hp:19,speed:"60 ft",fly:false,traits:"Charge",stats:[18,12,13,2,13,7],atk:"Hooves +6, 9 (2d4+4) bludgeoning (+5, 2d4 on charge)"},
+  "Brown Bear":{cr:1,ac:11,hp:22,speed:"40 ft, climb 30 ft",fly:false,traits:"Multiattack",stats:[17,12,15,2,13,7],atk:"Bite +5, 7 (1d8+3) piercing; Claw +5, 5 (1d4+3) slashing, Prone"},
+  "Dire Wolf":{cr:1,ac:14,hp:22,speed:"50 ft",fly:false,traits:"Pack Tactics",stats:[17,15,15,3,12,7],atk:"Bite +5, 8 (1d10+3) piercing, Prone"},
+  "Giant Spider":{cr:1,ac:14,hp:26,speed:"30 ft, climb 30 ft",fly:false,traits:"Web, Spider Climb, Poison Bite",stats:[14,16,12,2,11,4],atk:"Bite +5, 7 (1d8+3) piercing + 7 (2d6) poison; Web (recharge 5-6) DC 13"},
+  Lion:{cr:1,ac:12,hp:22,speed:"50 ft",fly:false,traits:"Pack Tactics, Multiattack, Roar",stats:[17,15,11,3,12,8],atk:"Multiattack (2 Rend); Rend +5, 7 (1d8+3) slashing; Roar DC 11 WIS or Frightened"},
+  Tiger:{cr:1,ac:13,hp:22,speed:"40 ft",fly:false,traits:"Pounce, Prowl",stats:[17,16,14,3,12,8],atk:"Pounce +5, 6 (1d6+3) slashing (+3, 1d6 and Prone with advantage)"},
 };
 // 2024 Druid Wild Shape gating by level: max CR and whether a Fly speed is allowed.
 function wildShapeLimit(level){if(level>=8)return{cr:1,fly:true};if(level>=4)return{cr:0.5,fly:false};return{cr:0.25,fly:false};}
@@ -1101,7 +1101,37 @@ function Page2({sh}){
         </div>
       </div>
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of 2</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {(sh.wildShapeForms||[]).length?3:2}</span></div>
+  </div>);
+}
+
+function Page3({sh}){
+  const forms=sh.wildShapeForms||[];
+  if(!forms.length)return null;
+  const ABBR=["STR","DEX","CON","INT","WIS","CHA"];
+  return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Wild Shape Forms")}</div></div>
+    </div>
+    <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gridAutoRows:"min-content",gap:8}}>
+      {forms.map(name=>{const b=WILDSHAPE_BEASTS[name];if(!b)return null;return(
+        <div key={name} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:"6px 8px",breakInside:"avoid"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:3}}>
+            <span style={{fontSize:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
+            <span style={{fontSize:6.5,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
+          </div>
+          <div style={{fontSize:7,fontFamily:"sans-serif",color:"#333",marginBottom:3}}>
+            <b>AC</b> {b.ac} · <b>HP</b> {b.hp} · <b>{t("Speed")}</b> {b.speed}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
+            {ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5.5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
+          </div>
+          <div style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4}}><b>{t("Attack")}:</b> {b.atk}</div>
+          {b.traits&&<div style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginTop:2}}><b>{t("Traits")}:</b> {b.traits}</div>}
+        </div>
+      );})}
+    </div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 3 of 3</span></div>
   </div>);
 }
 
@@ -1670,14 +1700,14 @@ export default function App(){
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
     const nextGender=nextGenderRoll||gender;
     const breathRow=sp==="Dragonborn"?[{name:"Breath Weapon ("+dragonColor+")",atk:"DC "+breathDC,dmg:breathWeaponDice(level)+" "+DRACONIC_ANCESTRY[dragonColor],props:"15-ft Cone or 30x5-ft Line",mastery:"—"}]:[];
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&Object.values(selSp).flat().length>0,spellSlots:slots,spellsByLevel:buildSBL(),profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[]};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
   }
 
   if(view==="sheet"&&sheet){
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {t("2 pages")}</span></div><div className="print-area"><FancySheet sh={sheet}/><Page2 sh={sheet}/></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {(sheet.wildShapeForms||[]).length?"3 "+t("pages"):t("2 pages")}</span></div><div className="print-area"><FancySheet sh={sheet}/><Page2 sh={sheet}/><Page3 sh={sheet}/></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
