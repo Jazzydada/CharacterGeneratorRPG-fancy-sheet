@@ -56,7 +56,7 @@ const DA={
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
-  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell","Draconic Ancestry":"Drage-afstamning","Breath Weapon":"Åndevåben","Damage type":"Skadetype","Backstory":"Baggrundshistorie","Where did your character come from? What happened before the adventure began?":"Hvor kommer din karakter fra? Hvad skete der før eventyret begyndte?","DEX save vs. your save DC, half damage on success. Choose a 15-ft Cone or a 30-by-5-ft Line each time. Usable Proficiency Bonus times per Long Rest.":"DEX save mod din save DC, halv skade ved succes. Vælg en 15 ft kegle eller en 30x5 ft linje hver gang. Kan bruges Proficiency Bonus gange pr. lang hvile.",
+  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell","Draconic Ancestry":"Drage-afstamning","Breath Weapon":"Åndevåben","Damage type":"Skadetype","Backstory":"Baggrundshistorie","Where did your character come from? What happened before the adventure began?":"Hvor kommer din karakter fra? Hvad skete der før eventyret begyndte?","Wild Shape Forms":"Wild Shape-former","choose up to":"vælg op til","Max CR":"Maks CR","Fly allowed":"Flyvning tilladt","No fly":"Ingen flyvning","uses per short or long rest":"anvendelser pr. kort eller lang hvile","DEX save vs. your save DC, half damage on success. Choose a 15-ft Cone or a 30-by-5-ft Line each time. Usable Proficiency Bonus times per Long Rest.":"DEX save mod din save DC, halv skade ved succes. Vælg en 15 ft kegle eller en 30x5 ft linje hver gang. Kan bruges Proficiency Bonus gange pr. lang hvile.",
   "Who is playing this character?":"Hvem spiller denne karakter?",
   "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner","Ritual spells (Pact of the Tome)":"Ritual spells (Pact of the Tome)","Extra cantrips (Pact of the Tome)":"Ekstra cantrips (Pact of the Tome)","from any class":"fra en vilkårlig klasse",
   "Roll 4d6":"Kast 4d6",
@@ -591,6 +591,25 @@ const DRACONIC_ANCESTRY={Black:"Acid",Blue:"Lightning",Brass:"Fire",Bronze:"Ligh
 function breathWeaponDice(level){const n=level>=17?4:level>=11?3:level>=5?2:1;return n+"d10";}
 // Level-1 Ritual spells (any class) — the 2 you learn with Pact of the Tome.
 const RITUAL_L1=["Alarm","Comprehend Languages","Detect Magic","Detect Poison and Disease","Find Familiar","Identify","Purify Food and Drink","Speak with Animals","Unseen Servant"];
+// Common low-CR beasts for Druid Wild Shape (2024 rules). cr as a number for comparison (0.25=1/4 etc).
+const WILDSHAPE_BEASTS={
+  Wolf:{cr:0.25,ac:13,hp:11,speed:"40 ft",fly:false,traits:"Keen Hearing/Smell, Pack Tactics"},
+  Boar:{cr:0.25,ac:11,hp:11,speed:"40 ft",fly:false,traits:"Charge, Relentless (1 HP)"},
+  Panther:{cr:0.25,ac:12,hp:13,speed:"50 ft, climb 40 ft",fly:false,traits:"Keen Smell, Pounce"},
+  Elk:{cr:0.25,ac:10,hp:13,speed:"50 ft",fly:false,traits:"Charge"},
+  "Constrictor Snake":{cr:0.25,ac:12,hp:13,speed:"30 ft, swim 30 ft",fly:false,traits:"Constrict"},
+  Crocodile:{cr:0.5,ac:12,hp:19,speed:"20 ft, swim 30 ft",fly:false,traits:"Hold Breath"},
+  Ape:{cr:0.5,ac:12,hp:19,speed:"30 ft, climb 30 ft",fly:false,traits:"Multiattack"},
+  "Reef Shark":{cr:0.5,ac:12,hp:22,speed:"swim 40 ft",fly:false,traits:"Water Breathing, Pack Tactics"},
+  "Giant Goat":{cr:0.5,ac:11,hp:19,speed:"40 ft",fly:false,traits:"Charge, Sure-Footed"},
+  "Giant Wasp":{cr:0.5,ac:12,hp:22,speed:"10 ft, fly 30 ft",fly:true,traits:"Sting (poison)"},
+  "Brown Bear":{cr:1,ac:11,hp:34,speed:"40 ft, climb 30 ft",fly:false,traits:"Keen Smell, Multiattack"},
+  "Giant Spider":{cr:1,ac:14,hp:26,speed:"30 ft, climb 30 ft",fly:false,traits:"Web Sense, Web Walker, Poison Bite"},
+  "Giant Toad":{cr:1,ac:11,hp:39,speed:"20 ft, swim 40 ft",fly:false,traits:"Amphibious"},
+  "Giant Owl":{cr:0.25,ac:12,hp:19,speed:"5 ft, fly 60 ft",fly:true,traits:"Flyby, Keen Hearing/Sight"},
+};
+// 2024 Druid Wild Shape gating by level: max CR and whether a Fly speed is allowed.
+function wildShapeLimit(level){if(level>=8)return{cr:1,fly:true};if(level>=4)return{cr:0.5,fly:false};return{cr:0.25,fly:false};}
 const STANDARD_LANGUAGES=["Common","Common Sign Language","Draconic","Dwarvish","Elvish","Giant","Gnomish","Goblin","Halfling","Orc"];
 const RARE_LANGUAGES=["Abyssal","Celestial","Deep Speech","Druidic","Infernal","Primordial","Sylvan","Thieves' Cant","Undercommon"];
 
@@ -1166,6 +1185,7 @@ export default function App(){
   const [miCantrips,setMiCantrips]=useState([]);
   const [miSpell,setMiSpell]=useState("");
   const [dragonColor,setDragonColor]=useState("Red");
+  const [selWildShapes,setSelWildShapes]=useState([]);
   const [cname,setCname]=useState("");
   const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
@@ -1291,7 +1311,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory((EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelExpertise([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory((EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelExpertise([]);setSelWildShapes([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1302,7 +1322,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,selWildShapes,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1311,7 +1331,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1430,6 +1450,7 @@ export default function App(){
   function togExpertise(s,max){setSelExpertise(cur=>cur.includes(s)?cur.filter(x=>x!==s):cur.length>=max?cur:[...cur,s]);}
   function togMiCantrip(name){setMiCantrips(cur=>cur.includes(name)?cur.filter(x=>x!==name):cur.length>=2?cur:[...cur,name]);}
   function chooseMiClass(c){setMiClass(c);setMiCantrips([]);setMiSpell("");}
+  function togWildShape(name,max){setSelWildShapes(cur=>cur.includes(name)?cur.filter(x=>x!==name):cur.length>=max?cur:[...cur,name]);}
   // START PATCH A — togSp: enforce leveled spell budget (cantrips lv=0 always free)
   function togSp(name,lv){
     setSelSp(prev=>{
@@ -1504,7 +1525,8 @@ export default function App(){
     const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const invBlock=[invLine?"Eldritch Invocations:\n"+invLine:"",tomeCantripLine?"Tome cantrips:\n"+tomeCantripLine:"",ritualLine?"Ritual spells (Tome):\n"+ritualLine:""].filter(Boolean).join("\n");
     const miLine=hasMagicInitiate&&(miCantrips.length||miSpell)?"Magic Initiate ("+miClassEff+"):\n"+[...miCantrips,miSpell].filter(Boolean).map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
-    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const wildShapeLine=(cn==="Druid"&&selWildShapes.length)?"Wild Shape (2/short or long rest):\n"+selWildShapes.map(n=>{const b=WILDSHAPE_BEASTS[n];return "• "+n+": CR "+b.cr+", AC "+b.ac+", HP "+b.hp+", Speed "+b.speed+", "+b.traits;}).join("\n"):"";
+    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,wildShapeLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+bgo.tools+"\nLanguages: "+allLangs.join(", ");
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
@@ -1692,6 +1714,13 @@ export default function App(){
         <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
           <div style={{fontSize:"0.75rem",color:over?"#f97316":G.muted,marginBottom:"0.5rem"}}>{t("Expertise")} ({selExpertise.length} / {maxExp}) — {t("choose from proficient skills")}{over?<span style={{fontWeight:700}}> · {selExpertise.length-maxExp} {t("over the rules")} ⚠</span>:""}</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{SKILL_LIST.map(({name:s})=>{const sel=selExpertise.includes(s);const eligible=skProfs.includes(s);return <button key={s} disabled={!eligible} title={eligible?skillDesc(s):skillDesc(s)+" — "+t("not a class skill")} onClick={()=>togExpertise(s,maxExp)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?"#fcd34d":eligible?"#334155":"#1e293b"),cursor:eligible?"pointer":"not-allowed",background:sel?"#fcd34d":"transparent",color:sel?"#020817":eligible?"#f1f5f9":G.dimmer,fontWeight:sel?700:400,opacity:eligible?1:0.4}}>{sel?"★ ":""}{s}</button>;})}</div>
+        </div>
+      );})()}
+      {cn==="Druid"&&level>=2&&(()=>{const lim=wildShapeLimit(level);const maxForms=4;const over=selWildShapes.length>maxForms;return (
+        <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
+          <div style={{fontSize:"0.75rem",color:over?"#f97316":G.muted,marginBottom:"0.35rem"}}>{t("Wild Shape Forms")} ({selWildShapes.length} / {maxForms}) — {t("choose up to")} {maxForms}</div>
+          <div style={{fontSize:"0.68rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Max CR")}: {lim.cr} · {lim.fly?t("Fly allowed"):t("No fly")} · 2 {t("uses per short or long rest")}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{Object.entries(WILDSHAPE_BEASTS).map(([name,b])=>{const sel=selWildShapes.includes(name);const legal=b.cr<=lim.cr&&(!b.fly||lim.fly);return <button key={name} disabled={!legal&&!sel} title={legal?`CR ${b.cr} · AC ${b.ac} · HP ${b.hp} · ${b.speed} · ${b.traits}`:t("No fly")+"/"+t("Max CR")+" "+lim.cr} onClick={()=>togWildShape(name,maxForms)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?G.gold:legal?"#334155":"#1e293b"),cursor:legal?"pointer":"not-allowed",background:sel?G.gold:"transparent",color:sel?"#020817":legal?"#f1f5f9":G.dimmer,fontWeight:sel?700:400,opacity:legal?1:0.4}}>{name} <span style={{fontSize:"0.62rem",opacity:0.75}}>(CR {b.cr})</span></button>;})}</div>
         </div>
       );})()}
     </div>
