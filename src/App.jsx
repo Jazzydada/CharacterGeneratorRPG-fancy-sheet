@@ -523,7 +523,7 @@ const SD={
 function maxSpellLevel(ct,lvl){if(ct==="full")return Math.min(9,Math.ceil(lvl/2));if(ct==="half")return Math.min(5,Math.ceil(lvl/2));if(ct==="warlock")return Math.min(5,Math.ceil(lvl/2));return 0;}
 function spellsKnown(cn,lvl,smod){
   const prepared=["Cleric","Druid","Paladin","Wizard"];
-  const tbl={Bard:[null,4,5,6,7,8,9,10,11,12,14,15,15,16,18,19,19,20,22,22,22],Sorcerer:[null,2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],Warlock:[null,2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],Ranger:[null,0,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11]};
+  const tbl={Bard:[null,4,5,6,7,8,9,10,11,12,14,15,15,16,18,19,19,20,22,22,22],Sorcerer:[null,2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],Warlock:[null,2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],Ranger:[null,0,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12]};
   if(prepared.includes(cn)){if(cn==="Wizard")return`${lvl+smod} prepared`;if(cn==="Paladin")return`${Math.max(1,Math.ceil(lvl/2)+smod)} prepared`;return`${Math.max(1,lvl+smod)} prepared`;}
   const t=tbl[cn];if(t)return`${t[Math.min(lvl,20)]} known`;return null;
 }
