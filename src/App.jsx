@@ -1205,6 +1205,9 @@ export default function App(){
 
   const activeFeats=useMemo(()=>Object.keys(featMap).filter(f=>featMap[f]),[featMap]);
   const cls=CLASSES[cn],speciesData=SPECIES[sp],bgo=BGS[bg];
+  // Mechanical checks must also count the Origin Feat granted for free by the background,
+  // even though it isn't toggled in featMap (and must not count against the ASI feat budget).
+  const mechFeats=useMemo(()=>{const s=new Set(activeFeats);const originBase=featBaseName(bgo.feat);if(ALL_FEATS[originBase])s.add(originBase);return s;},[activeFeats,bgo.feat]);
   const cls2=mc?CLASSES[cn2]:null;
   const lv2c=mc?Math.min(lv2,level-1):0;
   const lv1e=mc?level-lv2c:level;
@@ -1214,10 +1217,11 @@ export default function App(){
   const effB1=(bgo.ab.includes(boost1)&&boost1!==effB2)?boost1:bgo.ab.find(a=>a!==effB2);
   const fin=useMemo(()=>applyBoosts(base,bg,boost,effB2,effB1),[base,bg,boost,effB2,effB1]);
   const dm=mf(fin.DEX),sm=mf(fin.STR),cm=mf(fin.CON),wm=mf(fin.WIS);
-  const hasTough=activeFeats.includes("Tough");
-  const hasMobile=activeFeats.includes("Mobile");
-  const hasDefense=activeFeats.includes("Defense");
-  const hasAlert=activeFeats.includes("Alert");
+  const hasTough=mechFeats.has("Tough");
+  const hasMobile=mechFeats.has("Mobile");
+  const hasDefense=mechFeats.has("Defense");
+  const hasAlert=mechFeats.has("Alert");
+  const hasTavernBrawler=mechFeats.has("Tavern Brawler");
   const hp=Math.max(level,avgHp(level,cls.hd,cm)+(hasTough?level*2:0));
   const getAC=useCallback(()=>{let b=equipped.armor?(ARMOR_ITEMS[equipped.armor].ac||ARMOR_ITEMS[equipped.armor].acFn(dm)):(cn==="Barbarian"?10+dm+cm:cn==="Monk"?10+dm+wm:10+dm);if(equipped.shield)b+=2;if(hasDefense&&equipped.armor)b+=1;return b;},[equipped,dm,cm,wm,cn,hasDefense]);
   const ac=getAC();
@@ -1277,8 +1281,9 @@ export default function App(){
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
-    if(wname&&WD[wname]){const w=WD[wname];const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});}
-    CW[cn].filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=WD[wn];if(!w)return;const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(am+pb),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});});
+    const wd=n=>n==="Unarmed strike"&&hasTavernBrawler?{...WD[n],dmg:"1d4"}:WD[n];
+    if(wname&&wd(wname)){const w=wd(wname);const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});}
+    CW[cn].filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(am+pb),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});});
     return weapons.slice(0,4);
   }
 
