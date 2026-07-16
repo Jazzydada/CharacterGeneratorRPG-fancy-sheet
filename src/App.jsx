@@ -56,7 +56,7 @@ const DA={
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
-  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund",
+  "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell",
   "Who is playing this character?":"Hvem spiller denne karakter?",
   "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner","Ritual spells (Pact of the Tome)":"Ritual spells (Pact of the Tome)","Extra cantrips (Pact of the Tome)":"Ekstra cantrips (Pact of the Tome)","from any class":"fra en vilkårlig klasse",
   "Roll 4d6":"Kast 4d6",
@@ -581,6 +581,10 @@ function orderWisSkills(cn,order){const m=orderOption(cn,order);return m?(m[3]||
 // 2024 Expertise: Rogue chooses 2 skills at Lvl1, 2 more at Lvl6. Bard chooses 2 at Lvl3, 2 more at Lvl10.
 const EXPERTISE_LEVELS={Rogue:{1:2,6:2},Bard:{3:2,10:2}};
 function expertiseSlots(cn,lvl){const t=EXPERTISE_LEVELS[cn];if(!t)return 0;return Object.keys(t).reduce((sum,l)=>lvl>=Number(l)?sum+t[l]:sum,0);}
+// Strips a parenthetical suffix, e.g. "Magic Initiate (Druid)" -> "Magic Initiate".
+function featBaseName(f){return (f||"").replace(/\s*\([^)]*\)\s*$/,"").trim();}
+// 2024 rules: Magic Initiate can only pick from Cleric, Druid, or Wizard.
+const MAGIC_INITIATE_CLASSES=["Cleric","Druid","Wizard"];
 // Level-1 Ritual spells (any class) — the 2 you learn with Pact of the Tome.
 const RITUAL_L1=["Alarm","Comprehend Languages","Detect Magic","Detect Poison and Disease","Find Familiar","Identify","Purify Food and Drink","Speak with Animals","Unseen Servant"];
 const STANDARD_LANGUAGES=["Common","Common Sign Language","Draconic","Dwarvish","Elvish","Giant","Gnomish","Goblin","Halfling","Orc"];
@@ -638,7 +642,7 @@ const CLASSES={
 // feat = the ONE Origin Feat granted by this background (RAW).
 // originFeats removed — the single feat[] value IS the RAW origin feat.
 const BGS={
-  Acolyte:{ab:["INT","WIS","CHA"],feat:"Magic Initiate",sk:["Insight","Religion"],tools:"Calligrapher's Supplies",flavor:"Temple, faith, doctrine, forbidden relics."},
+  Acolyte:{ab:["INT","WIS","CHA"],feat:"Magic Initiate (Cleric)",sk:["Insight","Religion"],tools:"Calligrapher's Supplies",flavor:"Temple, faith, doctrine, forbidden relics."},
   Artisan:{ab:["STR","DEX","INT"],feat:"Crafter",sk:["Investigation","Persuasion"],tools:"Artisan's Tools (one type)",flavor:"Workshop, trade, debt, masterpiece."},
   Charlatan:{ab:["DEX","CON","CHA"],feat:"Skilled",sk:["Deception","Sleight of Hand"],tools:"Forgery Kit",flavor:"Cons, disguises, false identities."},
   Criminal:{ab:["DEX","CON","INT"],feat:"Alert",sk:["Sleight of Hand","Stealth"],tools:"Thieves' Tools",flavor:"Contacts, old crimes, blackmail, coded signals."},
@@ -646,7 +650,7 @@ const BGS={
   Farmer:{ab:["STR","CON","WIS"],feat:"Tough",sk:["Animal Handling","Nature"],tools:"Carpenter's Tools",flavor:"Land, harvest, community, hard seasons."},
   Guard:{ab:["STR","INT","WIS"],feat:"Alert",sk:["Athletics","Perception"],tools:"Gaming Set (one type)",flavor:"Watch duty, city gates, old case, corrupt captain."},
   Guide:{ab:["DEX","CON","WIS"],feat:"Magic Initiate (Druid)",sk:["Stealth","Survival"],tools:"Cartographer's Tools",flavor:"Roads, maps, weather, lost paths."},
-  Hermit:{ab:["CON","WIS","CHA"],feat:"Magic Initiate (Priest)",sk:["Medicine","Religion"],tools:"Herbalism Kit",flavor:"Revelation, isolation, strange omen."},
+  Hermit:{ab:["CON","WIS","CHA"],feat:"Healer",sk:["Medicine","Religion"],tools:"Herbalism Kit",flavor:"Revelation, isolation, strange omen."},
   Merchant:{ab:["CON","INT","CHA"],feat:"Lucky",sk:["Animal Handling","Persuasion"],tools:"Navigator's Tools",flavor:"Caravans, trade routes, profit and loss."},
   Noble:{ab:["STR","INT","CHA"],feat:"Skilled",sk:["History","Persuasion"],tools:"Gaming Set (one type)",flavor:"Inheritance, scandal, family obligation."},
   Sage:{ab:["CON","INT","WIS"],feat:"Magic Initiate (Wizard)",sk:["Arcana","History"],tools:"Calligrapher's Supplies",flavor:"Libraries, lost facts, dangerous theories."},
@@ -1146,6 +1150,9 @@ export default function App(){
   const [selSk,setSelSk]=useState(()=>CLASSES[initChar.cn].sc.slice(0,CLASSES[initChar.cn].ns));
   const [selLangs,setSelLangs]=useState([]);
   const [selExpertise,setSelExpertise]=useState([]);
+  const [miClass,setMiClass]=useState("");
+  const [miCantrips,setMiCantrips]=useState([]);
+  const [miSpell,setMiSpell]=useState("");
   const [cname,setCname]=useState("");
   const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
@@ -1218,6 +1225,10 @@ export default function App(){
   const allSc=mc&&cls2?Array.from(new Set([...cls.sc,...cls2.sc])):cls.sc;
   const maxSk=mc?cls.ns+1:cls.ns;
   const skProfs=useMemo(()=>Array.from(new Set([...bgo.sk,...selSk,...skilledSkills])),[bgo.sk,selSk,skilledSkills]);
+  const miForcedMatch=featBaseName(bgo.feat)==="Magic Initiate"?bgo.feat.match(/\(([^)]+)\)/):null;
+  const miForcedClass=miForcedMatch?miForcedMatch[1]:"";
+  const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"];
+  const miClassEff=miForcedClass||miClass||MAGIC_INITIATE_CLASSES[0];
   const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
   const init=dm+(hasAlert?pb:0);
   const speed=(speciesData?.speed||30)+(hasMobile?10:0);
@@ -1272,7 +1283,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,skilledSkills,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1281,7 +1292,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1398,6 +1409,8 @@ export default function App(){
   function togSk(s){setSelSk(cur=>cur.includes(s)?cur.filter(x=>x!==s):[...cur,s]);}
   function togLang(l){setSelLangs(cur=>cur.includes(l)?cur.filter(x=>x!==l):[...cur,l]);}
   function togExpertise(s,max){setSelExpertise(cur=>cur.includes(s)?cur.filter(x=>x!==s):cur.length>=max?cur:[...cur,s]);}
+  function togMiCantrip(name){setMiCantrips(cur=>cur.includes(name)?cur.filter(x=>x!==name):cur.length>=2?cur:[...cur,name]);}
+  function chooseMiClass(c){setMiClass(c);setMiCantrips([]);setMiSpell("");}
   // START PATCH A — togSp: enforce leveled spell budget (cantrips lv=0 always free)
   function togSp(name,lv){
     setSelSp(prev=>{
@@ -1465,7 +1478,8 @@ export default function App(){
     const tomeCantripLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selTomeCantrips.length)?selTomeCantrips.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const invBlock=[invLine?"Eldritch Invocations:\n"+invLine:"",tomeCantripLine?"Tome cantrips:\n"+tomeCantripLine:"",ritualLine?"Ritual spells (Tome):\n"+ritualLine:""].filter(Boolean).join("\n");
-    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const miLine=hasMagicInitiate&&(miCantrips.length||miSpell)?"Magic Initiate ("+miClassEff+"):\n"+[...miCantrips,miSpell].filter(Boolean).map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
+    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+bgo.tools+"\nLanguages: "+allLangs.join(", ");
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
@@ -1531,6 +1545,18 @@ export default function App(){
       if(cat==="Fighting Style")return canFS&&selFSCount<1;
       return !atBudget;
     };
+    const miPicker=()=>{
+      const cantripList=CS[miClassEff]?.[0]||[];
+      const spellList=CS[miClassEff]?.[1]||[];
+      return(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose a class")} (Cleric, Druid, {t("or")} Wizard):</div>
+        <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>{MAGIC_INITIATE_CLASSES.map(c=>(<button key={c} disabled={!!miForcedClass} onClick={()=>chooseMiClass(c)} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(miClassEff===c?G.gold:"#334155"),cursor:miForcedClass?"default":"pointer",background:miClassEff===c?G.gold:"transparent",color:miClassEff===c?"#020817":"#f1f5f9",fontWeight:miClassEff===c?700:400,opacity:miForcedClass&&miClassEff!==c?0.35:1}}>{c}</button>))}</div>
+        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Cantrips")} ({miCantrips.length}/2):</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{cantripList.map(name=>{const sel=miCantrips.includes(name);const atMax=miCantrips.length>=2;return <button key={name} disabled={atMax&&!sel} onClick={()=>togMiCantrip(name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level spell")}:</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{spellList.map(name=>{const sel=miSpell===name;return <button key={name} onClick={()=>setMiSpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+      </div>);
+    };
     return(<div>
       {activeFeats.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",marginBottom:"0.75rem"}}>{activeFeats.map(f=>{const fd=ALL_FEATS[f];const c=CAT_LABEL_COLOR[fd?.cat]||G.muted;return <span key={f} style={{background:"#14532d",color:"#4ade80",borderRadius:"0.5rem",padding:"0.2rem 0.6rem",fontSize:"0.72rem",fontWeight:600}}>{f} <span style={{color:c,fontSize:"0.62rem"}}>({fd?.cat||""})</span></span>;})}</div>}
       <div style={{fontSize:"0.72rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",background:"#1e293b",borderRadius:"0.5rem",border:"1px solid "+(atBudget?"#f87171":"#334155"),color:"#f1f5f9"}}>
@@ -1544,7 +1570,7 @@ export default function App(){
       <div style={{display:"flex",flexDirection:"column",gap:"0.35rem",maxHeight:"380px",overflowY:"auto"}}>
         {sorted.map(name=>{
           const feat=ALL_FEATS[name];if(!feat)return null;
-          if(featTab==="Origin"&&name===bgo.feat)return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>{t("Granted")}</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{name}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{featDescL(name,feat.desc)}</div></div>);
+          if(featTab==="Origin"&&featBaseName(name)===featBaseName(bgo.feat))return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>{t("Granted")}</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{bgo.feat}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{featDescL(name,feat.desc)}</div>{name==="Magic Initiate"&&miPicker()}</div>);
           const sel=!!featMap[name];const sugg=suggested.includes(name);const allowed=featAllowed(name);
           return(<div key={name} style={{outline:sugg?"1px solid #fbbf2444":"none",outlineOffset:"-1px",borderRadius:"0.65rem",opacity:allowed?1:0.35,pointerEvents:allowed?"auto":"none"}}>
             <FeatCard name={name} feat={feat} sel={sel} onToggle={()=>allowed&&togFeat(name)}>
@@ -1552,6 +1578,7 @@ export default function App(){
                 <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>Choose 3 additional skills ({skilledSkills.length}/3):</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{SKILL_LIST.map(sk=>{const picked=skilledSkills.includes(sk.name);const alreadyProf=bgo.sk.includes(sk.name)||selSk.includes(sk.name);const atMax=skilledSkills.length>=3;return <button key={sk.name} onClick={()=>setSkilledSkills(prev=>prev.includes(sk.name)?prev.filter(s=>s!==sk.name):prev.length>=3?prev:[...prev,sk.name])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:alreadyProf?"#94a3b8":"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{sk.name}{alreadyProf?" *":""}</button>;})}</div>
               </div>)}
+              {name==="Magic Initiate"&&sel&&miPicker()}
             </FeatCard>
           </div>);
         })}
