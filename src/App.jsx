@@ -582,7 +582,7 @@ function orderOption(cn,order){const o=CLASS_ORDER[cn];return o?o.options.find(x
 function orderCantripBonus(cn,order){const m=orderOption(cn,order);return m?m[2]:0;}
 function orderWisSkills(cn,order){const m=orderOption(cn,order);return m?(m[3]||[]):[];}
 // 2024 Expertise: Rogue chooses 2 skills at Lvl1, 2 more at Lvl6. Bard chooses 2 at Lvl3, 2 more at Lvl10.
-const EXPERTISE_LEVELS={Rogue:{1:2,6:2},Bard:{3:2,10:2}};
+const EXPERTISE_LEVELS={Rogue:{1:2,6:2},Bard:{3:2,10:2},Ranger:{2:1,9:1}};
 function expertiseSlots(cn,lvl){const t=EXPERTISE_LEVELS[cn];if(!t)return 0;return Object.keys(t).reduce((sum,l)=>lvl>=Number(l)?sum+t[l]:sum,0);}
 // Strips a parenthetical suffix, e.g. "Magic Initiate (Druid)" -> "Magic Initiate".
 function featBaseName(f){return (f||"").replace(/\s*\([^)]*\)\s*$/,"").trim();}
@@ -615,8 +615,16 @@ const WILDSHAPE_BEASTS={
 };
 // 2024 Druid Wild Shape gating by level: max CR and whether a Fly speed is allowed.
 function wildShapeLimit(level){if(level>=8)return{cr:1,fly:true};if(level>=4)return{cr:0.5,fly:false};return{cr:0.25,fly:false};}
+// PHB p.80 Beast Shapes table: Wild Shape uses scale 2/3/4 at levels 2/6/17; Known Forms scale 4/6/8 at levels 2/4/8.
+function wildShapeUses(level){return level>=17?4:level>=6?3:2;}
+function wildShapeKnownForms(level){return level>=8?8:level>=4?6:4;}
 // 2024 Barbarian Rage table (PHB p.52): uses and bonus damage scale with level; recharges 1/Short Rest, all/Long Rest.
 function barbarianRage(level){const rages=level>=17?6:level>=12?5:level>=6?4:level>=3?3:2;const dmg=level>=16?4:level>=9?3:2;return{rages,dmg};}
+// Channel Divinity uses (PHB Cleric p.70: 2/6/18; Paladin p.109: 2/11).
+function clericChannelDivinity(level){return level>=18?4:level>=6?3:2;}
+function paladinChannelDivinity(level){return level>=11?3:2;}
+// Sorcerer Sorcery Points (PHB p.140): equal to character level from level 2 onward.
+function sorceryPoints(level){return level>=2?level:0;}
 // 2024 Weapon Mastery slot counts by class and level (PHB feature tables) — confirmed against the book.
 function weaponMasterySlots(cn,level){
   if(cn==="Barbarian")return level>=10?4:level>=4?3:2;
@@ -1571,13 +1579,15 @@ export default function App(){
     const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const invBlock=[invLine?"Eldritch Invocations:\n"+invLine:"",tomeCantripLine?"Tome cantrips:\n"+tomeCantripLine:"",ritualLine?"Ritual spells (Tome):\n"+ritualLine:""].filter(Boolean).join("\n");
     const miLine=hasMagicInitiate&&(miCantrips.length||miSpell)?"Magic Initiate ("+miClassEff+"):\n"+[...miCantrips,miSpell].filter(Boolean).map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
-    const wildShapeLine=(cn==="Druid"&&selWildShapes.length)?"Wild Shape (2/short or long rest):\n"+selWildShapes.map(n=>{const b=WILDSHAPE_BEASTS[n];return "• "+n+": CR "+b.cr+", AC "+b.ac+", HP "+b.hp+", Speed "+b.speed+", "+b.traits;}).join("\n"):"";
+    const wildShapeLine=(cn==="Druid"&&selWildShapes.length)?"Wild Shape ("+wildShapeUses(level)+"/short or long rest):\n"+selWildShapes.map(n=>{const b=WILDSHAPE_BEASTS[n];return "• "+n+": CR "+b.cr+", AC "+b.ac+", HP "+b.hp+", Speed "+b.speed+", "+b.traits;}).join("\n"):"";
     const isCircleLand=cn==="Druid"&&sub==="Circle of the Land";
     const subclassSpellList=(sub&&level>=3)?(isCircleLand?circleLandSpellsAtLevel(landType,level):subclassSpellsAtLevel(cn,sub,level)):[];
     const subclassSpellLabel=isCircleLand?sub+" ("+landType+")":sub;
     const subclassSpellLine=subclassSpellList.length?subclassSpellLabel+" Spells (always prepared, free):\n"+subclassSpellList.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const rageLine=cn==="Barbarian"?(()=>{const r=barbarianRage(level);return "Rage: "+r.rages+" uses (regain 1 per Short Rest, all per Long Rest), +"+r.dmg+" damage on Strength-based hits";})():"";
-    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,subclassSpellLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const channelDivinityLine=(cn==="Cleric"&&level>=2)?"Channel Divinity: "+clericChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":(cn==="Paladin"&&level>=3)?"Channel Divinity: "+paladinChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":"";
+    const sorceryPointsLine=(cn==="Sorcerer"&&level>=2)?"Sorcery Points: "+sorceryPoints(level)+" (regain all per Long Rest)":"";
+    const combinedFeatures=[subclassLine,orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,subclassSpellLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const allTools=[bgo.tools,...skilledTools].filter(Boolean).join(", ");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
@@ -1772,10 +1782,10 @@ export default function App(){
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{SKILL_LIST.map(({name:s})=>{const sel=selExpertise.includes(s);const eligible=skProfs.includes(s);return <button key={s} disabled={!eligible} title={eligible?skillDesc(s):skillDesc(s)+" — "+t("not a class skill")} onClick={()=>togExpertise(s,maxExp)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?"#fcd34d":eligible?"#334155":"#1e293b"),cursor:eligible?"pointer":"not-allowed",background:sel?"#fcd34d":"transparent",color:sel?"#020817":eligible?"#f1f5f9":G.dimmer,fontWeight:sel?700:400,opacity:eligible?1:0.4}}>{sel?"★ ":""}{s}</button>;})}</div>
         </div>
       );})()}
-      {cn==="Druid"&&level>=2&&(()=>{const lim=wildShapeLimit(level);const maxForms=4;const over=selWildShapes.length>maxForms;return (
+      {cn==="Druid"&&level>=2&&(()=>{const lim=wildShapeLimit(level);const maxForms=wildShapeKnownForms(level);const over=selWildShapes.length>maxForms;return (
         <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
           <div style={{fontSize:"0.75rem",color:over?"#f97316":G.muted,marginBottom:"0.35rem"}}>{t("Wild Shape Forms")} ({selWildShapes.length} / {maxForms}) — {t("choose up to")} {maxForms}</div>
-          <div style={{fontSize:"0.68rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Max CR")}: {lim.cr} · {lim.fly?t("Fly allowed"):t("No fly")} · 2 {t("uses per short or long rest")}</div>
+          <div style={{fontSize:"0.68rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Max CR")}: {lim.cr} · {lim.fly?t("Fly allowed"):t("No fly")} · {wildShapeUses(level)} {t("uses per short or long rest")}</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{Object.entries(WILDSHAPE_BEASTS).map(([name,b])=>{const sel=selWildShapes.includes(name);const legal=b.cr<=lim.cr&&(!b.fly||lim.fly);return <button key={name} disabled={!legal&&!sel} title={legal?`CR ${b.cr} · AC ${b.ac} · HP ${b.hp} · ${b.speed} · ${b.traits}`:t("No fly")+"/"+t("Max CR")+" "+lim.cr} onClick={()=>togWildShape(name,maxForms)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?G.gold:legal?"#334155":"#1e293b"),cursor:legal?"pointer":"not-allowed",background:sel?G.gold:"transparent",color:sel?"#020817":legal?"#f1f5f9":G.dimmer,fontWeight:sel?700:400,opacity:legal?1:0.4}}>{name} <span style={{fontSize:"0.62rem",opacity:0.75}}>(CR {b.cr})</span></button>;})}</div>
         </div>
       );})()}
