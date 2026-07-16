@@ -820,9 +820,8 @@ function FancySheet({sh}){
         linear-gradient(rgba(244,224,170,.34),rgba(244,224,170,.34)),
         url('/fantasy-sheet-bg.jpg');background-size:cover;background-position:center;}
       .orn-bg:before{content:"";position:absolute;inset:0;background:
-        radial-gradient(circle at 52% 42%,rgba(255,248,210,.91) 0 18%,rgba(255,233,158,.38) 32%,rgba(16,10,5,0) 50%),
-        radial-gradient(circle at 18% 76%,rgba(255,166,73,.22),transparent 18%),
-        radial-gradient(circle at 86% 80%,rgba(105,191,255,.13),transparent 19%),
+        radial-gradient(circle at 52% 42%,rgba(255,253,245,.91) 0 18%,rgba(255,250,235,.34) 32%,rgba(16,10,5,0) 50%),
+        radial-gradient(circle at 18% 76%,rgba(255,220,190,.16),transparent 18%),
         linear-gradient(90deg,rgba(8,5,3,.68),rgba(8,5,3,.08) 18%,rgba(8,5,3,.06) 79%,rgba(8,5,3,.72)),
         linear-gradient(rgba(255,246,212,.22),rgba(69,39,12,.42));pointer-events:none;}
       .orn-veil{position:absolute;inset:7mm;z-index:1;border-radius:2mm;background:rgba(248,237,195,.12);pointer-events:none;}
