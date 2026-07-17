@@ -819,6 +819,36 @@ const SUBCLASS_FEATURES={
       14:[["Create Thrall",["Cast Summon Aberration without Concentration (1 min duration); the Aberration gains Temp HP and deals extra Psychic damage to Hexed creatures.","Cast Summon Aberration uden koncentration (1 min varighed); Aberrationen får midlertidige HP og giver ekstra Psychic-skade til Hexed væsener."]]],
     },
   },
+  Wizard:{
+    "Abjurer":{
+      3:[["Abjuration Savant",["Add two level-1-or-2 Abjuration spells to your spellbook free; also add one free Abjuration spell whenever you gain a new level of spell slots.","Tilføj to niveau 1-2 Abjuration-spells til din spellbook gratis; tilføj også et gratis Abjuration-spell hver gang du får en ny niveau af spell-slots."]],
+         ["Arcane Ward",["When you cast an Abjuration spell with a slot, create a ward (HP = 2x Wizard level+INT mod) that absorbs damage you take; recharges when casting more Abjuration spells.","Når du caster et Abjuration-spell med en slot, skab en ward (HP = 2x Wizard-niveau+INT-mod) der absorberer skade du tager; genoplades ved at caste flere Abjuration-spells."]]],
+      6:[["Projected Ward",["Reaction: your Arcane Ward can absorb damage taken by a creature within 30 ft instead of you.","Reaktion: din Arcane Ward kan absorbere skade taget af et væsen inden for 30 ft i stedet for dig."]]],
+      10:[["Spell Breaker",["Always have Counterspell and Dispel Magic prepared; can cast Dispel Magic as a Bonus Action and add Prof. Bonus to its check; a slot isn't expended if it fails to stop a spell.","Har altid Counterspell og Dispel Magic forberedt; kan caste Dispel Magic som en bonus-handling og lægge Prof.Bonus til dets tjek; en slot bruges ikke hvis den ikke stopper et spell."]]],
+      14:[["Spell Resistance",["Advantage on saves against spells; Resistance to spell damage.","Advantage på saves mod spells; Resistance mod spell-skade."]]],
+    },
+    "Diviner":{
+      3:[["Divination Savant",["Add two level-1-or-2 Divination spells to your spellbook free; also add one free Divination spell whenever you gain a new level of spell slots.","Tilføj to niveau 1-2 Divination-spells til din spellbook gratis; tilføj også et gratis Divination-spell hver gang du får en ny niveau af spell-slots."]],
+         ["Portent",["After a Long Rest, roll two d20s; you can replace any D20 Test made by you or a creature you can see with one of these foretelling rolls (once per turn each).","Efter en lang hvile, slå to d20'ere; du kan erstatte et hvilket som helst d20-test lavet af dig eller et væsen du kan se med et af disse forudsigelsesslag (én gang pr. tur hver)."]]],
+      6:[["Expert Divination",["When you cast a Divination spell with a level 2+ slot, regain one expended slot of a lower level (max level 5).","Når du caster et Divination-spell med en niveau 2+ slot, genopret en brugt slot af lavere niveau (maks niveau 5)."]]],
+      10:[["The Third Eye",["Bonus Action: gain Darkvision 120 ft, Greater Comprehension (read any language), or See Invisibility (free) until a Short/Long Rest.","Bonus-handling: få Darkvision 120 ft, Greater Comprehension (læs ethvert sprog), eller See Invisibility (gratis) indtil kort/lang hvile."]]],
+      14:[["Greater Portent",["Roll three d20s for your Portent feature rather than two.","Slå tre d20'ere til din Portent-funktion i stedet for to."]]],
+    },
+    "Evoker":{
+      3:[["Evocation Savant",["Add two level-1-or-2 Evocation spells to your spellbook free; also add one free Evocation spell whenever you gain a new level of spell slots.","Tilføj to niveau 1-2 Evocation-spells til din spellbook gratis; tilføj også et gratis Evocation-spell hver gang du får en ny niveau af spell-slots."]],
+         ["Potent Cantrip",["A creature that avoids your damaging cantrip (miss or successful save) still takes half damage.","Et væsen der undgår din skadegivende cantrip (forbi-slag eller vellykket save) tager stadig halv skade."]]],
+      6:[["Sculpt Spells",["Choose creatures (1+spell level) within an Evocation spell's area to automatically succeed their save and take no damage on a partial-success spell.","Vælg væsener (1+spellets niveau) inden for et Evocation-spells område til automatisk at bestå deres save og tage ingen skade ved et delvist-succes-spell."]]],
+      10:[["Empowered Evocation",["Add your INT mod to one damage roll of any Evocation spell you cast.","Læg dit INT-mod til ét skadeslag af et Evocation-spell, du caster."]]],
+      14:[["Overchannel",["Deal maximum damage with a level 1-5 damaging spell once free; further uses before a Long Rest deal escalating Necrotic damage to you.","Giv maksimal skade med et niveau 1-5 skadegivende spell én gang gratis; yderligere brug før en lang hvile giver eskalerende Necrotic-skade til dig selv."]]],
+    },
+    "Illusionist":{
+      3:[["Illusion Savant",["Add two level-1-or-2 Illusion spells to your spellbook free; also add one free Illusion spell whenever you gain a new level of spell slots.","Tilføj to niveau 1-2 Illusion-spells til din spellbook gratis; tilføj også et gratis Illusion-spell hver gang du får en ny niveau af spell-slots."]],
+         ["Improved Illusions",["Cast Illusion spells without Verbal components, and their range increases by 60 ft if 10+ ft; also know Minor Illusion, castable with both sound and image, as a Bonus Action.","Cast Illusion-spells uden Verbal-komponenter, og deres rækkevidde øges med 60 ft hvis 10+ ft; kend også Minor Illusion, som kan castes med både lyd og billede, som en bonus-handling."]]],
+      6:[["Phantasmal Creatures",["Always have Summon Beast and Summon Fey prepared; cast either as an Illusion (spectral, half HP) without a spell slot once per Long Rest.","Har altid Summon Beast og Summon Fey forberedt; cast en af dem som en Illusion (spektral, halv HP) uden en spell-slot én gang pr. lang hvile."]]],
+      10:[["Illusory Self",["Reaction when hit: interpose an illusory duplicate that causes the attack to automatically miss; restore use with a level 2+ slot.","Reaktion når du bliver ramt: sæt en illusorisk dublet ind, der får angrebet til automatisk at ramme forbi; genopret brug med en niveau 2+ slot."]]],
+      14:[["Illusory Reality",["When casting an Illusion spell with a slot, make one inanimate object in the illusion real for 1 minute.","Når du caster et Illusion-spell med en slot, gør en livløs genstand i illusionen ægte i 1 minut."]]],
+    },
+  },
 };
 function subclassFeaturesAtLevel(cn,sub,level){const table=SUBCLASS_FEATURES[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
 // Druid Circle of the Land: choose a land type (chosen anew each Long Rest per RAW); spells "and lower" are all prepared.
