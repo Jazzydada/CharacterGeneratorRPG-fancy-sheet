@@ -104,6 +104,11 @@ const DA={
   Successes:"Successer",
   Failures:"Fejl",
   "Features & Traits":"Evner & træk",
+  "Resources":"Ressourcer",
+  "Equipped":"Udstyret",
+  "No tracked resource pool":"Ingen sporet ressourcepulje",
+  "Other Notes":"Andre noter",
+  "Full features on page 2":"Fulde evner på side 2",
   "Portrait could not load.":"Portræt kunne ikke indlæses.",
   "Try Generate Sheet again.":"Prøv Lav karakterark igen.",
   "Painting portrait…":"Maler portræt…",
@@ -292,6 +297,22 @@ function clericChannelDivinity(level){return level>=18?4:level>=6?3:2;}
 function paladinChannelDivinity(level){return level>=11?3:2;}
 // Sorcerer Sorcery Points (PHB p.140): equal to character level from level 2 onward.
 function sorceryPoints(level){return level>=2?level:0;}
+// Monk Focus Points (PHB p.101): equal to Monk level from level 2 onward.
+function monkFocusPoints(level){return level>=2?level:0;}
+// Bardic Inspiration (PHB p.58): uses = CHA mod (min 1), die d6/d8/d10/d12 at levels 1/5/10/15.
+function bardicInspirationUses(cham){return Math.max(1,cham);}
+function bardicInspirationDie(level){return level>=15?"d12":level>=10?"d10":level>=5?"d8":"d6";}
+// Returns the class's primary trackable resource pool, or null if it has none of this kind.
+function classResource(cn,level,cham){
+  if(cn==="Barbarian"){const r=barbarianRage(level);return{name:"Rage",uses:r.rages,note:"+"+r.dmg+" dmg",recharge:"1/Short Rest, all/Long Rest"};}
+  if(cn==="Bard")return{name:"Bardic Inspiration",uses:bardicInspirationUses(cham),note:bardicInspirationDie(level),recharge:"all/Long Rest"};
+  if(cn==="Cleric"&&level>=2)return{name:"Channel Divinity",uses:clericChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest"};
+  if(cn==="Paladin"&&level>=3)return{name:"Channel Divinity",uses:paladinChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest"};
+  if(cn==="Druid"&&level>=2)return{name:"Wild Shape",uses:wildShapeUses(level),recharge:"all/Short or Long Rest"};
+  if(cn==="Monk"&&level>=2)return{name:"Focus Points",uses:monkFocusPoints(level),recharge:"all/Short or Long Rest"};
+  if(cn==="Sorcerer"&&level>=2)return{name:"Sorcery Points",uses:sorceryPoints(level),recharge:"all/Long Rest"};
+  return null;
+}
 // 2024 Weapon Mastery slot counts by class and level (PHB feature tables) — confirmed against the book.
 function weaponMasterySlots(cn,level){
   if(cn==="Barbarian")return level>=10?4:level>=4?3:2;
@@ -917,8 +938,6 @@ function FancySheet({sh}){
   const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0)+((sh.expertise||[]).includes(sk.name)?sh.profBonus:0)+((sh.wisSkills||[]).includes(sk.name)?(sh.wisMod||0):0));
   const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
-  // Page 1 shows just the feature NAMES (compact). Full descriptions live on page 2.
-  const featureLines=(sh.features||"").split("\n").filter(l=>l.trim()&&l.trim()!=="--").map(x=>{const c=x.indexOf(":");return (c>0?x.slice(0,c):x).replace(/^•\s*/,"").trim();}).slice(0,16);
   const skillRows=SKILL_LIST;
   const weaponRows=(sh.weapons||[]).slice(0,5);
   const lang=((sh.profLangs||"").split(/Languages:\s*/i).pop()||"").trim();
@@ -994,18 +1013,29 @@ function FancySheet({sh}){
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.4mm",color:"#6e4a17",marginBottom:"1.5mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
 
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
-    <div className="panel traits"><div className="panel-titlebar">{t("Features & Traits")}</div><ul>{featureLines.map((line,i)=><li key={i}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul><div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div></div>
+    <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
+      {sh.resource?<div style={{position:"relative",marginTop:"1mm"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"3.3mm"}}>{sh.resource.name}</b>{sh.resource.note&&<span style={{fontSize:"2.3mm",color:"#6e4a17"}}>{sh.resource.note}</span>}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"1mm",marginTop:"1.5mm"}}>{Array.from({length:Math.min(sh.resource.uses,24)}).map((_,i)=><span key={i} style={{width:"3.6mm",height:"3.6mm",borderRadius:"50%",border:".5mm solid #7b5118",background:"#fff4d3",display:"inline-block"}}/>)}</div>
+        <div style={{fontSize:"2.2mm",color:"#6e4a17",marginTop:"1.5mm"}}>{sh.resource.recharge}</div>
+      </div>:<div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>}
+      <div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
+        <div className="subtle-caption" style={{marginBottom:"1mm"}}>{t("Other Notes")}</div>
+        <ul style={{margin:0,padding:"0 0 0 4.2mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).slice(0,3).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.1,marginBottom:"0.8mm"}}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul>
+      </div>
+      <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
+    </div>
     <div className="small-token speed"><b>{sh.speed} ft.</b><span>{t("Speed")}</span></div>
     <div className="langs">{sh.weaponProf?`⚔ ${sh.weaponProf}  ·  `:""}{sh.toolProf?`🛠 ${sh.toolProf}  ·  `:""}{t("Languages")}: {lang||"Common"}</div>
   </div>;
 }
 
 function Page1({sh}){
-  const{name,classLevel,background,species,alignment,finalStats,ac,initiative,speed,hpMax,hitDice,profBonus,saves,skills,passivePerc,weapons,spellAbility,spellAtk,spellDC,isCaster,profLangs,features,originFeat,traits,ideals,bonds,flaws,gp,equipment}=sh;
+  const{name,classLevel,background,species,alignment,finalStats,ac,initiative,speed,hpMax,hitDice,profBonus,saves,skills,passivePerc,weapons,spellAbility,spellAtk,spellDC,isCaster,profLangs,features,originFeat,traits,ideals,bonds,flaws,gp,equipment,equippedGear,resource}=sh;
   return(<div className="page" style={pgStyle}>
     <div style={{display:"grid",gridTemplateColumns:"64px 1fr",gap:10,marginBottom:6,alignItems:"start"}}>
       <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",height:64}}><svg viewBox="0 0 50 50" width={50} height={50}><path d="M25 3 L47 13 L47 31 C47 43 25 48 25 48 C25 48 3 43 3 31 L3 13 Z" fill="none" stroke={RULE} strokeWidth={1.5}/><text x={25} y={22} textAnchor="middle" fontSize={9} fontFamily="serif" fontWeight="bold" fill={GOLD}>D&D</text><text x={25} y={32} textAnchor="middle" fontSize={6} fontFamily="sans-serif" fill={GOLD_L}>2024</text></svg></div>
@@ -1033,6 +1063,7 @@ function Page1({sh}){
           <PSec title="Death Saves"><div style={{display:"flex",flexDirection:"column",gap:4}}><div style={{display:"flex",alignItems:"center",gap:3}}><span style={{...capL,fontSize:6,marginBottom:0,flex:1}}>Successes</span>{[0,1,2].map(i=><Pip key={i} size={8}/>)}</div><div style={{display:"flex",alignItems:"center",gap:3}}><span style={{...capL,fontSize:6,marginBottom:0,flex:1}}>Failures</span>{[0,1,2].map(i=><Pip key={i} size={8} danger/>)}</div></div></PSec>
         </div>
         <PSec title="Attacks and Spellcasting">
+          {equippedGear&&<div style={{fontSize:6.5,color:"#6b4f1a",fontFamily:"sans-serif",marginBottom:4,paddingBottom:4,borderBottom:"0.5px solid "+RULE}}><span style={{...capL,fontSize:5.5,marginRight:4}}>{t("Equipped")}:</span>{equippedGear}</div>}
           {isCaster&&spellAbility&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,marginBottom:5,textAlign:"center"}}>{[["Ability",spellAbility],["Atk Bonus",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l}><div style={{fontSize:13,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,textAlign:"center",fontSize:5.5}}>{l}</div></div>)}</div>}
           <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"sans-serif"}}><thead><tr style={{borderBottom:"1px solid "+RULE}}>{["Weapon","Atk","Dmg","Mastery"].map(h=><th key={h} style={{textAlign:"left",padding:"1px 3px",fontSize:6.5,color:GOLD,fontWeight:600,textTransform:"uppercase"}}>{h}</th>)}</tr></thead><tbody>{weapons.map((w,i)=><tr key={i} style={{borderBottom:"0.5px solid #ede3cc"}}><td style={{padding:"3px 3px",fontSize:8,fontWeight:600}}>{w.name}</td><td style={{padding:"3px 3px",fontSize:8}}>{w.atk}</td><td style={{padding:"3px 3px",fontSize:7.5,color:"#444"}}>{w.dmg}</td>          <td style={{padding:"3px 3px",fontSize:7.5,color:"#6b4f1a",fontWeight:600}}>{w.mastery||"—"}</td></tr>)}</tbody></table>
         </PSec>
@@ -1041,13 +1072,20 @@ function Page1({sh}){
     </div>
     <ORul/>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginTop:2}}>
-      <PSec title="Features, Traits and Feats" style={{display:"flex",flexDirection:"column"}}>
-        <div style={{fontSize:7.5,lineHeight:1.45,fontFamily:"sans-serif",flex:1}}>
-          {features.split("\n").map((line,i)=>{
-            const colon=line.indexOf(":");
-            if(colon>0&&colon<40){return <div key={i}><span style={{fontWeight:700}}>{line.slice(0,colon)}</span><span style={{fontWeight:400,opacity:0.85}}>{line.slice(colon)}</span></div>;}
-            return <div key={i}>{line||"\u00a0"}</div>;
-          })}
+      <PSec title="Resources" style={{display:"flex",flexDirection:"column"}}>
+        <div style={{flex:1}}>
+          {resource?<div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><span style={{fontSize:9,fontWeight:700,fontFamily:"serif"}}>{resource.name}</span>{resource.note&&<span style={{fontSize:6.5,color:"#6b4f1a",fontFamily:"sans-serif"}}>{resource.note}</span>}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:4}}>{Array.from({length:Math.min(resource.uses,24)}).map((_,i)=><Pip key={i} size={9}/>)}</div>
+            <div style={{fontSize:6,color:GOLD,fontFamily:"sans-serif",opacity:0.8,marginTop:4}}>{resource.recharge}</div>
+          </div>:<div style={{fontSize:7,fontFamily:"sans-serif",color:"#999",fontStyle:"italic"}}>{t("No tracked resource pool")}</div>}
+          <div style={{marginTop:8,paddingTop:5,borderTop:"0.5px solid "+RULE}}>
+            <div style={{...capL,fontSize:5.5,marginBottom:3}}>{t("Other Notes")}</div>
+            <div style={{fontSize:6.5,lineHeight:1.4,fontFamily:"sans-serif",color:"#777"}}>
+              {(features.split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Wild Shape|Weapon Mastery)/i.test(l.trim())).slice(0,3)).map((line,i)=><div key={i}>{line.length>60?line.slice(0,60)+"\u2026":line}</div>)}
+              <div style={{fontStyle:"italic",marginTop:2}}>{t("Full features on page 2")}</div>
+            </div>
+          </div>
         </div>
         {originFeat&&<div style={{marginTop:5,paddingTop:3,borderTop:"0.5px solid "+RULE}}><span style={{...capL,display:"inline",fontSize:6}}>Origin Feat: </span><span style={{fontSize:7,fontFamily:"sans-serif"}}>{originFeat}</span></div>}
       </PSec>
@@ -1720,7 +1758,9 @@ export default function App(){
     const nextGender=nextGenderRoll||gender;
     const breathRow=sp==="Dragonborn"?[{name:"Breath Weapon ("+dragonColor+")",atk:"DC "+breathDC,dmg:breathWeaponDice(level)+" "+DRACONIC_ANCESTRY[dragonColor],props:"15-ft Cone or 30x5-ft Line",mastery:"—"}]:[];
     const nextSpellsByLevel=buildSBL();
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[]};
+    const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
+    const nextResource=classResource(cn,level,mf(fin.CHA));
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,resource:nextResource,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[]};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
