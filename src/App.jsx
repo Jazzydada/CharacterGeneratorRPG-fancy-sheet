@@ -1013,7 +1013,7 @@ function FancySheet({sh}){
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.4mm",color:"#6e4a17",marginBottom:"1.5mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.4mm",color:"#6e4a17",marginBottom:"1mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2.3mm",color:"#6e4a17",marginBottom:"1.5mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
 
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
@@ -1457,6 +1457,21 @@ export default function App(){
   const hp=Math.max(level,avgHp(level,cls.hd,cm)+(hasTough?level*2:0));
   const getAC=useCallback(()=>{let b=equipped.armor?(ARMOR_ITEMS[equipped.armor].ac||ARMOR_ITEMS[equipped.armor].acFn(dm)):(cn==="Barbarian"?10+dm+cm:cn==="Monk"?10+dm+wm:10+dm);if(equipped.shield)b+=2;if(hasDefense&&equipped.armor)b+=1;return b;},[equipped,dm,cm,wm,cn,hasDefense]);
   const ac=getAC();
+  const getACBreakdown=useCallback(()=>{
+    const parts=[];
+    if(equipped.armor){
+      const item=ARMOR_ITEMS[equipped.armor];
+      const base=item.ac||item.acFn(dm);
+      const capNote=item.heavy?" (no DEX)":item.medium?" (+DEX, max 2)":" (+DEX)";
+      parts.push(equipped.armor+capNote+": "+base);
+    }else if(cn==="Barbarian"){parts.push("Unarmored Defense (10+DEX+CON): "+(10+dm+cm));}
+    else if(cn==="Monk"){parts.push("Unarmored Defense (10+DEX+WIS): "+(10+dm+wm));}
+    else{parts.push("Unarmored (10+DEX): "+(10+dm));}
+    if(equipped.shield)parts.push("Shield: +2");
+    if(hasDefense&&equipped.armor)parts.push("Defense feat: +1");
+    return parts.join(" · ");
+  },[equipped,dm,cm,wm,cn,hasDefense]);
+  const acBreakdown=getACBreakdown();
   const saves=mc&&cls2?Array.from(new Set([...cls.saves,...cls2.saves])):cls.saves;
   const allSc=mc&&cls2?Array.from(new Set([...cls.sc,...cls2.sc])):cls.sc;
   const maxSk=mc?cls.ns+1:cls.ns;
@@ -1760,7 +1775,7 @@ export default function App(){
     const nextSpellsByLevel=buildSBL();
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,resource:nextResource,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[]};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[]};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
