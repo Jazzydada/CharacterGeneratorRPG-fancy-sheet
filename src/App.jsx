@@ -1125,7 +1125,17 @@ function Page2({sh}){
     </div>
     <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
       <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
-      <div style={{columnCount:2,columnGap:14}}>{featEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:7.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:5}}>{featEntries.map((line,i)=>{
+        const ci=line.indexOf(":");
+        const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
+        if(isHead)return <div key={i} style={{gridColumn:"1/-1",fontSize:7.5,fontWeight:800,color:GOLD,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",marginTop:i?3:0}}>{line}</div>;
+        const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
+        const rest=ci>0?line.slice(ci+1).trim():"";
+        return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
+          <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:rest?2:0}}>{label||line}</div>
+          {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
+        </div>;
+      })}</div>
     </div>
     {isCaster&&<div style={{flex:"0 1 auto",overflow:"hidden"}}>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
