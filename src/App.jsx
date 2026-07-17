@@ -305,15 +305,25 @@ function fighterSecondWindUses(level){return level>=9?4:level>=4?3:2;}
 function bardicInspirationUses(cham){return Math.max(1,cham);}
 function bardicInspirationDie(level){return level>=15?"d12":level>=10?"d10":level>=5?"d8":"d6";}
 // Returns the class's primary trackable resource pool, or null if it has none of this kind.
+const RESOURCE_DESC={
+  Rage:["Bonus Action (no Heavy armor): melee Strength attacks deal bonus damage, you have Resistance to Bludgeoning/Piercing/Slashing damage, and Advantage on Strength checks and saves. Lasts 10 min; ends early if you go a turn without attacking or taking damage.","Bonus-handling (ingen tung rustning): nærkampsangreb med Strength giver bonus-skade, du har Resistance mod Bludgeoning/Piercing/Slashing-skade, og Advantage på Strength-tjek og -saves. Varer 10 min; ophører tidligt hvis du går en tur uden at angribe eller tage skade."],
+  "Bardic Inspiration":["Bonus Action: give a creature within 60 ft a die it can add to one D20 Test, attack roll, or saving throw within the next hour.","Bonus-handling: giv et væsen inden for 60 ft en terning, det kan lægge til ét D20-test, angrebstjek eller saving throw inden for den næste time."],
+  "Channel Divinity (Cleric)":["Magic action: channel divine energy to fuel a chosen effect — starts with Divine Spark (heal or deal Necrotic/Radiant damage) and Turn Undead (Frighten nearby Undead).","Magisk handling: kanaliser guddommelig energi til en valgt effekt — starter med Divine Spark (hel eller giv Necrotic/Radiant-skade) og Turn Undead (gør nærliggende Undead Frightened)."],
+  "Channel Divinity (Paladin)":["Channel divine energy for a chosen effect — starts with Divine Sense (detect Celestials/Fiends/Undead); your Oath grants more options.","Kanaliser guddommelig energi til en valgt effekt — starter med Divine Sense (opdag Celestials/Fiends/Undead); dit Oath giver flere muligheder."],
+  "Wild Shape":["Magic action: transform into a beast form you've prepared, gaining its game statistics while keeping your own mind, for up to a few hours.","Magisk handling: forvandl dig til en beast-form du har forberedt, og få dens spil-statistikker mens du beholder dit eget sind, i op til nogle få timer."],
+  "Focus Points":["Spend to fuel Flurry of Blows (extra Unarmed Strikes), Patient Defense (Disengage+Dodge), Step of the Wind (Disengage+Dash, double jump), and other Monk features.","Brug til at drive Flurry of Blows (ekstra Unarmed Strikes), Patient Defense (Disengage+Dodge), Step of the Wind (Disengage+Dash, dobbelt spring), og andre Monk-evner."],
+  "Sorcery Points":["Spend to fuel Metamagic options, or convert to/from spell slots (2 points = a level 1 slot, more for higher levels).","Brug til at drive Metamagic-muligheder, eller konverter til/fra spell-slots (2 points = en niveau 1-slot, flere for højere niveauer)."],
+  "Second Wind":["Bonus Action: regain 1d10 plus your Fighter level in Hit Points.","Bonus-handling: genopret 1d10 plus dit Fighter-niveau i Hit Points."],
+};
 function classResource(cn,level,cham){
-  if(cn==="Barbarian"){const r=barbarianRage(level);return{name:"Rage",uses:r.rages,note:"+"+r.dmg+" dmg",recharge:"1/Short Rest, all/Long Rest"};}
-  if(cn==="Bard")return{name:"Bardic Inspiration",uses:bardicInspirationUses(cham),note:bardicInspirationDie(level),recharge:"all/Long Rest"};
-  if(cn==="Cleric"&&level>=2)return{name:"Channel Divinity",uses:clericChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest"};
-  if(cn==="Paladin"&&level>=3)return{name:"Channel Divinity",uses:paladinChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest"};
-  if(cn==="Druid"&&level>=2)return{name:"Wild Shape",uses:wildShapeUses(level),recharge:"all/Short or Long Rest"};
-  if(cn==="Monk"&&level>=2)return{name:"Focus Points",uses:monkFocusPoints(level),recharge:"all/Short or Long Rest"};
-  if(cn==="Sorcerer"&&level>=2)return{name:"Sorcery Points",uses:sorceryPoints(level),recharge:"all/Long Rest"};
-  if(cn==="Fighter")return{name:"Second Wind",uses:fighterSecondWindUses(level),note:"1d10+"+level+" HP",recharge:"1/Short Rest, all/Long Rest"};
+  if(cn==="Barbarian"){const r=barbarianRage(level);return{name:"Rage",uses:r.rages,note:"+"+r.dmg+" dmg",recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC.Rage};}
+  if(cn==="Bard")return{name:"Bardic Inspiration",uses:bardicInspirationUses(cham),note:bardicInspirationDie(level),recharge:"all/Long Rest",desc:RESOURCE_DESC["Bardic Inspiration"]};
+  if(cn==="Cleric"&&level>=2)return{name:"Channel Divinity",uses:clericChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC["Channel Divinity (Cleric)"]};
+  if(cn==="Paladin"&&level>=3)return{name:"Channel Divinity",uses:paladinChannelDivinity(level),recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC["Channel Divinity (Paladin)"]};
+  if(cn==="Druid"&&level>=2)return{name:"Wild Shape",uses:wildShapeUses(level),recharge:"all/Short or Long Rest",desc:RESOURCE_DESC["Wild Shape"]};
+  if(cn==="Monk"&&level>=2)return{name:"Focus Points",uses:monkFocusPoints(level),recharge:"all/Short or Long Rest",desc:RESOURCE_DESC["Focus Points"]};
+  if(cn==="Sorcerer"&&level>=2)return{name:"Sorcery Points",uses:sorceryPoints(level),recharge:"all/Long Rest",desc:RESOURCE_DESC["Sorcery Points"]};
+  if(cn==="Fighter")return{name:"Second Wind",uses:fighterSecondWindUses(level),note:"1d10+"+level+" HP",recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC["Second Wind"]};
   return null;
 }
 // 2024 Weapon Mastery slot counts by class and level (PHB feature tables) — confirmed against the book.
@@ -1023,12 +1033,13 @@ function FancySheet({sh}){
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
       {sh.resource?<div style={{position:"relative",marginTop:"1mm"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"3.3mm"}}>{sh.resource.name}</b>{sh.resource.note&&<span style={{fontSize:"2.3mm",color:"#6e4a17"}}>{sh.resource.note}</span>}</div>
+        {sh.resource.desc&&<div style={{fontSize:"2.15mm",lineHeight:1.25,color:"#4a3410",marginTop:"0.8mm",display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{sh.resource.desc[CURRENT_LANG==="da"?1:0]}</div>}
         <div style={{display:"flex",flexWrap:"wrap",gap:"1mm",marginTop:"1.5mm"}}>{Array.from({length:Math.min(sh.resource.uses,24)}).map((_,i)=><span key={i} style={{width:"3.6mm",height:"3.6mm",borderRadius:"50%",border:".5mm solid #7b5118",background:"#fff4d3",display:"inline-block"}}/>)}</div>
         <div style={{fontSize:"2.2mm",color:"#6e4a17",marginTop:"1.5mm"}}>{sh.resource.recharge}</div>
       </div>:<div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>}
-      <div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
+      <div style={{position:"relative",marginTop:"1.5mm",paddingTop:"1.2mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
         <div className="subtle-caption" style={{marginBottom:"1mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 4.2mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>!sh.resource||!l.trim().toLowerCase().startsWith(sh.resource.name.toLowerCase())).slice(0,3).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.1,marginBottom:"0.8mm"}}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul>
+        <ul style={{margin:0,padding:"0 0 0 4.2mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>!sh.resource||!l.trim().toLowerCase().startsWith(sh.resource.name.toLowerCase())).slice(0,2).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.1,marginBottom:"0.8mm"}}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
