@@ -299,6 +299,8 @@ function paladinChannelDivinity(level){return level>=11?3:2;}
 function sorceryPoints(level){return level>=2?level:0;}
 // Monk Focus Points (PHB p.101): equal to Monk level from level 2 onward.
 function monkFocusPoints(level){return level>=2?level:0;}
+// Fighter Second Wind uses (PHB p.91-92): 2 at level 1, 3 at level 4, 4 at level 9.
+function fighterSecondWindUses(level){return level>=9?4:level>=4?3:2;}
 // Bardic Inspiration (PHB p.58): uses = CHA mod (min 1), die d6/d8/d10/d12 at levels 1/5/10/15.
 function bardicInspirationUses(cham){return Math.max(1,cham);}
 function bardicInspirationDie(level){return level>=15?"d12":level>=10?"d10":level>=5?"d8":"d6";}
@@ -311,6 +313,7 @@ function classResource(cn,level,cham){
   if(cn==="Druid"&&level>=2)return{name:"Wild Shape",uses:wildShapeUses(level),recharge:"all/Short or Long Rest"};
   if(cn==="Monk"&&level>=2)return{name:"Focus Points",uses:monkFocusPoints(level),recharge:"all/Short or Long Rest"};
   if(cn==="Sorcerer"&&level>=2)return{name:"Sorcery Points",uses:sorceryPoints(level),recharge:"all/Long Rest"};
+  if(cn==="Fighter")return{name:"Second Wind",uses:fighterSecondWindUses(level),note:"1d10+"+level+" HP",recharge:"1/Short Rest, all/Long Rest"};
   return null;
 }
 // 2024 Weapon Mastery slot counts by class and level (PHB feature tables) — confirmed against the book.
@@ -359,7 +362,7 @@ const CLASSES={
   Bard:{hd:8,pri:["CHA","DEX","CON"],saves:["DEX","CHA"],armor:"Light",weapons:"Simple",sc:SKILL_LIST.map(s=>s.name),ns:3,role:"Social caster and support",features:["Bardic Inspiration CHA mod/long rest","Expertise Lvl3","Jack of All Trades Lvl2","Subclass Lvl3"],classFeatChoices:["War Caster","Resilient","Lucky","Inspiring Leader","Skilled"]},
   Cleric:{hd:8,pri:["WIS","CON","STR"],saves:["WIS","CHA"],armor:"Light, medium, shields",weapons:"Simple",sc:["History","Insight","Medicine","Persuasion","Religion"],ns:2,role:"Divine caster and healer",features:["Divine Order Lvl1","Subclass Lvl3","Channel Divinity","Blessed Strikes Lvl7"],classFeatChoices:["War Caster","Resilient","Lucky","Inspiring Leader","Sentinel"]},
   Druid:{hd:8,pri:["WIS","CON","INT"],saves:["INT","WIS"],armor:"Light, medium, shields (no metal)",weapons:"Simple",sc:["Animal Handling","Arcana","Insight","Medicine","Nature","Perception","Religion","Survival"],ns:2,role:"Nature caster and controller",features:["Druidic language","Primal Order Lvl1","Wild Shape Lvl2","Subclass Lvl3"],classFeatChoices:["War Caster","Resilient","Tough","Lucky","Mobile"]},
-  Fighter:{hd:10,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Acrobatics","Animal Handling","Athletics","History","Insight","Intimidation","Perception","Survival"],ns:2,role:"Weapon specialist",features:["Fighting Style Lvl1","Second Wind 2-4x/short or long rest","Weapon Mastery","Action Surge Lvl2","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Great Weapon Master","Sharpshooter","Sentinel","War Caster","Alert","Tough","Mobile"]},
+  Fighter:{hd:10,pri:["STR","CON","DEX"],saves:["STR","CON"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Acrobatics","Animal Handling","Athletics","History","Insight","Intimidation","Perception","Survival"],ns:2,role:"Weapon specialist",features:["Fighting Style Lvl1","Second Wind Lvl1","Weapon Mastery","Action Surge Lvl2","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Great Weapon Master","Sharpshooter","Sentinel","War Caster","Alert","Tough","Mobile"]},
   Monk:{hd:8,pri:["DEX","WIS","CON"],saves:["STR","DEX"],armor:"None",weapons:"Simple and monk weapons",sc:["Acrobatics","Athletics","History","Insight","Religion","Stealth"],ns:2,role:"Mobile martial artist",features:["Martial Arts Lvl1","Unarmored Defense AC=10+DEX+WIS","Weapon Mastery x2","Monks Focus Lvl2","Subclass Lvl3","Stunning Strike Lvl5"],classFeatChoices:["Mobile","Alert","War Caster","Tough","Resilient"]},
   Paladin:{hd:10,pri:["STR","CHA","CON"],saves:["WIS","CHA"],armor:"All armor, shields",weapons:"Simple and martial",sc:["Athletics","Insight","Intimidation","Medicine","Persuasion","Religion"],ns:2,role:"Holy warrior",features:["Lay on Hands 5x level HP","Spellcasting CHA Lvl1","Weapon Mastery x2","Divine Smite Lvl2","Subclass Lvl3","Aura of Protection Lvl6"],classFeatChoices:["Sentinel","War Caster","Great Weapon Master","Inspiring Leader","Tough"]},
   Ranger:{hd:10,pri:["DEX","WIS","CON"],saves:["STR","DEX"],armor:"Light, medium, shields",weapons:"Simple and martial",sc:["Animal Handling","Athletics","Insight","Investigation","Nature","Perception","Stealth","Survival"],ns:3,role:"Scout and striker",features:["Spellcasting WIS Lvl1","Weapon Mastery x2","Deft Explorer Lvl1","Favored Enemy Lvl1","Subclass Lvl3","Extra Attack Lvl5"],classFeatChoices:["Sharpshooter","Alert","Mobile","Resilient","Tough"]},
@@ -1025,7 +1028,7 @@ function FancySheet({sh}){
       </div>:<div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>}
       <div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
         <div className="subtle-caption" style={{marginBottom:"1mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 4.2mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).slice(0,3).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.1,marginBottom:"0.8mm"}}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul>
+        <ul style={{margin:0,padding:"0 0 0 4.2mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>!sh.resource||!l.trim().toLowerCase().startsWith(sh.resource.name.toLowerCase())).slice(0,3).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.1,marginBottom:"0.8mm"}}>{line.length>44?line.slice(0,44)+"…":line}</li>)}</ul>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
