@@ -479,16 +479,20 @@ const SUBCLASSES={
 // Bonus spells granted by subclass (Domain/Oath/Patron spells) — always prepared, don't count against known/prepared limits.
 const SUBCLASS_SPELLS={
   Cleric:{
-    "Life Domain":{1:["Bless","Cure Wounds"],3:["Lesser Restoration","Spiritual Weapon"],5:["Beacon of Hope","Revivify"],7:["Death Ward","Guardian of Faith"],9:["Mass Cure Wounds","Raise Dead"]},
-    "Light Domain":{1:["Burning Hands","Faerie Fire"],3:["Flaming Sphere","Scorching Ray"],5:["Daylight","Fireball"],7:["Guardian of Faith","Wall of Fire"],9:["Flame Strike","Scrying"]},
-    "Trickery Domain":{1:["Charm Person","Disguise Self"],3:["Mirror Image","Pass without Trace"],5:["Blink","Dispel Magic"],7:["Dimension Door","Polymorph"],9:["Modify Memory","Seeming"]},
-    "War Domain":{1:["Divine Favor","Shield of Faith"],3:["Magic Weapon","Spiritual Weapon"],5:["Crusader's Mantle","Spirit Guardians"],7:["Freedom of Movement","Stoneskin"],9:["Flame Strike","Hold Monster"]},
+    "Life Domain":{3:["Aid","Bless","Cure Wounds","Lesser Restoration"],5:["Mass Healing Word","Revivify"],7:["Aura of Life","Death Ward"],9:["Greater Restoration","Mass Cure Wounds"]},
+    "Light Domain":{3:["Burning Hands","Faerie Fire","Scorching Ray","See Invisibility"],5:["Daylight","Fireball"],7:["Arcane Eye","Wall of Fire"],9:["Flame Strike","Scrying"]},
+    "Trickery Domain":{3:["Charm Person","Disguise Self","Invisibility","Pass without Trace"],5:["Hypnotic Pattern","Nondetection"],7:["Confusion","Dimension Door"],9:["Dominate Person","Modify Memory"]},
+    "War Domain":{3:["Guiding Bolt","Magic Weapon","Shield of Faith","Spiritual Weapon"],5:["Crusader's Mantle","Spirit Guardians"],7:["Fire Shield","Freedom of Movement"],9:["Hold Monster","Steel Wind Strike"]},
   },
   Paladin:{
     "Oath of Devotion":{3:["Protection from Evil and Good","Sanctuary"],5:["Lesser Restoration","Zone of Truth"],9:["Beacon of Hope","Dispel Magic"],13:["Freedom of Movement","Guardian of Faith"],17:["Commune","Flame Strike"]},
     "Oath of the Ancients":{3:["Ensnaring Strike","Speak with Animals"],5:["Moonbeam","Misty Step"],9:["Plant Growth","Protection from Energy"],13:["Ice Storm","Stoneskin"],17:["Commune with Nature","Tree Stride"]},
     "Oath of Vengeance":{3:["Bane","Hunter's Mark"],5:["Hold Person","Misty Step"],9:["Haste","Protection from Energy"],13:["Banishment","Dimension Door"],17:["Hold Monster","Scrying"]},
     "Oath of Glory":{3:["Guiding Bolt","Heroism"],5:["Enhance Ability","Magic Weapon"],9:["Haste","Protection from Energy"],13:["Compulsion","Freedom of Movement"],17:["Legend Lore","Yolande's Regal Presence"]},
+  },
+  Druid:{
+    "Circle of the Moon":{3:["Cure Wounds","Moonbeam","Starry Wisp"],5:["Conjure Animals"],7:["Fount of Moonlight"],9:["Mass Cure Wounds"]},
+    "Circle of the Sea":{3:["Fog Cloud","Gust of Wind","Ray of Frost","Shatter","Thunderwave"],5:["Lightning Bolt","Water Breathing"],7:["Control Water","Ice Storm"],9:["Conjure Elemental","Hold Monster"]},
   },
   Warlock:{
     "Fiend Patron":{1:["Burning Hands","Command"],3:["Blindness/Deafness","Scorching Ray"],5:["Fireball","Stinking Cloud"],7:["Fire Shield","Wall of Fire"],9:["Geas","Insect Plague"]},
@@ -501,6 +505,60 @@ function subclassSpellsAtLevel(cn,sub,level){const table=SUBCLASS_SPELLS[cn]?.[s
 // Actual mechanical subclass features (not bonus spells), verified against the PHB. Each entry: [name,[en,da]].
 // Currently populated for Cleric's 4 domains only — other classes' subclasses still need the same pass.
 const SUBCLASS_FEATURES={
+  Barbarian:{
+    "Path of the Berserker":{
+      3:[["Frenzy",["While Raging, using Reckless Attack deals extra damage on your first hit each turn: roll d6s equal to your Rage Damage bonus.","Mens du raser, giver Reckless Attack ekstra skade på dit første ramte angreb hver tur: slå d6'ere svarende til din Rage-skadebonus."]]],
+      6:[["Mindless Rage",["Immunity to Charmed and Frightened while your Rage is active; an existing Charm/Fright ends when you enter Rage.","Immunitet mod Charmed og Frightened mens du raser; en eksisterende Charm/Fright ophæves når du starter din Rage."]]],
+      10:[["Retaliation",["Reaction when you take damage from a creature within 5 ft: make one melee attack against it.","Reaktion når du tager skade fra et væsen inden for 5 ft: udfør ét nærkampsangreb mod det."]]],
+      14:[["Intimidating Presence",["Bonus Action: each creature you choose in a 30-ft Emanation makes a WIS save (DC 8+STR mod+Prof.Bonus) or is Frightened 1 min.","Bonus-handling: hvert væsen du vælger i en 30-ft udstråling laver et WIS save (DC 8+STR-mod+Prof.Bonus) eller bliver Frightened i 1 min."]]],
+    },
+    "Path of the Wild Heart":{
+      3:[["Animal Speaker",["Cast Beast Sense and Speak with Animals, but only as Rituals (WIS).","Cast Beast Sense og Speak with Animals, men kun som Ritualer (WIS)."]],
+         ["Rage of the Wilds",["When you Rage, choose Bear (Resistance to all but Force/Necrotic/Psychic/Radiant), Eagle (Disengage+Dash as part of your Bonus Action), or Wolf (allies have Advantage vs enemies within 5 ft of you).","Når du raser, vælg Bear (Resistance mod alt undtagen Force/Necrotic/Psychic/Radiant), Eagle (Disengage+Dash som del af din bonus-handling), eller Wolf (allierede har Advantage mod fjender inden for 5 ft af dig)."]]],
+      6:[["Aspect of the Wilds",["Choose Owl (Darkvision 60 ft, or +60 ft), Panther (Climb Speed = Speed), or Salmon (Swim Speed = Speed); can change on a Long Rest.","Vælg Owl (Darkvision 60 ft, eller +60 ft), Panther (Climb Speed = Speed), eller Salmon (Swim Speed = Speed); kan ændres ved lang hvile."]]],
+      10:[["Nature Speaker",["Cast Commune with Nature, but only as a Ritual (WIS).","Cast Commune with Nature, men kun som et Ritual (WIS)."]]],
+      14:[["Power of the Wilds",["When you Rage, choose Falcon (Fly Speed = Speed if unarmored), Lion (enemies within 5 ft have Disadvantage attacking others), or Ram (melee hits can knock Large-or-smaller Prone).","Når du raser, vælg Falcon (Fly Speed = Speed hvis urustet), Lion (fjender inden for 5 ft har Disadvantage mod andre), eller Ram (nærkampsramt kan give Large-eller-mindre Prone)."]]],
+    },
+    "Path of the World Tree":{
+      3:[["Vitality of the Tree",["Vitality Surge: gain temp HP = Barbarian level on Rage. Life-Giving Force: another creature within 10 ft gains temp HP (roll d6s = Rage Damage bonus) at the start of your turns while Raging.","Vitality Surge: få midlertidige HP = Barbarian-niveau ved Rage. Life-Giving Force: et andet væsen inden for 10 ft får midlertidige HP (slå d6'ere = Rage-skadebonus) i starten af dine ture mens du raser."]]],
+      6:[["Branches of the Tree",["Reaction when a creature starts its turn within 30 ft while Raging: it makes a STR save or is teleported within 5 ft of you (or nearest space) and its Speed can be reduced to 0.","Reaktion når et væsen starter sin tur inden for 30 ft mens du raser: det laver et STR save eller bliver teleporteret inden for 5 ft af dig, og dets Speed kan sættes til 0."]]],
+      10:[["Battering Roots",["Heavy/Versatile melee weapons gain +10 ft reach; hits can activate Push or Topple mastery in addition to the weapon's own.","Heavy/Versatile nærkampsvåben får +10 ft rækkevidde; ramte angreb kan aktivere Push eller Topple mastery ud over våbnets egen."]]],
+      14:[["Travel along the Tree",["Bonus Action while Raging: teleport up to 60 ft (once per Rage, up to 150 ft and bring up to 6 willing creatures).","Bonus-handling mens du raser: teleporter op til 60 ft (én gang pr. Rage, op til 150 ft og bring op til 6 villige væsener)."]]],
+    },
+    "Path of the Zealot":{
+      3:[["Divine Fury",["First creature you hit each turn while Raging takes extra 1d6+half Barbarian level Necrotic or Radiant damage (your choice).","Det første væsen du rammer hver tur mens du raser tager ekstra 1d6+halvt Barbarian-niveau Necrotic eller Radiant skade (dit valg)."]],
+         ["Warrior of the Gods",["Pool of four d12s (more at higher levels) to spend as a Bonus Action to heal yourself; regain all on Long Rest.","Pulje af fire d12'ere (flere ved højere niveau) du kan bruge som bonus-handling til at hele dig selv; alle genoprettes ved lang hvile."]]],
+      6:[["Fanatical Focus",["Once per Rage, reroll a failed save with a bonus equal to your Rage Damage bonus.","Én gang pr. Rage, kast et fejlet save om med en bonus svarende til din Rage-skadebonus."]]],
+      10:[["Zealous Presence",["Bonus Action: up to 10 creatures within 60 ft gain Advantage on attack rolls and saves until the start of your next turn.","Bonus-handling: op til 10 væsener inden for 60 ft får Advantage på angrebstjek og saves indtil starten af din næste tur."]]],
+      14:[["Rage of the Gods",["When you Rage, become a divine warrior for 1 min: Fly Speed = Speed, Resistance to Necrotic/Psychic/Radiant, and Revivification (Reaction to save a dying creature within 30 ft).","Når du raser, bliv en guddommelig kriger i 1 min: Fly Speed = Speed, Resistance mod Necrotic/Psychic/Radiant, og Revivification (Reaktion for at redde et døende væsen inden for 30 ft)."]]],
+    },
+  },
+  Bard:{
+    "College of Dance":{
+      3:[["Dazzling Footwork",["Unarmored: Advantage on Dance Performance checks, AC=10+DEX+CHA, Unarmed Strikes as part of Bardic Inspiration actions, using DEX for those attacks and Bardic Inspiration die + DEX for damage.","Urustet: Advantage på Dance Performance-tjek, AC=10+DEX+CHA, Unarmed Strikes som del af Bardic Inspiration-handlinger, ved brug af DEX til de angreb og Bardic Inspiration-terning + DEX til skade."]]],
+      6:[["Inspiring Movement",["Reaction, expend Bardic Inspiration, when an enemy ends its turn within 5 ft: move up to half Speed, then one ally can also move up to half Speed. No Opportunity Attacks.","Reaktion, brug Bardic Inspiration, når en fjende slutter sin tur inden for 5 ft: flyt op til halv Speed, og en allieret kan også flytte op til halv Speed. Ingen Opportunity Attacks."]],
+         ["Tandem Footwork",["When rolling Initiative, expend Bardic Inspiration: you and allies within 30 ft who can see/hear you gain a bonus to Initiative equal to the die roll.","Når du slår Initiative, brug Bardic Inspiration: du og allierede inden for 30 ft der kan se/høre dig får en bonus til Initiative svarende til terningslaget."]]],
+      14:[["Leading Evasion",["When subjected to a DEX save for half damage, take no damage on success and only half on failure; can share this with creatures within 5 ft making the same save.","Når du udsættes for et DEX save til halv skade, tager du ingen skade ved succes og kun halv ved fejl; kan deles med væsener inden for 5 ft der laver samme save."]]],
+    },
+    "College of Glamour":{
+      3:[["Beguiling Magic",["Always have Charm Person and Mirror Image prepared. After casting an Enchantment/Illusion spell with a slot, a creature within 60 ft makes a WIS save or is Charmed/Frightened (your choice) 1 min; restore use with Bardic Inspiration.","Har altid Charm Person og Mirror Image forberedt. Efter at have castet et Enchantment/Illusion spell med en slot, laver et væsen inden for 60 ft et WIS save eller bliver Charmed/Frightened (dit valg) i 1 min; genopret brug med Bardic Inspiration."]],
+         ["Mantle of Inspiration",["Bonus Action, expend Bardic Inspiration: creatures up to CHA mod gain temp HP = 2x the die roll and can use their Reaction to move up to their Speed without Opportunity Attacks.","Bonus-handling, brug Bardic Inspiration: væsener op til CHA-mod får midlertidige HP = 2x terningslaget og kan bruge deres Reaktion til at flytte op til deres Speed uden Opportunity Attacks."]]],
+      6:[["Mantle of Majesty",["Always have Command prepared. Bonus Action: cast Command free (Charmed creatures auto-fail) for 1 min; restore with a level 3+ slot.","Har altid Command forberedt. Bonus-handling: cast Command gratis (Charmed væsener fejler automatisk) i 1 min; genopret med en niveau 3+ slot."]]],
+      14:[["Unbreakable Majesty",["Bonus Action: assume a majestic presence for 1 min; the first attacker against you each turn must succeed on a CHA save or the attack misses.","Bonus-handling: antag en majestætisk tilstedeværelse i 1 min; den første angriber mod dig hver tur skal bestå et CHA save eller angrebet fejler."]]],
+    },
+    "College of Lore":{
+      3:[["Bonus Proficiencies",["Gain proficiency with three skills of your choice.","Få proficiency i tre valgfrie færdigheder."]],
+         ["Cutting Words",["Reaction, expend Bardic Inspiration, when a creature within 60 ft makes a damage roll or succeeds an ability check/attack roll: subtract the die roll from it.","Reaktion, brug Bardic Inspiration, når et væsen inden for 60 ft laver et skadetjek eller består et evnetjek/angrebstjek: træk terningslaget fra det."]]],
+      6:[["Magical Discoveries",["Learn two spells from the Cleric, Druid, or Wizard list (cantrip or a level you have slots for); always prepared.","Lær to spells fra Cleric-, Druid- eller Wizard-listen (cantrip eller et niveau du har slots til); altid forberedt."]]],
+      14:[["Peerless Skill",["Expend Bardic Inspiration on a failed ability check or attack roll: add the die roll, potentially turning failure into success.","Brug Bardic Inspiration ved et fejlet evnetjek eller angrebstjek: læg terningslaget til, hvilket kan vende fiasko til succes."]]],
+    },
+    "College of Valor":{
+      3:[["Combat Inspiration",["A creature with your Bardic Inspiration die can use it to add to AC against an attack (Reaction) or to damage after hitting.","Et væsen med din Bardic Inspiration-terning kan bruge den til at lægge til AC mod et angreb (Reaktion) eller til skade efter et ramt angreb."]],
+         ["Martial Training",["Proficiency with Martial weapons, Medium armor, and Shields; can use a Simple/Martial weapon as a Spellcasting Focus.","Proficiency med Martial-våben, Medium rustning og Shields; kan bruge et Simple/Martial-våben som Spellcasting Focus."]]],
+      6:[["Extra Attack",["Attack twice instead of once when you take the Attack action; can replace one attack with a cantrip that has a casting time of an action.","Angrib to gange i stedet for én når du tager Attack-handlingen; kan erstatte ét angreb med en cantrip med en handlings-cast-tid."]]],
+      14:[["Battle Magic",["After casting a spell with a casting time of an action, make one weapon attack as a Bonus Action.","Efter at have castet et spell med en handlings-cast-tid, udfør ét våbenangreb som en bonus-handling."]]],
+    },
+  },
   Cleric:{
     "Life Domain":{
       3:[["Disciple of Life",["When a spell you cast with a spell slot restores Hit Points, the target regains additional HP equal to 2 + the spell slot's level.","Når et spell du caster med en spell slot genopretter HP, får målet yderligere HP svarende til 2 + spell slottets niveau."]],
@@ -525,6 +583,33 @@ const SUBCLASS_FEATURES={
          ["War Priest",["Bonus Action: make one weapon or Unarmed Strike attack. Uses = WIS mod (min 1), regain all on a Short or Long Rest.","Bonus-handling: udfør ét våben- eller ubevæbnet angreb. Bruges = WIS-mod (min 1), alle genoprettes ved kort eller lang hvile."]]],
       6:[["War God's Blessing",["Expend Channel Divinity to cast Shield of Faith or Spiritual Weapon without a spell slot; it doesn't require Concentration but lasts only 1 minute and ends early if you cast it again, are Incapacitated, or die.","Brug Channel Divinity til at caste Shield of Faith eller Spiritual Weapon uden en spell slot; det kræver ikke Concentration men varer kun 1 minut og slutter tidligt hvis du caster det igen, bliver Incapacitated, eller dør."]]],
       17:[["Avatar of Battle",["Resistance to Bludgeoning, Piercing, and Slashing damage.","Resistance mod Bludgeoning-, Piercing- og Slashing-skade."]]],
+    },
+  },
+  Druid:{
+    "Circle of the Land":{
+      3:[["Land's Aid",["Magic action, expend Wild Shape: vitality/thorns in a 10-ft Sphere within 60 ft; a chosen creature takes 2d6 Necrotic (CON save for half) and another regains 2d6 HP (both scale up at levels 10 and 14).","Magisk handling, brug Wild Shape: livskraft/torne i en 10-ft kugle inden for 60 ft; et valgt væsen tager 2d6 Necrotic (CON save for halv) og et andet genopretter 2d6 HP (begge skalerer op ved niveau 10 og 14)."]]],
+      6:[["Natural Recovery",["Cast a prepared Circle Spell of level 1+ without a slot (1/Long Rest); also recover spell slots (combined level ≤ half Druid level) on a Short Rest.","Cast et forberedt Circle Spell af niveau 1+ uden en slot (1/lang hvile); genopret også spell slots (kombineret niveau ≤ halvt Druid-niveau) ved kort hvile."]]],
+      10:[["Nature's Ward",["Immune to Poisoned; Resistance to the damage type tied to your chosen land (Fire/Cold/Lightning/Poison).","Immun mod Poisoned; Resistance mod skadetypen knyttet til dit valgte land (Fire/Cold/Lightning/Poison)."]]],
+      14:[["Nature's Sanctuary",["Magic action, expend Wild Shape: spectral trees in a 15-ft Cube give you and allies Half Cover and your Nature's Ward Resistance for 1 minute.","Magisk handling, brug Wild Shape: spøgelsestræer i en 15-ft terning giver dig og allierede Half Cover og din Nature's Ward-Resistance i 1 minut."]]],
+    },
+    "Circle of the Moon":{
+      3:[["Circle Forms",["Your Wild Shape CR limit becomes Druid level ÷ 3 (round down); while shaped, AC = 13+WIS mod if higher, and you gain temp HP = 3x Druid level.","Din Wild Shape CR-grænse bliver Druid-niveau ÷ 3 (rund ned); mens du er forvandlet, AC = 13+WIS-mod hvis højere, og du får midlertidige HP = 3x Druid-niveau."]]],
+      6:[["Improved Circle Forms",["Wild Shape attacks can deal Radiant instead of their normal damage; add WIS mod to CON saves while shaped.","Wild Shape-angreb kan give Radiant skade i stedet for deres normale skadetype; læg WIS-mod til CON saves mens du er forvandlet."]]],
+      10:[["Moonlight Step",["Bonus Action: teleport up to 30 ft and gain Advantage on your next attack. Uses = WIS mod, regain on Long Rest (or spend a level 2+ slot).","Bonus-handling: teleporter op til 30 ft og få Advantage på dit næste angreb. Bruges = WIS-mod, genoprettes ved lang hvile (eller brug en niveau 2+ slot)."]]],
+      14:[["Lunar Form",["Once per turn, deal an extra 2d10 Radiant with a Wild Shape attack; Moonlight Step can also teleport one willing creature within 10 ft.","Én gang pr. tur, giv ekstra 2d10 Radiant med et Wild Shape-angreb; Moonlight Step kan også teleportere et villigt væsen inden for 10 ft."]]],
+    },
+    "Circle of the Sea":{
+      3:[["Wrath of the Sea",["Bonus Action, expend Wild Shape: 5-ft ocean-spray Emanation for 10 min; as a Bonus Action, a chosen creature in it makes a CON save or takes Cold damage (d6s = WIS mod) and is pushed 15 ft if Large or smaller.","Bonus-handling, brug Wild Shape: 5-ft havsprøjt-udstråling i 10 min; som bonus-handling laver et valgt væsen i den et CON save eller tager Cold-skade (d6'ere = WIS-mod) og skubbes 15 ft hvis Large eller mindre."]]],
+      6:[["Aquatic Affinity",["The Emanation grows to 10 ft; you gain a Swim Speed equal to your Speed.","Udstrålingen vokser til 10 ft; du får en Swim Speed svarende til din Speed."]]],
+      10:[["Stormborn",["While Wrath of the Sea is active, you have a Fly Speed equal to your Speed and Resistance to Cold, Lightning, and Thunder damage.","Mens Wrath of the Sea er aktiv, har du en Fly Speed svarende til din Speed og Resistance mod Cold-, Lightning- og Thunder-skade."]]],
+      14:[["Oceanic Gift",["Manifest Wrath of the Sea's Emanation around a willing creature within 60 ft instead of yourself (using your save DC/WIS mod), or around both of you by expending two uses of Wild Shape.","Manifester Wrath of the Sea's udstråling omkring et villigt væsen inden for 60 ft i stedet for dig selv (med din save DC/WIS-mod), eller omkring jer begge ved at bruge to Wild Shape-brug."]]],
+    },
+    "Circle of the Stars":{
+      3:[["Star Map",["A Tiny Spellcasting Focus; while holding it you always have Guidance and Guiding Bolt prepared, and can cast Guiding Bolt free (WIS mod times, regain on Long Rest).","Et lille Spellcasting Focus; mens du holder det har du altid Guidance og Guiding Bolt forberedt, og kan caste Guiding Bolt gratis (WIS-mod gange, genoprettes ved lang hvile)."]],
+         ["Starry Form",["Bonus Action, expend Wild Shape: take a luminous starry form (10 min) instead of shape-shifting, choosing a constellation — Archer (ranged spell attack 1d8+WIS radiant as a Bonus Action), Chalice (regain 1d8+WIS HP when you heal someone with a slot), or Dragon (treat CON/INT/WIS rolls of 9 or lower as a 10).","Bonus-handling, brug Wild Shape: antag en lysende stjerneform (10 min) i stedet for at forvandle dig, og vælg en konstellation — Archer (afstandsangreb 1d8+WIS radiant som bonus-handling), Chalice (genopret 1d8+WIS HP når du healer nogen med en slot), eller Dragon (behandl CON/INT/WIS-slag på 9 eller lavere som et 10-tal)."]]],
+      6:[["Cosmic Omen",["After a Long Rest, roll a die for Weal (even, Reaction to add 1d6 to a creature's D20 Test) or Woe (odd, Reaction to subtract 1d6). Uses = WIS mod, regain on Long Rest.","Efter en lang hvile, slå en terning for Weal (lige, Reaktion for at lægge 1d6 til et væsens D20-test) eller Woe (ulige, Reaktion for at trække 1d6 fra). Bruges = WIS-mod, genoprettes ved lang hvile."]]],
+      10:[["Twinkling Constellations",["Archer/Chalice dice become 2d8; Dragon grants a 20-ft Fly Speed (hover); you can change constellation at the start of each of your turns in Starry Form.","Archer/Chalice-terninger bliver 2d8; Dragon giver en 20-ft Fly Speed (svæve); du kan skifte konstellation i starten af hver af dine ture i Starry Form."]]],
+      14:[["Full of Stars",["While in your Starry Form, you become partially incorporeal, gaining Resistance to Bludgeoning, Piercing, and Slashing damage.","Mens du er i din Starry Form, bliver du delvist ukorporlig og får Resistance mod Bludgeoning-, Piercing- og Slashing-skade."]]],
     },
   },
 };
