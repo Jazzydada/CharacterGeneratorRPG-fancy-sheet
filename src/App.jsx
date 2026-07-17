@@ -495,10 +495,10 @@ const SUBCLASS_SPELLS={
     "Circle of the Sea":{3:["Fog Cloud","Gust of Wind","Ray of Frost","Shatter","Thunderwave"],5:["Lightning Bolt","Water Breathing"],7:["Control Water","Ice Storm"],9:["Conjure Elemental","Hold Monster"]},
   },
   Warlock:{
-    "Fiend Patron":{1:["Burning Hands","Command"],3:["Blindness/Deafness","Scorching Ray"],5:["Fireball","Stinking Cloud"],7:["Fire Shield","Wall of Fire"],9:["Geas","Insect Plague"]},
-    "Archfey Patron":{1:["Faerie Fire","Sleep"],3:["Calm Emotions","Phantasmal Force"],5:["Blink","Plant Growth"],7:["Dimension Door","Freedom of Movement"],9:["Dominate Person","Seeming"]},
-    "Great Old One Patron":{1:["Dissonant Whispers","Hideous Laughter"],3:["Detect Thoughts","Phantasmal Force"],5:["Clairvoyance","Sending"],7:["Dominate Beast","Evard's Black Tentacles"],9:["Dream","Telekinesis"]},
-    "Celestial Patron":{1:["Cure Wounds","Guiding Bolt"],3:["Flaming Sphere","Lesser Restoration"],5:["Daylight","Revivify"],7:["Guardian of Faith","Wall of Fire"],9:["Flame Strike","Greater Restoration"]},
+    "Fiend Patron":{3:["Burning Hands","Command","Scorching Ray","Suggestion"],5:["Fireball","Stinking Cloud"],7:["Fire Shield","Wall of Fire"],9:["Geas","Insect Plague"]},
+    "Archfey Patron":{3:["Calm Emotions","Faerie Fire","Misty Step","Phantasmal Force","Sleep"],5:["Blink","Plant Growth"],7:["Dominate Beast","Greater Invisibility"],9:["Dominate Person","Seeming"]},
+    "Great Old One Patron":{3:["Detect Thoughts","Dissonant Whispers","Phantasmal Force","Tasha's Hideous Laughter"],5:["Clairvoyance","Hunger of Hadar"],7:["Confusion","Summon Aberration"],9:["Modify Memory","Telekinesis"]},
+    "Celestial Patron":{3:["Aid","Cure Wounds","Guiding Bolt","Lesser Restoration","Light","Sacred Flame"],5:["Daylight","Revivify"],7:["Guardian of Faith","Wall of Fire"],9:["Greater Restoration","Summon Celestial"]},
   },
 };
 function subclassSpellsAtLevel(cn,sub,level){const table=SUBCLASS_SPELLS[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
@@ -759,6 +759,64 @@ const SUBCLASS_FEATURES={
       9:[["Supreme Sneak",["New Cunning Strike option Stealth Attack (Cost 1d6): an Invisible-from-Hide attack doesn't lose that Invisibility from Three-Quarters/Total Cover at turn's end.","Ny Cunning Strike-mulighed Stealth Attack (Cost 1d6): et Invisible-fra-Hide angreb mister ikke den Invisibility fra Three-Quarters/Total Cover ved turens afslutning."]]],
       13:[["Use Magic Device",["Attune to up to four magic items; on charge-use roll 1d6, a 6 doesn't expend charges; use any Spell Scroll via Intelligence.","Attune til op til fire magiske genstande; ved brug af opladninger, slå 1d6, et 6-tal bruger ikke opladninger; brug enhver Spell Scroll via Intelligence."]]],
       17:[["Thief's Reflexes",["Take two turns in the first round of combat: one at normal Initiative, one at Initiative minus 10.","Tag to ture i første runde af kamp: en ved normal Initiative, en ved Initiative minus 10."]]],
+    },
+  },
+  Sorcerer:{
+    "Aberrant Sorcery":{
+      3:[["Telepathic Speech",["Bonus Action: form a telepathic connection with a creature within 30 ft, lasting Sorcerer-level minutes within CHA-mod miles.","Bonus-handling: dan en telepatisk forbindelse med et væsen inden for 30 ft, varende Sorcerer-niveau minutter inden for CHA-mod miles."]]],
+      6:[["Psionic Sorcery",["Cast your Psionic Spells by spending Sorcery Points equal to the spell's level instead of a slot, with no components required.","Cast dine Psionic Spells ved at bruge Sorcery Points svarende til spellets niveau i stedet for en slot, uden krav om komponenter."]],
+         ["Psychic Defenses",["Resistance to Psychic damage; Advantage on saves to avoid/end Charmed or Frightened.","Resistance mod Psychic-skade; Advantage på saves for at undgå/ophæve Charmed eller Frightened."]]],
+      14:[["Revelation in Flesh",["Bonus Action, spend 1+ Sorcery Points for 10 min: choose Aquatic Adaptation, Glistening Flight, See the Invisible, or Wormlike Movement.","Bonus-handling, brug 1+ Sorcery Points i 10 min: vælg Aquatic Adaptation, Glistening Flight, See the Invisible eller Wormlike Movement."]]],
+      18:[["Warping Implosion",["Magic action: teleport up to 120 ft; creatures within 30 ft of your former space make a STR save or take 3d10 Force damage and are pulled to that space.","Magisk handling: teleporter op til 120 ft; væsener inden for 30 ft af din tidligere plads laver et STR save eller tager 3d10 Force-skade og trækkes til den plads."]]],
+    },
+    "Clockwork Sorcery":{
+      3:[["Restore Balance",["Reaction: prevent a creature's d20 roll within 60 ft from being affected by Advantage or Disadvantage.","Reaktion: forhindr et væsens d20-slag inden for 60 ft i at blive påvirket af Advantage eller Disadvantage."]],
+         ["Clockwork Spells",["Always have Aid prepared from level 3 (later Alarm, Lesser Restoration, Dispel Magic, Protection from Energy, Freedom of Movement, Summon Construct, Greater Restoration, Wall of Force).","Har altid Aid forberedt fra niveau 3 (senere Alarm, Lesser Restoration, Dispel Magic, Protection from Energy, Freedom of Movement, Summon Construct, Greater Restoration, Wall of Force)."]]],
+      6:[["Bastion of Law",["Magic action, spend 1-5 Sorcery Points: create a d8-per-point ward around yourself or another creature within 30 ft that can be expended to reduce damage.","Magisk handling, brug 1-5 Sorcery Points: skab en ward (d8 pr. point) omkring dig selv eller et andet væsen inden for 30 ft, der kan bruges til at reducere skade."]]],
+      14:[["Trance of Order",["Bonus Action, 1 minute: attack rolls against you can't have Advantage, and you treat d20 Test rolls of 9 or lower as a 10.","Bonus-handling, 1 minut: angrebstjek mod dig kan ikke have Advantage, og du behandler d20-tests på 9 eller lavere som et 10-tal."]]],
+      18:[["Clockwork Cavalcade",["Magic action: summon spirits in a 30-ft Cube that heal up to 100 HP, repair objects, and end spells of level 6 or lower.","Magisk handling: tilkald ånder i en 30-ft Cube der healer op til 100 HP, reparerer genstande og ophæver spells af niveau 6 eller lavere."]]],
+    },
+    "Draconic Sorcery":{
+      3:[["Draconic Resilience",["Hit Point maximum +3 (and +1 per Sorcerer level); base AC = 10+DEX+CHA while unarmored.","Hit Point-maksimum +3 (og +1 pr. Sorcerer-niveau); base AC = 10+DEX+CHA mens du er urustet."]],
+         ["Draconic Spells",["Always have Alter Self prepared from level 3 (later Fear, Fly, Arcane Eye, Charm Monster, Legend Lore, Summon Dragon).","Har altid Alter Self forberedt fra niveau 3 (senere Fear, Fly, Arcane Eye, Charm Monster, Legend Lore, Summon Dragon)."]]],
+      6:[["Elemental Affinity",["Choose Acid/Cold/Fire/Lightning/Poison: Resistance to it, and add CHA mod to one damage roll of a spell of that type.","Vælg Acid/Cold/Fire/Lightning/Poison: Resistance mod den, og læg CHA-mod til ét skadeslag fra et spell af den type."]]],
+      14:[["Dragon Wings",["Bonus Action: sprout wings for 1 hour, gaining a Fly Speed of 60 ft; restore use with 3 Sorcery Points.","Bonus-handling: få vinger i 1 time og en Fly Speed på 60 ft; genopret brug med 3 Sorcery Points."]]],
+      18:[["Dragon Companion",["Cast Summon Dragon without a Material component, once free per Long Rest.","Cast Summon Dragon uden en materiel komponent, én gang gratis pr. lang hvile."]]],
+    },
+    "Wild Magic Sorcery":{
+      3:[["Wild Magic Surge",["Once per turn, after casting a Sorcerer spell with a slot, roll 1d20; on a 20, roll on the Wild Magic Surge table for a random effect.","Én gang pr. tur, efter at have castet et Sorcerer-spell med en slot, slå 1d20; ved 20, slå på Wild Magic Surge-tabellen for en tilfældig effekt."]],
+         ["Tides of Chaos",["Gain Advantage on one d20 Test; must then cast a spell with a slot or finish a Long Rest before using it again (doing the former auto-triggers a Surge roll).","Få Advantage på et d20-test; skal derefter caste et spell med en slot eller afslutte en lang hvile før brug igen (det første udløser automatisk et Surge-slag)."]]],
+      6:[["Bend Luck",["Reaction, spend 1 Sorcery Point when another creature rolls a d20 Test: roll 1d4 and apply it as a bonus or penalty to that roll.","Reaktion, brug 1 Sorcery Point når et andet væsen laver et d20-test: slå 1d4 og påfør det som en bonus eller straf til det slag."]]],
+      14:[["Controlled Chaos",["When rolling on the Wild Magic Surge table, roll twice and use either result.","Når du slår på Wild Magic Surge-tabellen, slå to gange og brug enten resultat."]]],
+      18:[["Tamed Surge",["After casting a Sorcerer spell with a slot, choose an effect from the Wild Magic Surge table instead of rolling (except the final row); once per Long Rest.","Efter at have castet et Sorcerer-spell med en slot, vælg en effekt fra Wild Magic Surge-tabellen i stedet for at slå (undtagen den sidste række); én gang pr. lang hvile."]]],
+    },
+  },
+  Warlock:{
+    "Archfey Patron":{
+      3:[["Steps of the Fey",["Cast Misty Step free (uses = CHA mod, min. once, regain on Long Rest); add Refreshing Step (temp HP) or Taunting Step (Disadvantage on enemy attacks vs others).","Cast Misty Step gratis (bruges = CHA-mod, min. en, genoprettes ved lang hvile); tilføj Refreshing Step (midlertidige HP) eller Taunting Step (Disadvantage på fjendtlige angreb mod andre)."]]],
+      6:[["Misty Escape",["Cast Misty Step as a Reaction when you take damage; also gain Disappearing Step (Invisible) or Dreadful Step (Psychic damage) options.","Cast Misty Step som en Reaktion når du tager skade; få også mulighederne Disappearing Step (Invisible) eller Dreadful Step (Psychic-skade)."]]],
+      10:[["Beguiling Defenses",["Immunity to Charmed; Reaction when hit to halve the damage and force the attacker to make a WIS save or take equal Psychic damage.","Immunity mod Charmed; Reaktion når du bliver ramt for at halvere skaden og fremtvinge et WIS save fra angriberen eller give lige så meget Psychic-skade."]]],
+      14:[["Bewitching Magic",["After casting an Enchantment or Illusion spell with a slot, cast Misty Step as part of the same action for free.","Efter at have castet et Enchantment- eller Illusion-spell med en slot, cast Misty Step som del af samme handling gratis."]]],
+    },
+    "Celestial Patron":{
+      3:[["Healing Light",["Bonus Action: heal yourself or a creature within 60 ft using a pool of d6s (1+Warlock level); expend up to CHA mod dice at once.","Bonus-handling: hel dig selv eller et væsen inden for 60 ft med en pulje af d6'ere (1+Warlock-niveau); brug op til CHA-mod terninger ad gangen."]]],
+      6:[["Radiant Soul",["Resistance to Radiant damage; once per turn add CHA mod to a spell's Radiant or Fire damage.","Resistance mod Radiant-skade; én gang pr. tur læg CHA-mod til et spells Radiant- eller Fire-skade."]]],
+      10:[["Celestial Resilience",["Gain Temporary HP (Warlock level+CHA mod) when using Healing Light or resting; up to five other creatures gain half that amount.","Få midlertidige HP (Warlock-niveau+CHA-mod) ved brug af Healing Light eller hvile; op til fem andre væsener får halvdelen af den mængde."]]],
+      14:[["Searing Vengeance",["When you or an ally within 60 ft is about to make a Death Save, heal them half their HP max and deal 2d8+CHA Radiant damage/Blinded to nearby creatures.","Når du eller en allieret inden for 60 ft skal lave et Death Save, hel dem for halvdelen af deres HP-max og giv 2d8+CHA Radiant-skade/Blinded til nærliggende væsener."]]],
+    },
+    "Fiend Patron":{
+      3:[["Dark One's Blessing",["When you reduce an enemy to 0 HP (or an ally does within 10 ft), gain Temporary HP = Warlock level+CHA mod (min. 1).","Når du reducerer en fjende til 0 HP (eller en allieret gør det inden for 10 ft), få midlertidige HP = Warlock-niveau+CHA-mod (min. 1)."]]],
+      6:[["Dark One's Own Luck",["Add 1d10 to an ability check or save after seeing the roll but before effects occur; uses = CHA mod (min. once).","Læg 1d10 til et ability-tjek eller save efter at have set slaget men før effekterne indtræder; bruges = CHA-mod (min. en)."]]],
+      10:[["Fiendish Resilience",["Choose a damage type (not Force): Resistance to it until you choose a different one on a Short/Long Rest.","Vælg en skadestype (ikke Force): Resistance mod den indtil du vælger en anden ved kort/lang hvile."]]],
+      14:[["Hurl Through Hell",["Once per turn on a hit, force a CHA save or transport the target through the Lower Planes (8d10 Psychic damage, Incapacitated); restore with a Pact Magic slot.","Én gang pr. tur ved et ramt angreb, fremtving et CHA save eller transporter målet gennem de nedre planer (8d10 Psychic-skade, Incapacitated); genopret med en Pact Magic-slot."]]],
+    },
+    "Great Old One Patron":{
+      3:[["Awakened Mind",["Bonus Action: form a telepathic connection with a creature within 30 ft, lasting Warlock-level minutes within CHA-mod miles.","Bonus-handling: dan en telepatisk forbindelse med et væsen inden for 30 ft, varende Warlock-niveau minutter inden for CHA-mod miles."]],
+         ["Psychic Spells",["Change a damage-dealing spell's type to Psychic; cast Enchantment/Illusion Warlock spells without Verbal/Somatic components.","Ændr en skadegivende spells type til Psychic; cast Enchantment/Illusion Warlock-spells uden Verbal/Somatic-komponenter."]]],
+      6:[["Clairvoyant Combatant",["When bonded via Awakened Mind, force a WIS save: on a fail the creature has Disadvantage attacking you and you have Advantage attacking it for the bond's duration.","Når bundet via Awakened Mind, fremtving et WIS save: ved fejl har væsenet Disadvantage mod dig og du har Advantage mod det for bondens varighed."]]],
+      10:[["Eldritch Hex",["Always have Hex prepared; the target also has Disadvantage on saves of the chosen ability while Hex lasts.","Har altid Hex forberedt; målet har også Disadvantage på saves af den valgte evne mens Hex varer."]],
+         ["Thought Shield",["Your thoughts can't be read without permission; Resistance to Psychic damage, and attackers dealing Psychic damage to you take the same amount.","Dine tanker kan ikke læses uden tilladelse; Resistance mod Psychic-skade, og angribere der giver dig Psychic-skade tager samme mængde."]]],
+      14:[["Create Thrall",["Cast Summon Aberration without Concentration (1 min duration); the Aberration gains Temp HP and deals extra Psychic damage to Hexed creatures.","Cast Summon Aberration uden koncentration (1 min varighed); Aberrationen får midlertidige HP og giver ekstra Psychic-skade til Hexed væsener."]]],
     },
   },
 };
