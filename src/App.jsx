@@ -498,6 +498,37 @@ const SUBCLASS_SPELLS={
   },
 };
 function subclassSpellsAtLevel(cn,sub,level){const table=SUBCLASS_SPELLS[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
+// Actual mechanical subclass features (not bonus spells), verified against the PHB. Each entry: [name,[en,da]].
+// Currently populated for Cleric's 4 domains only — other classes' subclasses still need the same pass.
+const SUBCLASS_FEATURES={
+  Cleric:{
+    "Life Domain":{
+      3:[["Disciple of Life",["When a spell you cast with a spell slot restores Hit Points, the target regains additional HP equal to 2 + the spell slot's level.","Når et spell du caster med en spell slot genopretter HP, får målet yderligere HP svarende til 2 + spell slottets niveau."]],
+         ["Preserve Life",["Magic action, expend Channel Divinity: restore HP equal to 5x Cleric level, divided among Bloodied creatures within 30 ft (max half their HP max).","Magisk handling, brug Channel Divinity: genopret HP svarende til 5x Cleric-niveau, fordelt blandt Bloodied væsener inden for 30 ft (maks halvdelen af deres HP-maks)."]]],
+      6:[["Blessed Healer",["Healing spells you cast on others also heal you for 2 + the spell slot's level.","Helende spells du caster på andre healer også dig for 2 + spell slottets niveau."]]],
+      17:[["Supreme Healing",["Instead of rolling healing dice, use the highest possible number for each die.","I stedet for at slå helbredende terninger, brug det højst mulige tal for hver terning."]]],
+    },
+    "Light Domain":{
+      3:[["Radiance of the Dawn",["Magic action, expend Channel Divinity: flash of light in a 30-ft Emanation dispels magical Darkness; each creature of your choice makes a CON save, taking 2d10+Cleric level radiant on a failed save (half on success).","Magisk handling, brug Channel Divinity: lysglimt i en 30-ft udstråling ophæver magisk mørke; hvert væsen du vælger laver et CON save, og tager 2d10+Cleric-niveau strålende skade ved fejlet save (halv ved succes)."]],
+          ["Warding Flare",["Reaction when a creature within 30 ft makes an attack roll: impose Disadvantage on it. Uses = WIS mod (min 1), regain all on Long Rest.","Reaktion når et væsen inden for 30 ft laver et angrebstjek: giv det Disadvantage. Bruges = WIS-mod (min 1), alle genoprettes ved lang hvile."]]],
+      6:[["Improved Warding Flare",["Regain uses on a Short or Long Rest. Using Warding Flare also grants the attack's target 2d6+WIS mod temporary HP.","Genopret brug ved kort eller lang hvile. Warding Flare giver også målet for angrebet 2d6+WIS-mod midlertidige HP."]]],
+      17:[["Corona of Light",["Magic action: emit sunlight in a 60-ft Bright Light and 30-ft Dim Light for 1 minute. Enemies in the Bright Light have Disadvantage on saves against your Radiance of the Dawn and any Fire/Radiant spell. Uses = WIS mod, regain on Long Rest.","Magisk handling: udstrål sollys i 60 ft Bright Light og 30 ft Dim Light i 1 minut. Fjender i Bright Light har Disadvantage på saves mod din Radiance of the Dawn og alle Fire/Radiant spells. Bruges = WIS-mod, genoprettes ved lang hvile."]]],
+    },
+    "Trickery Domain":{
+      3:[["Blessing of the Trickster",["Magic action: you or a willing creature within 30 ft gains Advantage on DEX (Stealth) checks until you finish a Long Rest or use this again.","Magisk handling: du eller et villigt væsen inden for 30 ft får Advantage på DEX (Stealth) tjek indtil du afslutter en lang hvile eller bruger det igen."]],
+          ["Invoke Duplicity",["Bonus Action, expend Channel Divinity: create a perfect illusory duplicate of yourself within 30 ft, lasting 1 minute. You can cast spells as if in the illusion's space, gain Advantage on attacks against a creature within 5 ft of both you and the illusion, and move the illusion 30 ft as a Bonus Action.","Bonus-handling, brug Channel Divinity: skab en perfekt illusorisk kopi af dig selv inden for 30 ft i 1 minut. Du kan caste spells som om du var i illusionens rum, få Advantage på angreb mod et væsen inden for 5 ft af både dig og illusionen, og flytte illusionen 30 ft som en bonus-handling."]]],
+      6:[["Trickster's Transposition",["Whenever you use the Bonus Action to create or move your Invoke Duplicity illusion, you can teleport to swap places with it.","Når du bruger bonus-handlingen til at skabe eller flytte din Invoke Duplicity-illusion, kan du teleportere og bytte plads med den."]]],
+      17:[["Improved Duplicity",["Shared Distraction: attack rolls against a creature within 5 ft of the illusion have Advantage. Healing Illusion: when the illusion ends, you or a creature within 5 ft of it regains HP equal to your Cleric level.","Shared Distraction: angrebstjek mod et væsen inden for 5 ft af illusionen har Advantage. Healing Illusion: når illusionen ender, genopretter du eller et væsen inden for 5 ft HP svarende til dit Cleric-niveau."]]],
+    },
+    "War Domain":{
+      3:[["Guided Strike",["Reaction when you or a creature within 30 ft misses with an attack roll: expend Channel Divinity to give that roll +10.","Reaktion når du eller et væsen inden for 30 ft rammer forbi med et angrebstjek: brug Channel Divinity til at give det slag +10."]],
+         ["War Priest",["Bonus Action: make one weapon or Unarmed Strike attack. Uses = WIS mod (min 1), regain all on a Short or Long Rest.","Bonus-handling: udfør ét våben- eller ubevæbnet angreb. Bruges = WIS-mod (min 1), alle genoprettes ved kort eller lang hvile."]]],
+      6:[["War God's Blessing",["Expend Channel Divinity to cast Shield of Faith or Spiritual Weapon without a spell slot; it doesn't require Concentration but lasts only 1 minute and ends early if you cast it again, are Incapacitated, or die.","Brug Channel Divinity til at caste Shield of Faith eller Spiritual Weapon uden en spell slot; det kræver ikke Concentration men varer kun 1 minut og slutter tidligt hvis du caster det igen, bliver Incapacitated, eller dør."]]],
+      17:[["Avatar of Battle",["Resistance to Bludgeoning, Piercing, and Slashing damage.","Resistance mod Bludgeoning-, Piercing- og Slashing-skade."]]],
+    },
+  },
+};
+function subclassFeaturesAtLevel(cn,sub,level){const table=SUBCLASS_FEATURES[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
 // Druid Circle of the Land: choose a land type (chosen anew each Long Rest per RAW); spells "and lower" are all prepared.
 const CIRCLE_LAND_SPELLS={
   Arid:{3:["Blur","Burning Hands","Fire Bolt"],5:["Fireball"],7:["Blight"],9:["Wall of Stone"]},
@@ -1340,7 +1371,8 @@ export default function App(){
     const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return d?f+": "+d:f;})].join("\n");
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
-    const classFeaturesTxt=[subclassLine,...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;})].filter(Boolean).join("\n");
+    const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>name+" ("+sub+"): "+txt[da?1:0]):[];
+    const classFeaturesTxt=[subclassLine,...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
     const breathDC=8+cm+pb;
     const dragonTraitDetail={
       "Draconic Ancestry":dragonColor+" — "+DRACONIC_ANCESTRY[dragonColor],
