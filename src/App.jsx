@@ -884,6 +884,16 @@ const SUBCLASS_FEATURES={
     },
   },
 };
+// PHB 2024 page each subclass appears on, individually verified against the book (only classes confirmed this way are listed).
+const SUBCLASS_PG={
+  Barbarian:{"Path of the Berserker":54,"Path of the Wild Heart":55,"Path of the World Tree":56,"Path of the Zealot":57},
+  Bard:{"College of Dance":64,"College of Glamour":65,"College of Lore":66,"College of Valor":67},
+  Cleric:{"Life Domain":73,"Light Domain":74,"Trickery Domain":75,"War Domain":76},
+  Druid:{"Circle of the Land":85,"Circle of the Moon":86,"Circle of the Sea":87,"Circle of the Stars":88},
+  Fighter:{"Battle Master":93,"Champion":96,"Eldritch Knight":96,"Psi Warrior":98},
+  Monk:{"Warrior of Mercy":104,"Warrior of Shadow":105,"Warrior of the Elements":106,"Warrior of the Open Hand":107},
+  Paladin:{"Oath of Devotion":113,"Oath of Glory":114,"Oath of the Ancients":115,"Oath of Vengeance":116},
+};
 function subclassFeaturesAtLevel(cn,sub,level){const table=SUBCLASS_FEATURES[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
 // Druid Circle of the Land: choose a land type (chosen anew each Long Rest per RAW); spells "and lower" are all prepared.
 const CIRCLE_LAND_SPELLS={
@@ -1773,7 +1783,8 @@ export default function App(){
     const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return d?f+": "+d:f;})].join("\n");
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
-    const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>name+" ("+sub+"): "+txt[da?1:0]):[];
+    const subPg=(sub&&SUBCLASS_PG[cn]?.[sub])||null;
+    const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>name+" ("+sub+"): "+txt[da?1:0]+(subPg?" (PHB p."+subPg+")":"")):[];
     const classFeaturesTxt=[...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
     const breathDC=8+cm+pb;
     const dragonTraitDetail={
