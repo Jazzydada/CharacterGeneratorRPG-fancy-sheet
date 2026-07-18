@@ -1510,8 +1510,8 @@ export default function App(){
   CURRENT_LANG=lang;
   const switchLang=l=>{setLang(l);setLangState(l);};
   const [featTab,setFeatTab]=useState("General");
-  const [panelOrder,setPanelOrder]=useState(["overview","spells","equipment","notes"]);
-  const [collapsed,setCollapsed]=useState({});
+  const [panelOrder,setPanelOrder]=useState(["overview","equipment","notes"]);
+  const [collapsed,setCollapsed]=useState({spells:true});
   const [groupCollapsed,setGroupCollapsed]=useState({creator:true});
   const [draggingPanel,setDraggingPanel]=useState(null);
   const [classLocked,setClassLocked]=useState(false);
@@ -2239,6 +2239,9 @@ export default function App(){
                 {buildFeatsPanel()}
               </div>
             </div>
+          </div>
+          <div style={{marginTop:"0.75rem"}}>
+            <CPanel title={panelMeta.spells.title} icon={panelMeta.spells.icon} collapsed={!!collapsed.spells} onToggle={()=>togCollapsed("spells")}>{panelContent.spells}</CPanel>
           </div>
         </PanelGroup>
       </div>
