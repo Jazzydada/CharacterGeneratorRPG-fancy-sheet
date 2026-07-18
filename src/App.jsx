@@ -893,6 +893,11 @@ const SUBCLASS_PG={
   Fighter:{"Battle Master":93,"Champion":96,"Eldritch Knight":96,"Psi Warrior":98},
   Monk:{"Warrior of Mercy":104,"Warrior of Shadow":105,"Warrior of the Elements":106,"Warrior of the Open Hand":107},
   Paladin:{"Oath of Devotion":113,"Oath of Glory":114,"Oath of the Ancients":115,"Oath of Vengeance":116},
+  Ranger:{"Beast Master":122,"Fey Wanderer":124,"Gloom Stalker":125,"Hunter":127},
+  Rogue:{"Arcane Trickster":132,"Assassin":134,"Soulknife":135,"Thief":137},
+  Sorcerer:{"Aberrant Sorcery":145,"Clockwork Sorcery":146,"Draconic Sorcery":148,"Wild Magic Sorcery":149},
+  Warlock:{"Archfey Patron":159,"Celestial Patron":160,"Fiend Patron":161,"Great Old One Patron":162},
+  Wizard:{"Abjurer":172,"Diviner":173,"Evoker":174,"Illusionist":175},
 };
 function subclassFeaturesAtLevel(cn,sub,level){const table=SUBCLASS_FEATURES[cn]?.[sub];if(!table)return[];return Object.keys(table).filter(l=>level>=Number(l)).sort((a,b)=>a-b).flatMap(l=>table[l]);}
 // Druid Circle of the Land: choose a land type (chosen anew each Long Rest per RAW); spells "and lower" are all prepared.
