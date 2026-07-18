@@ -1766,17 +1766,15 @@ export default function App(){
     setGender(nextGenderRoll);
     const da=CURRENT_LANG==="da";
     const featDesc=n=>da?(FEATDESC_DA[n]||ALL_FEATS[n]?.desc||""):(ALL_FEATS[n]?.desc||"");
-    const subDesc=(SUBCLASSES[cn]||{})[sub]||"Subclass features from level 3.";
     const orderInfo=CLASS_ORDER[cn]?CLASS_ORDER[cn].options.find(o=>o[0]===classOrder):null;
     const orderLine=orderInfo?CLASS_ORDER[cn].label+": "+orderInfo[0]+" — "+orderInfo[1][da?1:0]:"";
-    const subclassLine=(sub&&level>=3)?sub+": "+(da?(SUBCLASS_DESC_DA[sub]||subDesc):subDesc):"";
     const originWord=da?"Oprindelse":"Origin";
     const originFeatLine=bgo.feat+" ("+originWord+"): "+featDesc(bgo.feat);
     const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return d?f+": "+d:f;})].join("\n");
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
     const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>name+" ("+sub+"): "+txt[da?1:0]):[];
-    const classFeaturesTxt=[subclassLine,...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
+    const classFeaturesTxt=[...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
     const breathDC=8+cm+pb;
     const dragonTraitDetail={
       "Draconic Ancestry":dragonColor+" — "+DRACONIC_ANCESTRY[dragonColor],
