@@ -392,6 +392,17 @@ const MASTERY_DESC={
   Vex:"If you hit a creature, you have Advantage on your next attack roll against that creature before the end of your next turn.",
   Entangle:"Special: target is restrained. See Net weapon rules."
 };
+const MASTERY_DESC_DA={
+  Cleave:"Én gang pr. tur, hvis du rammer et væsen, kan du udføre et ekstra angrebstjek mod et andet væsen inden for 5 ft af det første og inden for din rækkevidde.",
+  Graze:"Hvis dit angrebstjek er forbi, kan du give skade svarende til det evne-modifier der blev brugt til angrebet.",
+  Nick:"Når du udfører det ekstra angreb fra Light-egenskaben, kan du gøre det som del af Attack-handlingen i stedet for som en bonus-handling.",
+  Push:"Hvis du rammer et Large-eller-mindre væsen, kan du skubbe det op til 10 ft direkte væk fra dig.",
+  Sap:"Hvis du rammer et væsen, får det væsen Disadvantage på sit næste angrebstjek indtil starten af din næste tur.",
+  Slow:"Hvis du rammer et væsen og giver skade, kan du reducere dets Speed med 10 ft indtil starten af din næste tur.",
+  Topple:"Hvis du rammer et væsen, kan du tvinge det til at lave et Constitution saving throw eller få Prone.",
+  Vex:"Hvis du rammer et væsen, har du Advantage på dit næste angrebstjek mod det væsen inden slutningen af din næste tur.",
+  Entangle:"Særlig: målet bliver Restrained. Se Net-våbnets regler."
+};
 
 const CLASS_DEFAULTS={Barbarian:{armor:null,shield:false,weapon:"Greataxe"},Bard:{armor:"Leather armor",shield:false,weapon:"Rapier"},Cleric:{armor:"Chain shirt",shield:true,weapon:"Mace"},Druid:{armor:"Leather armor",shield:true,weapon:"Scimitar"},Fighter:{armor:"Chain mail",shield:true,weapon:"Longsword"},Monk:{armor:null,shield:false,weapon:"Shortsword"},Paladin:{armor:"Chain mail",shield:true,weapon:"Longsword"},Ranger:{armor:"Scale mail",shield:false,weapon:"Shortsword"},Rogue:{armor:"Leather armor",shield:false,weapon:"Rapier"},Sorcerer:{armor:null,shield:false,weapon:"Dagger"},Warlock:{armor:"Leather armor",shield:false,weapon:"Dagger"},Wizard:{armor:null,shield:false,weapon:"Quarterstaff"}};
 
@@ -1069,7 +1080,9 @@ function FancySheet({sh}){
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.4mm",color:"#6e4a17",marginBottom:"1mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2.3mm",color:"#6e4a17",marginBottom:"1.5mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.4mm",color:"#6e4a17",marginBottom:"1mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2.3mm",color:"#6e4a17",marginBottom:"1.5mm",paddingBottom:"1mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}{weaponRows.map((w,i)=><div className="attack-row" key={i}><b>{w.name}</b>{w.masteredActive&&w.mastery!=="—"&&<span style={{fontSize:"2mm",fontWeight:700,color:"#7c2d12",border:".25mm solid #7c2d12",borderRadius:".7mm",padding:"0 .8mm",marginLeft:"1mm"}}>{w.mastery}</span>}<span>{w.atk}</span><span>{w.dmg}</span></div>)}
+      {(()=>{const active=[...new Set(weaponRows.filter(w=>w.masteredActive&&w.mastery!=="—").map(w=>w.mastery))];if(!active.length)return null;const DA=CURRENT_LANG==="da";return <div style={{position:"relative",marginTop:"1.5mm",paddingTop:"1mm",borderTop:".25mm solid rgba(107,75,22,.3)"}}>{active.slice(0,2).map(m=><div key={m} style={{fontSize:"2.15mm",lineHeight:1.3,color:"#4a3410",marginBottom:"0.6mm"}}><b>{m}:</b> {(DA?MASTERY_DESC_DA[m]:MASTERY_DESC[m])||""}</div>)}</div>;})()}
+    </div>
 
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
@@ -1622,8 +1635,8 @@ export default function App(){
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
     const wd=n=>n==="Unarmed strike"&&hasTavernBrawler?{...WD[n],dmg:"1d4"}:WD[n];
-    if(wname&&wd(wname)){const w=wd(wname);const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});}
-    CW[cn].filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(am+pb),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—"});});
+    if(wname&&wd(wname)){const w=wd(wname);const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wname)});}
+    CW[cn].filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(am+pb),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wn)});});
     return weapons.slice(0,4);
   }
 
