@@ -105,6 +105,7 @@ const DA={
   Failures:"Fejl",
   "Features & Traits":"Evner & træk",
   "Resources":"Ressourcer",
+  "In attacks":"Vis i angreb","Show this weapon under Attacks & Spellcasting":"Vis dette våben under Angreb & magi",
   "Equipped":"Udstyret",
   "No tracked resource pool":"Ingen sporet ressourcepulje",
   "Other Notes":"Andre noter",
@@ -1391,7 +1392,7 @@ function FeatCard({name,feat,sel,onToggle,children}){
   </div>);
 }
 
-function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeapons,setMasteredWeapons}){
+function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons}){
   const [eqTab,setEqTab]=useState("weapons");
   const [eqSearch,setEqSearch]=useState("");
   const [showNonProf,setShowNonProf]=useState(false);
@@ -1403,8 +1404,8 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,master
   const canUseWeapon=name=>{const w=WD[name];if(!w)return false;if(w.type==="simple")return weapProfs.includes("simple");if(w.type==="martial"){if(weapProfs.includes("martial"))return true;if(weapProfs.includes("bard-martial"))return BARD_MARTIAL.includes(name);if(weapProfs.includes("rogue-martial"))return ROGUE_MARTIAL.includes(name);return false;}return false;};
   const q=eqSearch.toLowerCase();
   const weaponRows=Object.entries(WD).filter(([n])=>n!=="Unarmed strike").filter(([n])=>{if(q&&!n.toLowerCase().includes(q))return false;if(!showNonProf&&!canUseWeapon(n))return false;return true;}).map(([wn,w])=>{
-    const isProf=canUseWeapon(wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;const bonus=isProf?am+pb:am;const isEq=equipped.weapon===wn;
-    return(<div key={wn} style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 64px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:4}}>
+    const isProf=canUseWeapon(wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;const bonus=isProf?am+pb:am;const isEq=equipped.weapon===wn;const inAttacks=selWeapons.includes(wn);
+    return(<div key={wn} style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 60px 64px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:4}}>
       <div><span style={{fontSize:"0.82rem",color:isEq?"#4ade80":"#e2e8f0",fontWeight:isEq?700:400}}>{wn}</span>{isProf?<span style={{fontSize:"0.6rem",color:"#4ade80",marginLeft:5,border:"1px solid #4ade80",borderRadius:3,padding:"0 3px",fontWeight:700}}>prof</span>:<span style={{fontSize:"0.6rem",color:"#f87171",marginLeft:5,border:"1px solid #f87171",borderRadius:3,padding:"0 3px"}}>non-prof</span>}<div style={{fontSize:"0.65rem",color:G.dimmer,marginTop:1}}>{w.pr}</div></div>
       <span style={{fontSize:"0.9rem",fontWeight:800,color:G.gold,textAlign:"center"}}>{sgn(bonus)}</span>
       <span style={{fontSize:"0.78rem",color:G.muted,textAlign:"center"}}>{w.dmg}</span>
@@ -1413,6 +1414,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,master
                 ?<span style={{display:"inline-flex",alignItems:"center",gap:"0.35rem"}}><span style={{fontSize:"0.55rem",fontWeight:900,padding:"0.1rem 0.28rem",borderRadius:"0.35rem",background:"#14532d",color:"#4ade80",border:"1px solid #4ade80",letterSpacing:"0.05em"}}>VM</span><span style={{color:"#4ade80"}}><MasteryBtn name={w.mastery}/></span></span>
                 :<span style={{fontSize:"0.75rem",color:G.dimmer}}>—</span>
               }</div>
+      <div style={{textAlign:"center"}}><input type="checkbox" title={t("Show this weapon under Attacks & Spellcasting")} checked={inAttacks} onChange={()=>setSelWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):[...prev,wn])} style={{accentColor:G.gold,width:15,height:15,cursor:"pointer"}}/></div>
       <button onClick={()=>equipItem(wn)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#14532d":"transparent",color:isEq?"#4ade80":G.dim,borderColor:isEq?"#4ade80":"#334155"}}>{isEq?"Unequip":"Equip"}</button>
     </div>);
   });
@@ -1441,7 +1443,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,master
     </div>
     {eqTab==="weapons"&&(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
       <div style={{fontSize:"0.75rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",borderRadius:"0.5rem",background:"#14532d22",border:"1px solid #4ade8055",color:"#e2e8f0"}}><span style={{color:"#4ade80",fontWeight:800}}>✓ Proficient:</span> {CLASSES[cn].weapons} <span style={{color:G.dim}}>— {t("green = proficient, red = not proficient")}</span></div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 64px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Atk","Dmg","Type","Mastery",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{h}</div>)}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 60px 64px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Atk","Dmg","Type","Mastery","In attacks",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t(h)}</div>)}</div>
       {weaponRows.length?weaponRows:<div style={{fontSize:"0.82rem",color:G.dim,fontStyle:"italic",padding:"0.5rem"}}>No weapons match.</div>}
       {weaponMasterySlots(cn,level)>0&&(()=>{const slots=weaponMasterySlots(cn,level);const eligible=Object.entries(WD).filter(([,w])=>w.mastery&&w.mastery!=="—"&&(WEAPON_PROF[cn]||[]).includes(w.type));return(<div style={{marginTop:"0.75rem",padding:"0.65rem",background:"#1e293b",borderRadius:"0.75rem",border:"1px solid #334155"}}><div style={{fontSize:"0.72rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>Weapon Mastery - choose {slots} ({masteredWeapons.length}/{slots})</div><div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{eligible.map(([wn,w])=>{const sel=masteredWeapons.includes(wn);const atMax=masteredWeapons.length>=slots;return(<button key={wn} onClick={()=>setMasteredWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):prev.length>=slots?prev:[...prev,wn])} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid",cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?"#581c87":"transparent",color:sel?"#e9d5ff":"#f1f5f9",borderColor:sel?"#a78bfa":"#334155",fontWeight:sel?700:400}}>{wn} <span style={{color:"#a78bfa",fontSize:"0.65rem"}}>{w.mastery}</span></button>);})}</div></div>);})()} 
     </div>)}
@@ -1496,6 +1498,7 @@ export default function App(){
   const [inventory,setInventory]=useState(()=>(EQUIP[initChar.cn]||[]).join("\n"));
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
   const [masteredWeapons,setMasteredWeapons]=useState(()=>defaultMasteredWeaponsForClass(initChar.cn));
+  const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
   const [featMap,setFeatMap]=useState({});
   const [skilledSkills,setSkilledSkills]=useState([]);
   const [skilledTools,setSkilledTools]=useState([]);
@@ -1632,18 +1635,18 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory((EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelExpertise([]);setSelWildShapes([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory((EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
     const wd=n=>n==="Unarmed strike"&&hasTavernBrawler?{...WD[n],dmg:"1d4"}:WD[n];
     if(wname&&wd(wname)){const w=wd(wname);const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wname)});}
-    CW[cn].filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(am+pb),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wn)});});
+    selWeapons.filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wn)});});
     return weapons.slice(0,4);
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1652,7 +1655,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -2191,7 +2194,7 @@ export default function App(){
     <GFld label={t("Backstory")}><textarea value={backstory} onChange={e=>setBackstory(e.target.value)} placeholder={t("Where did your character come from? What happened before the adventure began?")} style={{...inp,minHeight:"100px",resize:"vertical"}}/></GFld>
   </div>);
 
-  const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons}/>,notes:notesPanel};
+  const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons}/>,notes:notesPanel};
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
