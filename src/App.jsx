@@ -1996,6 +1996,25 @@ export default function App(){
     </div>);
   };
 
+  const miPicker=()=>{
+    const cantripList=CS[miClassEff]?.[0]||[];
+    const spellList=CS[miClassEff]?.[1]||[];
+    return(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+      <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose a class")} (Cleric, Druid, {t("or")} Wizard):</div>
+      <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>{MAGIC_INITIATE_CLASSES.map(c=>(<button key={c} onClick={()=>chooseMiClass(c)} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(miClassEff===c?G.gold:"#334155"),cursor:"pointer",background:miClassEff===c?G.gold:"transparent",color:miClassEff===c?"#020817":"#f1f5f9",fontWeight:miClassEff===c?700:400}}>{c}</button>))}</div>
+      <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Cantrips")} ({miCantrips.length}/2):</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{cantripList.map(name=>{const sel=miCantrips.includes(name);const atMax=miCantrips.length>=2;return <button key={name} disabled={atMax&&!sel} onClick={()=>togMiCantrip(name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+      <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level spell")}:</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{spellList.map(name=>{const sel=miSpell===name;return <button key={name} onClick={()=>setMiSpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+    </div>);
+  };
+  const skilledPicker=()=>(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+    <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose 3 additional skills or tools")} ({skilledSkills.length+skilledTools.length}/3):</div>
+    <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Skills")}</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{SKILL_LIST.map(sk=>{const picked=skilledSkills.includes(sk.name);const alreadyProf=bgo.sk.includes(sk.name)||selSk.includes(sk.name);const atMax=(skilledSkills.length+skilledTools.length)>=3;return <button key={sk.name} onClick={()=>setSkilledSkills(prev=>prev.includes(sk.name)?prev.filter(s=>s!==sk.name):atMax?prev:[...prev,sk.name])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:alreadyProf?"#94a3b8":"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{sk.name}{alreadyProf?" *":""}</button>;})}</div>
+    <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Tools")}</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{TOOL_LIST.map(tool=>{const picked=skilledTools.includes(tool);const atMax=(skilledSkills.length+skilledTools.length)>=3;return <button key={tool} onClick={()=>setSkilledTools(prev=>prev.includes(tool)?prev.filter(s=>s!==tool):atMax?prev:[...prev,tool])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{tool}</button>;})}</div>
+  </div>);
   const buildFeatsPanel=()=>{
     const tabs=["Origin","General","Fighting Style","Epic Boon","Species","Class"];
     // 2024 RAW eligibility: General/Species/Class feats come from ASI levels (4/8/12/16/19; Fighter +6/+14; Rogue +10)
@@ -2020,25 +2039,6 @@ export default function App(){
       if(cat==="Epic Boon")return canEpicBoon&&selEBCount<1;
       return !atBudget;
     };
-    const miPicker=()=>{
-      const cantripList=CS[miClassEff]?.[0]||[];
-      const spellList=CS[miClassEff]?.[1]||[];
-      return(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
-        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose a class")} (Cleric, Druid, {t("or")} Wizard):</div>
-        <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>{MAGIC_INITIATE_CLASSES.map(c=>(<button key={c} onClick={()=>chooseMiClass(c)} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(miClassEff===c?G.gold:"#334155"),cursor:"pointer",background:miClassEff===c?G.gold:"transparent",color:miClassEff===c?"#020817":"#f1f5f9",fontWeight:miClassEff===c?700:400}}>{c}</button>))}</div>
-        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Cantrips")} ({miCantrips.length}/2):</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{cantripList.map(name=>{const sel=miCantrips.includes(name);const atMax=miCantrips.length>=2;return <button key={name} disabled={atMax&&!sel} onClick={()=>togMiCantrip(name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:(atMax&&!sel)?"not-allowed":"pointer",opacity:(atMax&&!sel)?0.35:1,background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
-        <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level spell")}:</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{spellList.map(name=>{const sel=miSpell===name;return <button key={name} onClick={()=>setMiSpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
-      </div>);
-    };
-    const skilledPicker=()=>(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
-      <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose 3 additional skills or tools")} ({skilledSkills.length+skilledTools.length}/3):</div>
-      <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Skills")}</div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem",marginBottom:"0.5rem"}}>{SKILL_LIST.map(sk=>{const picked=skilledSkills.includes(sk.name);const alreadyProf=bgo.sk.includes(sk.name)||selSk.includes(sk.name);const atMax=(skilledSkills.length+skilledTools.length)>=3;return <button key={sk.name} onClick={()=>setSkilledSkills(prev=>prev.includes(sk.name)?prev.filter(s=>s!==sk.name):atMax?prev:[...prev,sk.name])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:alreadyProf?"#94a3b8":"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{sk.name}{alreadyProf?" *":""}</button>;})}</div>
-      <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Tools")}</div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{TOOL_LIST.map(tool=>{const picked=skilledTools.includes(tool);const atMax=(skilledSkills.length+skilledTools.length)>=3;return <button key={tool} onClick={()=>setSkilledTools(prev=>prev.includes(tool)?prev.filter(s=>s!==tool):atMax?prev:[...prev,tool])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{tool}</button>;})}</div>
-    </div>);
     return(<div>
       {activeFeats.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",marginBottom:"0.75rem"}}>{activeFeats.map(f=>{const fd=ALL_FEATS[f];const c=CAT_LABEL_COLOR[fd?.cat]||G.muted;return <span key={f} style={{background:"#14532d",color:"#4ade80",borderRadius:"0.5rem",padding:"0.2rem 0.6rem",fontSize:"0.72rem",fontWeight:600}}>{f} <span style={{color:c,fontSize:"0.62rem"}}>({fd?.cat||""})</span></span>;})}</div>}
       <div style={{fontSize:"0.72rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",background:"#1e293b",borderRadius:"0.5rem",border:"1px solid "+(atBudget?"#f87171":"#334155"),color:"#f1f5f9"}}>
@@ -2184,6 +2184,8 @@ export default function App(){
             {sel&&name==="Lessons of the First Ones"&&<div onClick={e=>e.stopPropagation()} style={{marginTop:"0.5rem",paddingTop:"0.4rem",borderTop:"1px solid #4c1d95"}}>
               <div style={{fontSize:"0.68rem",color:"#c4b5fd",marginBottom:"0.3rem"}}>{t("Choose an Origin feat")}:</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{ORIGIN_FEATS.map(f=>{const fsel=lessonsFeat===f;return <button key={f} onClick={()=>setLessonsFeat(fsel?"":f)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(fsel?"#a78bfa":"#334155"),cursor:"pointer",background:fsel?"#7c3aed":"transparent",color:fsel?"#fff":"#f1f5f9",fontWeight:fsel?700:400}}>{f}</button>;})}</div>
+              {lessonsFeat==="Magic Initiate"&&miPicker()}
+              {lessonsFeat==="Skilled"&&skilledPicker()}
             </div>}
           </div>
         </div>);})}
