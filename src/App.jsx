@@ -105,6 +105,7 @@ const DA={
   Failures:"Fejl",
   "Features & Traits":"Evner & træk",
   "Resources":"Ressourcer",
+  "Giant Ancestry":"Kæmpe-afstamning","Cloud Giant":"Cloud Giant","Fire Giant":"Fire Giant","Frost Giant":"Frost Giant","Hill Giant":"Hill Giant","Stone Giant":"Stone Giant","Storm Giant":"Storm Giant","regain all on Long Rest":"genopret alle ved lang hvile",
   "In attacks":"Vis i angreb","Show this weapon under Attacks & Spellcasting":"Vis dette våben under Angreb & magi",
   "Equipped":"Udstyret",
   "No tracked resource pool":"Ingen sporet ressourcepulje",
@@ -238,6 +239,15 @@ function featBaseName(f){return (f||"").replace(/\s*\([^)]*\)\s*$/,"").trim();}
 const MAGIC_INITIATE_CLASSES=["Cleric","Druid","Wizard"];
 // 2024 Dragonborn Draconic Ancestry: color -> Breath Weapon / Damage Resistance type.
 const DRACONIC_ANCESTRY={Black:"Acid",Blue:"Lightning",Brass:"Fire",Bronze:"Lightning",Copper:"Acid",Gold:"Fire",Green:"Poison",Red:"Fire",Silver:"Cold",White:"Cold"};
+// Goliath Giant Ancestry benefits (PHB p.192), verified against the book. Uses = Proficiency Bonus, regain all on Long Rest.
+const GIANT_ANCESTRY={
+  "Cloud Giant":["Bonus Action: teleport up to 30 ft to an unoccupied space you can see.","Bonus-handling: teleporter op til 30 ft til en ledig plads du kan se."],
+  "Fire Giant":["When you hit a target with an attack roll and deal damage, you can also deal 1d10 Fire damage to that target.","Når du rammer et mål med et angrebstjek og giver skade, kan du også give 1d10 Fire-skade til det mål."],
+  "Frost Giant":["When you hit a target with an attack roll and deal damage, you can also deal 1d6 Cold damage and reduce its Speed by 10 ft until the start of your next turn.","Når du rammer et mål med et angrebstjek og giver skade, kan du også give 1d6 Cold-skade og reducere dets Speed med 10 ft indtil starten af din næste tur."],
+  "Hill Giant":["When you hit a Large or smaller creature with an attack roll and deal damage, you can give that target the Prone condition.","Når du rammer et Large-eller-mindre væsen med et angrebstjek og giver skade, kan du give det væsen Prone."],
+  "Stone Giant":["When you take damage, you can take a Reaction to roll 1d12, add your Constitution modifier, and reduce the damage by that total.","Når du tager skade, kan du bruge en Reaktion til at slå 1d12, lægge dit Constitution-modifier til, og reducere skaden med det samlede tal."],
+  "Storm Giant":["When you take damage from a creature within 60 ft of you, you can take a Reaction to deal 1d8 Thunder damage to that creature.","Når du tager skade fra et væsen inden for 60 ft af dig, kan du bruge en Reaktion til at give 1d8 Thunder-skade til det væsen."],
+};
 // Breath Weapon damage dice by character level (2024 rules): 1d10 -> 2d10 (5) -> 3d10 (11) -> 4d10 (17).
 function breathWeaponDice(level){const n=level>=17?4:level>=11?3:level>=5?2:1;return n+"d10";}
 // Level-1 Ritual spells (any class) — the 2 you learn with Pact of the Tome.
@@ -1491,6 +1501,7 @@ export default function App(){
   const [miCantrips,setMiCantrips]=useState([]);
   const [miSpell,setMiSpell]=useState("");
   const [dragonColor,setDragonColor]=useState("Red");
+  const [giantAncestry,setGiantAncestry]=useState("Stone Giant");
   const [selWildShapes,setSelWildShapes]=useState([]);
   const [landType,setLandType]=useState("Temperate");
   const [cname,setCname]=useState("");
@@ -1649,7 +1660,7 @@ export default function App(){
   }
 
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1658,7 +1669,7 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
@@ -1865,7 +1876,10 @@ export default function App(){
       "Breath Weapon":breathWeaponDice(level)+" "+DRACONIC_ANCESTRY[dragonColor]+", DC "+breathDC+" DEX save (half on success), 15-ft Cone or 30x5-ft Line, "+pb+"/long rest",
       "Damage Resistance":"Resistance to "+DRACONIC_ANCESTRY[dragonColor]+" damage",
     };
-    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=sp==="Dragonborn"?dragonTraitDetail[tr]:null;return d?label+": "+d:label;}).join("\n");
+    const goliathTraitDetail={
+      "Giant Ancestry":giantAncestry+": "+GIANT_ANCESTRY[giantAncestry][da?1:0]+" ("+pb+"x, "+(da?"genopret alle ved lang hvile":"regain all on Long Rest")+")",
+    };
+    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:null;return d?label+": "+d:label;}).join("\n");
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];return "• "+n+(d?": "+d:"");}).join("\n"):"";
     const tomeCantripLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selTomeCantrips.length)?selTomeCantrips.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
     const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
@@ -2008,6 +2022,11 @@ export default function App(){
           <div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Draconic Ancestry")}</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{Object.keys(DRACONIC_ANCESTRY).map(c=>{const sel=dragonColor===c;return <button key={c} onClick={()=>setDragonColor(c)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{c} ({DRACONIC_ANCESTRY[c]})</button>;})}</div>
           <div style={{fontSize:"0.68rem",color:G.muted,marginTop:"0.35rem"}}>{t("Breath Weapon")}: {breathWeaponDice(level)} {DRACONIC_ANCESTRY[dragonColor]}</div>
+        </div>}
+        {sp==="Goliath"&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}>
+          <div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Giant Ancestry")}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{Object.keys(GIANT_ANCESTRY).map(g=>{const sel=giantAncestry===g;return <button key={g} onClick={()=>setGiantAncestry(g)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{t(g)}</button>;})}</div>
+          <div style={{fontSize:"0.68rem",color:G.muted,marginTop:"0.35rem"}}>{GIANT_ANCESTRY[giantAncestry][CURRENT_LANG==="da"?1:0]} ({pb}x, {t("regain all on Long Rest")})</div>
         </div>}
       </GFld>
       <GFld label={t("Class")}><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Class Features")}</div>{cls.features.filter(f=>{const m=f.match(/Lvl(\d+)/);return(m?parseInt(m[1],10):1)<=level;}).map((f,i)=>{const da=CURRENT_LANG==="da";const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return <div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.25rem"}}>- <b style={{color:"#cbd5e1"}}>{label}</b>{d?<span style={{color:G.dim}}> — {d}</span>:""}</div>;})}</div>}
