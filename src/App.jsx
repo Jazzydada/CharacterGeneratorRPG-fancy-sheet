@@ -492,6 +492,17 @@ const ARMOR_ITEMS={"Padded armor":{acFn:d=>11+d,light:true,stealth:"Disadvantage
 const ARMOR_PROF={Barbarian:["light","medium","shield"],Bard:["light"],Cleric:["light","medium","shield"],Druid:["light","medium","shield"],Fighter:["light","medium","heavy","shield"],Monk:[],Paladin:["light","medium","heavy","shield"],Ranger:["light","medium","shield"],Rogue:["light"],Sorcerer:[],Warlock:["light"],Wizard:[]};
 const WEAPON_PROF={Barbarian:["simple","martial"],Bard:["simple","bard-martial"],Cleric:["simple"],Druid:["simple"],Fighter:["simple","martial"],Monk:["simple","martial"],Paladin:["simple","martial"],Ranger:["simple","martial"],Rogue:["simple","rogue-martial"],Sorcerer:["simple"],Warlock:["simple"],Wizard:["simple"]};
 const CW={Barbarian:["Greataxe","Handaxe","Unarmed strike"],Bard:["Rapier","Dagger","Unarmed strike"],Cleric:["Mace","Unarmed strike"],Druid:["Scimitar","Unarmed strike"],Fighter:["Longsword","Light crossbow","Unarmed strike"],Monk:["Shortsword","Dart","Unarmed strike"],Paladin:["Longsword","Javelin","Unarmed strike"],Ranger:["Shortsword","Longbow","Unarmed strike"],Rogue:["Rapier","Shortbow","Dagger","Unarmed strike"],Sorcerer:["Spear","Dagger","Unarmed strike"],Warlock:["Dagger","Unarmed strike"],Wizard:["Quarterstaff","Dagger","Unarmed strike"]};
+// Starting-gear pack contents (PHB p.225-228), verified against the book.
+const PACK_CONTENTS={
+  "Burglars Pack":["Backpack","Ball Bearings","Bell","10 Candles","Crowbar","Hooded Lantern","7 flasks of Oil","5 days of Rations","Rope","Tinderbox","Waterskin"],
+  "Diplomats Pack":["Chest","Fine Clothes","Ink","5 Ink Pens","Lamp","2 Map or Scroll Cases","4 flasks of Oil","5 sheets of Paper","5 sheets of Parchment","Perfume","Tinderbox"],
+  "Dungeoneers Pack":["Backpack","Caltrops","Crowbar","2 flasks of Oil","10 days of Rations","Rope","Tinderbox","10 Torches","Waterskin"],
+  "Entertainers Pack":["Backpack","Bedroll","Bell","Bullseye Lantern","3 Costumes","Mirror","8 flasks of Oil","9 days of Rations","Tinderbox","Waterskin"],
+  "Explorers Pack":["Backpack","Bedroll","2 flasks of Oil","10 days of Rations","Rope","Tinderbox","10 Torches","Waterskin"],
+  "Priests Pack":["Backpack","Blanket","Holy Water","Lamp","7 days of Rations","Robe","Tinderbox"],
+  "Scholars Pack":["Backpack","Book","Ink","Ink Pen","Lamp","10 flasks of Oil","10 sheets of Parchment","Tinderbox"],
+};
+function expandPacks(list){return list.map(item=>PACK_CONTENTS[item]?item+" ("+PACK_CONTENTS[item].join(", ")+")":item);}
 const EQUIP={Barbarian:["Greataxe","4x Handaxe","Explorers Pack","15 GP"],Bard:["Leather armor","Rapier","Diplomats Pack","Lute","Dagger","15 GP"],Cleric:["Chain shirt","Shield","Mace","Holy symbol","Priests Pack","10 GP"],Druid:["Leather armor","Shield","Scimitar","Druidic focus","Explorers Pack","9 GP"],Fighter:["Chain mail","Longsword","Shield","Light crossbow","20 bolts","Dungeoneers Pack","4 GP"],Monk:["Shortsword","10x Darts","Explorers Pack","5 GP"],Paladin:["Chain mail","Shield","Longsword","6x Javelins","Priests Pack","Holy symbol","9 GP"],Ranger:["Scale mail","Longbow","20 arrows","Shortsword x2","Dungeoneers Pack","Quiver","10 GP"],Rogue:["Leather armor","Rapier","Shortbow","20 arrows","Thieves tools","Burglars Pack","Dagger x2","8 GP"],Sorcerer:["Spear","2x Daggers","Arcane focus","Dungeoneers Pack","50 GP"],Warlock:["Leather armor","Dagger x2","Arcane focus","Scholars Pack","15 GP"],Wizard:["Quarterstaff","Spellbook","2x Daggers","Arcane focus","Scholars Pack","5 GP"]};
 
 const ALL_FEATS={Alert:{desc:"Add Prof. Bonus to Initiative. Cannot be surprised while conscious.",cat:"General"},Crafter:{desc:"Proficiency in 3 artisan tools. Craft at 20% discount.",cat:"General"},Healer:{desc:"Healer kit: restore 1d6+4+HD HP once per creature per rest.",cat:"General"},Lucky:{desc:"3 luck points per long rest. Reroll any d20 and choose either result.",cat:"General"},"Magic Initiate":{desc:"Learn 2 cantrips and 1 1st-level spell from any class.",cat:"General"},"Savage Attacker":{desc:"Once per turn, reroll melee weapon damage and use either result.",cat:"General"},Skilled:{desc:"Gain proficiency in any 3 skills or tools.",cat:"General",skilled:true},"Tavern Brawler":{desc:"Unarmed strikes use d4+STR. Bonus action grapple on hit.",cat:"General"},Tough:{desc:"HP maximum +2 per level (retroactive).",cat:"General",tough:true},"War Caster":{desc:"Advantage on CON concentration saves. Cast spells as OA.",cat:"General"},"Great Weapon Master":{desc:"+1 STR. Heavy weapon hits deal +Prof.Bonus damage. Hew: bonus attack on crit/kill.",cat:"General"},Mobile:{desc:"Speed +10 ft. Dash through difficult terrain. No OA from attacked creatures.",cat:"General",speed:10},Resilient:{desc:"Proficiency in one saving throw. +1 to that ability.",cat:"General"},Sentinel:{desc:"OA reduces speed to 0. OA on Disengage. React when ally targeted.",cat:"General"},Sharpshooter:{desc:"+1 DEX. Ranged attacks ignore half and three-quarters cover.",cat:"General"},"Inspiring Leader":{desc:"10-min speech: up to 6 allies gain temp HP = level+CHA.",cat:"General"},Skulker:{desc:"Hide when lightly obscured. Missed ranged attack does not reveal you.",cat:"General"},Durable:{desc:"+1 CON. Min HP from Hit Dice = 2x CON mod.",cat:"General"},"Spell Sniper":{desc:"Double range of attack spells. Ignore half and 3/4 cover.",cat:"General"},"Polearm Master":{desc:"Bonus butt-end attack (1d4). OA when enemy enters reach.",cat:"General"},Actor:{desc:"+1 CHA. Advantage on Deception/Performance checks to impersonate. Mimic sounds and speech.",cat:"General"},
@@ -1384,7 +1395,11 @@ function EquipRow({item,equipped,onEquip}){
   const isA=!!ARMOR_ITEMS[item],isS=item==="Shield",isW=!!WD[item];
   const canEquip=isA||isS||isW;
   const isEq=(isA&&equipped.armor===item)||(isS&&equipped.shield)||(isW&&equipped.weapon===item);
-  return <div style={{display:"flex",alignItems:"center",gap:6,padding:"3px 6px",borderRadius:6,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:3}}><span style={{flex:1,fontSize:"0.82rem",color:"#e2e8f0"}}>{item}</span>{canEquip&&<button onClick={onEquip} style={{padding:"0.15rem 0.5rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#14532d":"transparent",color:isEq?"#4ade80":G.dim,borderColor:isEq?"#4ade80":"#334155",whiteSpace:"nowrap"}}>{isEq?"Unequip":"Equip"}</button>}</div>;
+  const packItems=PACK_CONTENTS[item];
+  return <div style={{padding:"3px 6px",borderRadius:6,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:3}}>
+    <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{flex:1,fontSize:"0.82rem",color:"#e2e8f0"}}>{item}</span>{canEquip&&<button onClick={onEquip} style={{padding:"0.15rem 0.5rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#14532d":"transparent",color:isEq?"#4ade80":G.dim,borderColor:isEq?"#4ade80":"#334155",whiteSpace:"nowrap"}}>{isEq?"Unequip":"Equip"}</button>}</div>
+    {packItems&&<div style={{fontSize:"0.68rem",color:G.dimmer,marginTop:2}}>{packItems.join(", ")}</div>}
+  </div>;
 }
 
 function FeatCard({name,feat,sel,onToggle,children}){
@@ -1508,7 +1523,7 @@ export default function App(){
   const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
   const [anotes,setAnotes]=useState("");
-  const [inventory,setInventory]=useState(()=>(EQUIP[initChar.cn]||[]).join("\n"));
+  const [inventory,setInventory]=useState(()=>expandPacks(EQUIP[initChar.cn]||[]).join("\n"));
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
   const [masteredWeapons,setMasteredWeapons]=useState(()=>defaultMasteredWeaponsForClass(initChar.cn));
   const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
@@ -1649,7 +1664,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory((EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
