@@ -1115,15 +1115,16 @@ function FancySheet({sh}){
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
-      {sh.resource?<div style={{position:"relative",marginTop:"0.8mm"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{sh.resource.name}</b>{sh.resource.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{sh.resource.note}</span>}</div>
-        {sh.resource.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{sh.resource.desc[CURRENT_LANG==="da"?1:0]}</div>}
-        <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(sh.resource.uses,24)}).map((_,i)=><span key={i} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:"#fff4d3",display:"inline-block"}}/>)}</div>
-        <div style={{fontSize:"1.9mm",color:"#6e4a17",marginTop:"1mm"}}>{sh.resource.recharge}</div>
-      </div>:<div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>}
+      {(()=>{const resList=[sh.resource,sh.resource2].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
+        return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
+          {r.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
+          <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=><span key={j} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:"#fff4d3",display:"inline-block"}}/>)}</div>
+          <div style={{fontSize:"1.9mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
+        </div>);})()}
       <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
         <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"1.5mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>!sh.resource||!l.trim().toLowerCase().startsWith(sh.resource.name.toLowerCase())).slice(0,2).map((line,i)=><li key={i} style={{fontSize:"1.9mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
+        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();return(!sh.resource||!t2.startsWith(sh.resource.name.toLowerCase()))&&(!sh.resource2||!t2.startsWith(sh.resource2.name.toLowerCase()));}).slice(0,sh.resource2?1:2).map((line,i)=><li key={i} style={{fontSize:"1.9mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
@@ -1583,7 +1584,7 @@ export default function App(){
   const cls=CLASSES[cn],speciesData=SPECIES[sp],bgo=BGS[bg];
   // Mechanical checks must also count the Origin Feat granted for free by the background,
   // even though it isn't toggled in featMap (and must not count against the ASI feat budget).
-  const mechFeats=useMemo(()=>{const s=new Set(activeFeats);const originBase=featBaseName(bgo.feat);if(ALL_FEATS[originBase])s.add(originBase);return s;},[activeFeats,bgo.feat]);
+  const mechFeats=useMemo(()=>{const s=new Set(activeFeats);const originBase=featBaseName(bgo.feat);if(ALL_FEATS[originBase])s.add(originBase);if(lessonsFeat&&ALL_FEATS[lessonsFeat])s.add(lessonsFeat);return s;},[activeFeats,bgo.feat,lessonsFeat]);
   const cls2=mc?CLASSES[cn2]:null;
   const lv2c=mc?Math.min(lv2,level-1):0;
   const lv1e=mc?level-lv2c:level;
@@ -1598,6 +1599,7 @@ export default function App(){
   const hasDefense=mechFeats.has("Defense");
   const hasAlert=mechFeats.has("Alert");
   const hasTavernBrawler=mechFeats.has("Tavern Brawler");
+  const hasLucky=mechFeats.has("Lucky");
   const hp=Math.max(level,avgHp(level,cls.hd,cm)+(hasTough?level*2:0));
   const getAC=useCallback(()=>{let b=equipped.armor?(ARMOR_ITEMS[equipped.armor].ac||ARMOR_ITEMS[equipped.armor].acFn(dm)):(cn==="Barbarian"?10+dm+cm:cn==="Monk"?10+dm+wm:10+dm);if(equipped.shield)b+=2;if(hasDefense&&equipped.armor)b+=1;return b;},[equipped,dm,cm,wm,cn,hasDefense]);
   const ac=getAC();
@@ -1957,7 +1959,8 @@ export default function App(){
     const nextSpellsByLevel=buildSBL();
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[],subclass:sub};
+    const nextResource2=hasLucky?{name:"Lucky",uses:3,recharge:"all/Long Rest",desc:["Spend a Luck Point to give yourself Advantage on an attack roll, ability check, or saving throw, or to impose Disadvantage on an attack roll against you.","Brug et Luck Point til at give dig selv Advantage på et angrebstjek, ability-tjek eller saving throw, eller til at give Disadvantage på et angrebstjek mod dig."]}:null;
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
