@@ -1081,6 +1081,8 @@ function FancySheet({sh}){
         /* PDF viewers (Preview/Adobe) render glows, clip-path and masks as black boxes — drop them for print */
         .ornate-sheet *{box-shadow:none!important}
         .orn-stat:after,.rune-ring:after,.rune-ring:before{display:none!important}
+        /* Some PDF renderers show a visible seam through radial-gradient circles (background bleeds through); force a flat opaque fill for print */
+        .orn-stat{background:#e9d09c!important}
       }
     `}</style>
     <div className="orn-bg"/><div className="orn-veil"/><div className="rune-ring"/><div className="dragon-mark">☽</div><div className="left-sword"/>
