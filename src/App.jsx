@@ -330,6 +330,8 @@ function sorceryPoints(level){return level>=2?level:0;}
 function monkFocusPoints(level){return level>=2?level:0;}
 // Fighter Second Wind uses (PHB p.91-92): 2 at level 1, 3 at level 4, 4 at level 9.
 function fighterSecondWindUses(level){return level>=9?4:level>=4?3:2;}
+// Monk Unarmored Movement (PHB p.102): +10 ft at level 2, scaling to +30 ft at level 18. Only while not wearing armor or wielding a Shield.
+function monkUnarmoredMovement(level){if(level<2)return 0;return level>=18?30:level>=14?25:level>=10?20:level>=6?15:10;}
 // Bardic Inspiration (PHB p.58): uses = CHA mod (min 1), die d6/d8/d10/d12 at levels 1/5/10/15.
 function bardicInspirationUses(cham){return Math.max(1,cham);}
 function bardicInspirationDie(level){return level>=15?"d12":level>=10?"d10":level>=5?"d8":"d6";}
@@ -1593,7 +1595,8 @@ export default function App(){
   const init=dm+(hasAlert?pb:0);
   const armorStrReq=equipped.armor&&ARMOR_ITEMS[equipped.armor]?.str;
   const armorSpeedPenalty=(armorStrReq&&fin.STR<armorStrReq)?10:0;
-  const speed=Math.max(0,(speciesData?.speed||30)+(hasMobile?10:0)-armorSpeedPenalty);
+  const unarmoredMoveBonus=(cn==="Monk"&&!equipped.armor&&!equipped.shield)?monkUnarmoredMovement(level):0;
+  const speed=Math.max(0,(speciesData?.speed||30)+(hasMobile?10:0)+unarmoredMoveBonus-armorSpeedPenalty);
   const isCaster=!!CTYPE[cn]||(mc&&!!CTYPE[cn2]);
   const isMcCaster=mc&&!!CTYPE[cn2]&&CTYPE[cn2]!=="warlock"&&!!CTYPE[cn]&&CTYPE[cn]!=="warlock";
   const sab=SAB[cn]||(mc?SAB[cn2]:"");
@@ -1872,7 +1875,8 @@ export default function App(){
     const rageLine=cn==="Barbarian"?(()=>{const r=barbarianRage(level);return "Rage: "+r.rages+" uses (regain 1 per Short Rest, all per Long Rest), +"+r.dmg+" damage on Strength-based hits";})():"";
     const channelDivinityLine=(cn==="Cleric"&&level>=2)?"Channel Divinity: "+clericChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":(cn==="Paladin"&&level>=3)?"Channel Divinity: "+paladinChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":"";
     const sorceryPointsLine=(cn==="Sorcerer"&&level>=2)?"Sorcery Points: "+sorceryPoints(level)+" (regain all per Long Rest)":"";
-    const combinedFeatures=[orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const unarmoredMoveLine=(cn==="Monk"&&level>=2)?"Unarmored Movement: +"+monkUnarmoredMovement(level)+" ft Speed while not wearing armor or wielding a Shield":"";
+    const combinedFeatures=[orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,unarmoredMoveLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const allTools=[bgo.tools,...skilledTools].filter(Boolean).join(", ");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
