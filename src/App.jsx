@@ -1624,7 +1624,7 @@ export default function App(){
   const skProfs=useMemo(()=>Array.from(new Set([...bgo.sk,...selSk,...skilledSkills])),[bgo.sk,selSk,skilledSkills]);
   const miForcedMatch=featBaseName(bgo.feat)==="Magic Initiate"?bgo.feat.match(/\(([^)]+)\)/):null;
   const miForcedClass=miForcedMatch?miForcedMatch[1]:"";
-  const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"];
+  const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"]||lessonsFeat==="Magic Initiate";
   const miClassEff=miClass||miForcedClass||MAGIC_INITIATE_CLASSES[0];
   const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
   const init=dm+(hasAlert?pb:0);
@@ -1908,6 +1908,20 @@ export default function App(){
         res[lvl].push(mk(name,bonusLabel));
       });
     }
+    // Merge Pact of the Tome cantrips/rituals and Magic Initiate spells into the same list, tagged with their source.
+    const addBonus=(name,label)=>{
+      const lvl=spellLevelOf(name);if(lvl===undefined)return;
+      if(!res[lvl])res[lvl]=[];
+      if(res[lvl].some(s=>s.name===name))return;
+      res[lvl].push(mk(name,label));
+    };
+    if(isWarlock&&selInv.includes("Pact of the Tome")){
+      selTomeCantrips.forEach(name=>addBonus(name,"Pact of the Tome"));
+      selRituals.forEach(name=>addBonus(name,"Pact of the Tome"));
+    }
+    if(hasMagicInitiate){
+      [...miCantrips,miSpell].filter(Boolean).forEach(name=>addBonus(name,"Magic Initiate"));
+    }
     return res;
   }
 
@@ -1939,16 +1953,13 @@ export default function App(){
     };
     const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:null;return d?label+": "+d:label;}).join("\n");
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
-    const tomeCantripLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selTomeCantrips.length)?selTomeCantrips.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
-    const ritualLine=(isWarlock&&selInv.includes("Pact of the Tome")&&selRituals.length)?selRituals.map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
-    const invBlock=[invLine?"Eldritch Invocations:\n"+invLine:"",tomeCantripLine?"Tome cantrips:\n"+tomeCantripLine:"",ritualLine?"Ritual spells (Tome):\n"+ritualLine:""].filter(Boolean).join("\n");
-    const miLine=hasMagicInitiate&&(miCantrips.length||miSpell)?"Magic Initiate ("+miClassEff+"):\n"+[...miCantrips,miSpell].filter(Boolean).map(n=>{const dd=spellD(n)||{};return "• "+n+(dd.desc?": "+dd.desc:"");}).join("\n"):"";
+    const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
     const wildShapeLine=(cn==="Druid"&&selWildShapes.length)?"Wild Shape ("+wildShapeUses(level)+"/short or long rest):\n"+selWildShapes.map(n=>"• "+n+" — see page 3 for full stat block").join("\n"):"";
     const rageLine=cn==="Barbarian"?(()=>{const r=barbarianRage(level);return "Rage: "+r.rages+" uses (regain 1 per Short Rest, all per Long Rest), +"+r.dmg+" damage on Strength-based hits";})():"";
     const channelDivinityLine=(cn==="Cleric"&&level>=2)?"Channel Divinity: "+clericChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":(cn==="Paladin"&&level>=3)?"Channel Divinity: "+paladinChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":"";
     const sorceryPointsLine=(cn==="Sorcerer"&&level>=2)?"Sorcery Points: "+sorceryPoints(level)+" (regain all per Long Rest)":"";
     const unarmoredMoveLine=(cn==="Monk"&&level>=2)?"Unarmored Movement: +"+monkUnarmoredMovement(level)+" ft Speed while not wearing armor or wielding a Shield":"";
-    const combinedFeatures=[orderLine,featsList,invBlock,miLine,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,unarmoredMoveLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const combinedFeatures=[orderLine,featsList,invBlock,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,unarmoredMoveLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const allTools=[bgo.tools,...skilledTools].filter(Boolean).join(", ");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
@@ -1960,7 +1971,7 @@ export default function App(){
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
     const nextResource2=hasLucky?{name:"Lucky",uses:3,recharge:"all/Long Rest",desc:["Spend a Luck Point to give yourself Advantage on an attack roll, ability check, or saving throw, or to impose Disadvantage on an attack roll against you.","Brug et Luck Point til at give dig selv Advantage på et angrebstjek, ability-tjek eller saving throw, eller til at give Disadvantage på et angrebstjek mod dig."]}:null;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:isCaster&&!!sab&&(Object.values(selSp).flat().length>0||Object.values(nextSpellsByLevel).flat().length>0),spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:cn==="Druid"?selWildShapes:[],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
