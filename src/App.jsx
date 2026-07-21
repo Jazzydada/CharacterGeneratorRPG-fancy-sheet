@@ -1,4 +1,4 @@
-import React,{useMemo,useState,useRef,useCallback}from"react";
+import React,{useMemo,useState,useRef,useCallback,useEffect}from"react";
 import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVertical,Package,Lock,Unlock,RefreshCw}from"lucide-react";
 import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
 import{FEATURE_DA,TRAIT_DA,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC}from"./sheet_da.js";
@@ -105,6 +105,7 @@ const DA={
   Failures:"Fejl",
   "Features & Traits":"Evner & træk",
   "Resources":"Ressourcer",
+  "Save Character":"Gem karakter","My Characters":"Mine karakterer","Export JSON":"Eksportér JSON","Import JSON":"Importér JSON","Save as New":"Gem som ny","No saved characters yet. Click \"Save Character\" to store this one in your browser.":"Ingen gemte karakterer endnu. Klik på \"Gem karakter\" for at gemme denne i din browser.","active":"aktiv","Delete":"Slet","Delete this saved character?":"Slet denne gemte karakter?",
   "Giant Ancestry":"Kæmpe-afstamning","Cloud Giant":"Cloud Giant","Fire Giant":"Fire Giant","Frost Giant":"Frost Giant","Hill Giant":"Hill Giant","Stone Giant":"Stone Giant","Storm Giant":"Storm Giant","regain all on Long Rest":"genopret alle ved lang hvile",
   "In attacks":"Vis i angreb","Show this weapon under Attacks & Spellcasting":"Vis dette våben under Angreb & magi",
   "Equipped":"Udstyret",
@@ -1527,6 +1528,10 @@ export default function App(){
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
   const [masteredWeapons,setMasteredWeapons]=useState(()=>defaultMasteredWeaponsForClass(initChar.cn));
   const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
+  const [savedChars,setSavedChars]=useState(()=>{try{return JSON.parse(localStorage.getItem("cg_saved_characters")||"[]");}catch(e){return[];}});
+  const [activeSlotId,setActiveSlotId]=useState(null);
+  const [showCharPanel,setShowCharPanel]=useState(false);
+  useEffect(()=>{try{localStorage.setItem("cg_saved_characters",JSON.stringify(savedChars));}catch(e){}},[savedChars]);
   const [featMap,setFeatMap]=useState({});
   const [skilledSkills,setSkilledSkills]=useState([]);
   const [skilledTools,setSkilledTools]=useState([]);
@@ -1674,8 +1679,14 @@ export default function App(){
     return weapons.slice(0,4);
   }
 
+  function buildCharacterData(){
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+  }
+  function applyCharacterData(d){
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);
+  }
   function exportCharacter(){
-    const data={version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots};
+    const data=buildCharacterData();
     const safeName=(cname||"unnamed").replace(/[^a-z0-9_\-]/gi,"_");
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1684,8 +1695,36 @@ export default function App(){
   function importCharacter(e){
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=evt=>{try{const d=JSON.parse(evt.target.result);if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(d.inventory);if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);}catch(err){alert("Failed to load character file.");}e.target.value="";};
+    reader.onload=evt=>{try{applyCharacterData(JSON.parse(evt.target.result));}catch(err){alert("Failed to load character file.");}e.target.value="";};
     reader.readAsText(file);
+  }
+  function saveToSlot(){
+    const data=buildCharacterData();
+    setSavedChars(prev=>{
+      const now=Date.now();
+      if(activeSlotId){
+        return prev.map(s=>s.id===activeSlotId?{...s,name:cname||"Unnamed",classLevel:cn+" "+level,updatedAt:now,data}:s);
+      }
+      const id=now+"_"+Math.random().toString(36).slice(2,7);
+      setActiveSlotId(id);
+      return[...prev,{id,name:cname||"Unnamed",classLevel:cn+" "+level,updatedAt:now,data}];
+    });
+  }
+  function saveAsNewSlot(){
+    const data=buildCharacterData();
+    const id=Date.now()+"_"+Math.random().toString(36).slice(2,7);
+    setSavedChars(prev=>[...prev,{id,name:cname||"Unnamed",classLevel:cn+" "+level,updatedAt:Date.now(),data}]);
+    setActiveSlotId(id);
+  }
+  function loadSlot(id){
+    const slot=savedChars.find(s=>s.id===id);if(!slot)return;
+    applyCharacterData(slot.data);
+    setActiveSlotId(id);
+  }
+  function deleteSlot(id){
+    if(!confirm(t("Delete this saved character?")))return;
+    setSavedChars(prev=>prev.filter(s=>s.id!==id));
+    if(activeSlotId===id)setActiveSlotId(null);
   }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
 
@@ -2250,12 +2289,33 @@ export default function App(){
           </div>
           <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
           <GBtn onClick={genSheet} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
-          <GBtn onClick={exportCharacter}><span>💾</span> {t("Save")}</GBtn>
-          <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> {t("Load")}</GBtn>
+          <GBtn onClick={saveToSlot} gold><span>👤</span> {t("Save Character")}</GBtn>
+          <GBtn onClick={()=>setShowCharPanel(v=>!v)}><span>👥</span> {t("My Characters")} {savedChars.length?"("+savedChars.length+")":""}</GBtn>
+          <GBtn onClick={exportCharacter}><span>💾</span> {t("Export JSON")}</GBtn>
+          <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> {t("Import JSON")}</GBtn>
           <input ref={fileInputRef} type="file" accept=".json" style={{display:"none"}} onChange={importCharacter}/>
           <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
         </div>
       </div>
+      {showCharPanel&&<div style={{background:"rgba(15,23,42,0.95)",border:"1px solid "+G.gold,borderRadius:"1rem",padding:"1rem 1.25rem",marginBottom:"1rem"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.65rem"}}>
+          <span style={{fontWeight:800,color:G.gold,fontSize:"0.9rem"}}>{t("My Characters")}</span>
+          <GBtn small onClick={saveAsNewSlot}>+ {t("Save as New")}</GBtn>
+        </div>
+        {savedChars.length===0?<div style={{fontSize:"0.8rem",color:G.dim,fontStyle:"italic"}}>{t("No saved characters yet. Click \"Save Character\" to store this one in your browser.")}</div>:
+        <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+          {[...savedChars].sort((a,b)=>b.updatedAt-a.updatedAt).map(s=>(
+            <div key={s.id} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.5rem 0.7rem",borderRadius:"0.65rem",background:activeSlotId===s.id?"#4a3800":G.card,border:"1px solid "+(activeSlotId===s.id?G.gold:G.border)}}>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontSize:"0.85rem",color:activeSlotId===s.id?G.gold:"#f1f5f9"}}>{s.name}{activeSlotId===s.id?" ("+t("active")+")":""}</div>
+                <div style={{fontSize:"0.68rem",color:G.dim}}>{s.classLevel} · {new Date(s.updatedAt).toLocaleString()}</div>
+              </div>
+              <GBtn small onClick={()=>{loadSlot(s.id);setShowCharPanel(false);}}>{t("Load")}</GBtn>
+              <button onClick={()=>deleteSlot(s.id)} title={t("Delete")} style={{background:"transparent",border:"1px solid #7f1d1d",color:"#f87171",borderRadius:"0.5rem",padding:"0.3rem 0.5rem",cursor:"pointer",fontSize:"0.75rem"}}>🗑</button>
+            </div>
+          ))}
+        </div>}
+      </div>}
 
       <div style={{background:"rgba(15,23,42,0.9)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"0.75rem 1.25rem",marginBottom:"1rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
         <div style={{display:"flex",flexWrap:"wrap",gap:"0.5rem",alignItems:"center"}}>
