@@ -1081,8 +1081,21 @@ function FancySheet({sh}){
         /* PDF viewers (Preview/Adobe) render glows, clip-path and masks as black boxes — drop them for print */
         .ornate-sheet *{box-shadow:none!important}
         .orn-stat:after,.rune-ring:after,.rune-ring:before{display:none!important}
-        /* Some PDF renderers show a visible seam through radial-gradient circles (background bleeds through); force a flat opaque fill for print */
+        /* Some PDF renderers (Preview/Adobe) show a visible seam through CSS gradients (background bleeds through); force flat opaque fills for print on every gradient-backed element */
         .orn-stat{background:#e9d09c!important}
+        .name-plaque{background:#efdcb0!important}
+        .top-scroll{background:#dcb87c!important}
+        .ribbon{background:#3d140f!important}
+        .prof-label{background:#551f56!important}
+        .small-token{background:#e9d3a0!important}
+        .saving-title{background:#835222!important}
+        .save-gem{background:#e0bd8c!important}
+        .portrait-frame{background:#8a6323!important}
+        .portrait-wrap{background:#e9d3a0!important}
+        .portrait-cap{background:#3d2810!important}
+        .panel{background:#f0e0bd!important;backdrop-filter:none!important}
+        .panel-titlebar{background:#1c1208!important}
+        .langs{background:#241207!important}
       }
     `}</style>
     <div className="orn-bg"/><div className="orn-veil"/><div className="rune-ring"/><div className="dragon-mark">☽</div><div className="left-sword"/>
