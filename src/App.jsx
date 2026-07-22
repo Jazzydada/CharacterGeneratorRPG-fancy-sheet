@@ -1675,6 +1675,7 @@ export default function App(){
   const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"]||lessonsFeat==="Magic Initiate";
   const miClassEff=miClass||miForcedClass||MAGIC_INITIATE_CLASSES[0];
   const hasFindFamiliar=Object.values(selSp).flat().includes("Find Familiar")||miSpell==="Find Familiar"||selRituals.includes("Find Familiar");
+  useEffect(()=>{if(hasFindFamiliar&&!selFamiliarForm)setSelFamiliarForm(FAMILIAR_FORMS[0]);if(!hasFindFamiliar&&selFamiliarForm)setSelFamiliarForm("");},[hasFindFamiliar]);
   const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
   const init=dm+(hasAlert?pb:0);
   const armorStrReq=equipped.armor&&ARMOR_ITEMS[equipped.armor]?.str;
