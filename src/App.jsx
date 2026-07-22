@@ -2395,18 +2395,22 @@ export default function App(){
           <h1 style={{fontSize:"clamp(1.6rem,4vw,2.5rem)",fontWeight:900,margin:0,lineHeight:1.1}}>CharacterGeneratorRPG</h1>
           <div style={{fontSize:"0.8rem",color:G.dim,marginTop:"0.3rem"}}>{t("Generate and customize your RPG character with stats, spells and gear — in seconds.")} {t("Made by")} <a href="https://asaheim.dk" target="_blank" rel="noopener noreferrer" style={{color:G.gold,textDecoration:"underline"}}>asaheim.dk</a></div>
         </div>
-        <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"flex-start"}}>
-          <div style={{display:"flex",border:"1px solid "+G.border,borderRadius:"0.6rem",overflow:"hidden"}}>
-            {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
+        <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",alignItems:"flex-end"}}>
+          <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
+            <div style={{display:"flex",border:"1px solid "+G.border,borderRadius:"0.6rem",overflow:"hidden"}}>
+              {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
+            </div>
+            <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
+            <GBtn onClick={genSheet} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
+            <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
           </div>
-          <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
-          <GBtn onClick={genSheet} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
-          <GBtn onClick={saveToSlot} gold><span>👤</span> {t("Save Character")}</GBtn>
-          <GBtn onClick={()=>setShowCharPanel(v=>!v)}><span>👥</span> {t("My Characters")} {savedChars.length?"("+savedChars.length+")":""}</GBtn>
-          <GBtn onClick={exportCharacter}><span>💾</span> {t("Export JSON")}</GBtn>
-          <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> {t("Import JSON")}</GBtn>
-          <input ref={fileInputRef} type="file" accept=".json" style={{display:"none"}} onChange={importCharacter}/>
-          <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
+          <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
+            <GBtn onClick={saveToSlot} gold><span>👤</span> {t("Save Character")}</GBtn>
+            <GBtn onClick={()=>setShowCharPanel(v=>!v)}><span>👥</span> {t("My Characters")} {savedChars.length?"("+savedChars.length+")":""}</GBtn>
+            <GBtn onClick={exportCharacter}><span>💾</span> {t("Export JSON")}</GBtn>
+            <GBtn onClick={()=>fileInputRef.current.click()}><span>📂</span> {t("Import JSON")}</GBtn>
+            <input ref={fileInputRef} type="file" accept=".json" style={{display:"none"}} onChange={importCharacter}/>
+          </div>
         </div>
       </div>
       {showCharPanel&&<div style={{background:"rgba(15,23,42,0.95)",border:"1px solid "+G.gold,borderRadius:"1rem",padding:"1rem 1.25rem",marginBottom:"1rem"}}>
