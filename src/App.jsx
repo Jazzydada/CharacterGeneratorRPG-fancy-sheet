@@ -1279,32 +1279,29 @@ function Page2({sh,totalPages}){
 }
 
 const CREATURE_ABBR=["STR","DEX","CON","INT","WIS","CHA"];
-function CreatureCard({name,b}){
+function CreatureCard({name,b,compact}){
   if(!b)return null;
-  return(<div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:"6px 8px",breakInside:"avoid"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:3}}>
-      <span style={{fontSize:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
-      <span style={{fontSize:6.5,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
+  return(<div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:compact?"4px 6px":"6px 8px",breakInside:"avoid"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:compact?2:3}}>
+      <span style={{fontSize:compact?8.5:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
+      <span style={{fontSize:6,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
     </div>
-    <div style={{fontSize:7,fontFamily:"sans-serif",color:"#333",marginBottom:2}}>
+    <div style={{fontSize:compact?6.2:7,fontFamily:"sans-serif",color:"#333",marginBottom:2}}>
       <b>AC</b> {b.ac} · <b>HP</b> {b.hp} · <b>{t("Speed")}</b> {b.speed}
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
-      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5.5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:compact?2:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
+      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:compact?6:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
     </div>
-    <div style={{fontSize:6.6,fontFamily:"sans-serif",color:"#333",lineHeight:1.5}}>
+    <div style={{fontSize:compact?5.8:6.6,fontFamily:"sans-serif",color:"#333",lineHeight:1.4}}>
       {b.skills&&<div><b>{t("Skills")}:</b> {b.skills}</div>}
       {b.resist&&<div><b>Resistances:</b> {b.resist}</div>}
       <div><b>{t("Senses")}:</b> {b.senses}</div>
-      <div><b>{t("Languages")}:</b> {b.lang}</div>
+      {!compact&&<div><b>{t("Languages")}:</b> {b.lang}</div>}
     </div>
-    {b.traits.length>0&&<div style={{marginTop:3}}>{b.traits.map(([tn,td])=><div key={tn} style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginBottom:2}}><b style={{fontStyle:"italic"}}>{tn}.</b> {td}</div>)}</div>}
-    <div style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginTop:3,paddingTop:2,borderTop:"0.5px solid "+RULE}}><b>{t("Attack")}:</b> {b.atk}</div>
+    {b.traits.length>0&&<div style={{marginTop:compact?2:3}}>{(compact?b.traits.slice(0,1):b.traits).map(([tn,td])=><div key={tn} style={{fontSize:compact?6:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.35,marginBottom:2}}><b style={{fontStyle:"italic"}}>{tn}.</b> {td}</div>)}</div>}
+    <div style={{fontSize:compact?6:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.35,marginTop:compact?2:3,paddingTop:2,borderTop:"0.5px solid "+RULE}}><b>{t("Attack")}:</b> {b.atk}</div>
   </div>);
 }
-
-const FORMS_PAGE1_CAP=4;
-const FORMS_EXTRA_CAP=8;
 
 function Page3({sh,forms,totalPages}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -1332,8 +1329,8 @@ function FormsPage({sh,forms,pageNum,totalPages}){
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Creature Forms")}</div></div>
     </div>
-    <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
-      {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
+    <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>6?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5,alignContent:"start"}}>
+      {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]} compact={forms.length>6}/>)}
     </div>
     <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
   </div>);
@@ -2045,10 +2042,8 @@ export default function App(){
 
   if(view==="sheet"&&sheet){
     const allForms=sheet.wildShapeForms||[];
-    const page3Forms=allForms.slice(0,FORMS_PAGE1_CAP);
-    const overflowForms=allForms.slice(FORMS_PAGE1_CAP);
-    const extraFormPages=[];
-    for(let i=0;i<overflowForms.length;i+=FORMS_EXTRA_CAP)extraFormPages.push(overflowForms.slice(i,i+FORMS_EXTRA_CAP));
+    const page3Forms=[];
+    const extraFormPages=allForms.length?[allForms]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
     const totalPages=3+extraFormPages.length+(wildMagic?1:0);
     return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {totalPages+" "+t("pages")}</span></div><div className="print-area"><FancySheet sh={sheet} totalPages={totalPages}/><Page2 sh={sheet} totalPages={totalPages}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((chunk,i)=><FormsPage key={i} sh={sheet} forms={chunk} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
