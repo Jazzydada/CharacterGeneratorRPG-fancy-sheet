@@ -1850,6 +1850,7 @@ export default function App(){
     else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
+    setInventory(expandPacks(EQUIP[useCn]||[]).join("\n"));
     const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(useCn,rolls);
     setRstats(ns);setMstats(ns);setSmode("Rolled");
     // Respect 2024 feat budget: ASI levels 4/8/12/16/19 (+Fighter 6/14, +Rogue 10, +1 Origin for Human)
