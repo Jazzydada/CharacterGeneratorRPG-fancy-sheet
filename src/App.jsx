@@ -57,7 +57,7 @@ const DA={
   "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
   "Upload Image":"Upload billede","Choose an image":"Vælg et billede","Remove":"Fjern","No image uploaded":"Intet billede uploadet",
-  "Familiar Form":"Familiar-form","choose one":"vælg én","Creature Forms":"Skabningsformer",
+  "Creature Forms":"Skabningsformer","Find Familiar: all possible animal forms are shown on the character sheet.":"Find Familiar: alle mulige dyreformer vises på karakterarket.",
   "green = proficient, red = not proficient":"grøn = proficient, rød = ikke proficient","Languages":"Sprog","Choose":"Vælg","over the rules":"ud over reglerne","for":"for","not a class skill":"ikke en klasse-skill","Inventory":"Inventar","Inventory (one item per line)":"Inventar (én genstand pr. linje)","Backpack, rope, torches...":"Rygsæk, reb, fakler...","Add language":"Tilføj sprog","Standard Languages":"Standardsprog","Rare Languages":"Sjældne sprog","From species":"Fra art","Expertise":"Ekspertise","choose from proficient skills":"vælg blandt dine proficient færdigheder","from Background":"fra baggrund","Choose a class":"Vælg en klasse","or":"eller","1st-level spell":"1.-niveau spell","Draconic Ancestry":"Drage-afstamning","Breath Weapon":"Åndevåben","Damage type":"Skadetype","Backstory":"Baggrundshistorie","Where did your character come from? What happened before the adventure began?":"Hvor kommer din karakter fra? Hvad skete der før eventyret begyndte?","Wild Shape Forms":"Wild Shape-former","Wild Magic Surge":"Wild Magic Surge","Roll 1d100 immediately after casting a Sorcerer spell with a spell slot, once per turn, on a 20 rolled for Wild Magic Surge.":"Slå 1d100 straks efter at have castet et Sorcerer-spell med en slot, én gang pr. tur, ved et slag på 20 for Wild Magic Surge.","choose up to":"vælg op til","Max CR":"Maks CR","Fly allowed":"Flyvning tilladt","No fly":"Ingen flyvning","uses per short or long rest":"anvendelser pr. kort eller lang hvile","Tools":"Værktøj","Choose 3 additional skills or tools":"Vælg 3 ekstra færdigheder eller værktøjer","DEX save vs. your save DC, half damage on success. Choose a 15-ft Cone or a 30-by-5-ft Line each time. Usable Proficiency Bonus times per Long Rest.":"DEX save mod din save DC, halv skade ved succes. Vælg en 15 ft kegle eller en 30x5 ft linje hver gang. Kan bruges Proficiency Bonus gange pr. lang hvile.","Circle of the Land — Land Type":"Circle of the Land — Landtype","chosen anew each Long Rest":"vælges igen efter hver lang hvile","Attack":"Angreb","Traits":"Evner","Senses":"Sanser","Components":"Komponenter",
   "Who is playing this character?":"Hvem spiller denne karakter?",
   "Eldritch Invocations":"Eldritch Invocations","Warlocks choose special magical abilities":"Warlocks vælger særlige magiske evner","Ritual spells (Pact of the Tome)":"Ritual spells (Pact of the Tome)","Extra cantrips (Pact of the Tome)":"Ekstra cantrips (Pact of the Tome)","from any class":"fra en vilkårlig klasse",
@@ -1035,7 +1035,7 @@ function xpForClassLevel(classLevel){
   return (LEVEL_XP_5E[lvl]??0).toLocaleString('en-US');
 }
 
-function FancySheet({sh}){
+function FancySheet({sh,totalPages}){
   const [portraitFailed,setPortraitFailed]=useState(false);
   const [portraitLoading,setPortraitLoading]=useState(true);
   const stats=sh.finalStats||{};
@@ -1222,11 +1222,11 @@ function Page1({sh}){
         <PSec title="Equipment" style={{flex:1}}><div style={{fontSize:7,whiteSpace:"pre-wrap",lineHeight:1.5,fontFamily:"sans-serif"}}>{equipment}</div></PSec>
       </div>
     </div>
-    <div style={{marginTop:7,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 1{sh.isCaster?" of 2":""}</span></div>
+    <div style={{marginTop:7,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 1 of {totalPages||(sh.isCaster?2:1)}</span></div>
   </div>);
 }
 
-function Page2({sh}){
+function Page2({sh,totalPages}){
   const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
   const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
   // Parse the features text into readable entries (bold the label before the colon).
@@ -1274,13 +1274,39 @@ function Page2({sh}){
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
       </div>
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {sh.subclass==="Wild Magic Sorcery"?4:3}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
 
-function Page3({sh}){
-  const forms=sh.wildShapeForms||[];
-  const ABBR=["STR","DEX","CON","INT","WIS","CHA"];
+const CREATURE_ABBR=["STR","DEX","CON","INT","WIS","CHA"];
+function CreatureCard({name,b}){
+  if(!b)return null;
+  return(<div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:"6px 8px",breakInside:"avoid"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:3}}>
+      <span style={{fontSize:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
+      <span style={{fontSize:6.5,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
+    </div>
+    <div style={{fontSize:7,fontFamily:"sans-serif",color:"#333",marginBottom:2}}>
+      <b>AC</b> {b.ac} · <b>HP</b> {b.hp} · <b>{t("Speed")}</b> {b.speed}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
+      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5.5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
+    </div>
+    <div style={{fontSize:6.6,fontFamily:"sans-serif",color:"#333",lineHeight:1.5}}>
+      {b.skills&&<div><b>{t("Skills")}:</b> {b.skills}</div>}
+      {b.resist&&<div><b>Resistances:</b> {b.resist}</div>}
+      <div><b>{t("Senses")}:</b> {b.senses}</div>
+      <div><b>{t("Languages")}:</b> {b.lang}</div>
+    </div>
+    {b.traits.length>0&&<div style={{marginTop:3}}>{b.traits.map(([tn,td])=><div key={tn} style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginBottom:2}}><b style={{fontStyle:"italic"}}>{tn}.</b> {td}</div>)}</div>}
+    <div style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginTop:3,paddingTop:2,borderTop:"0.5px solid "+RULE}}><b>{t("Attack")}:</b> {b.atk}</div>
+  </div>);
+}
+
+const FORMS_PAGE1_CAP=4;
+const FORMS_EXTRA_CAP=8;
+
+function Page3({sh,forms,totalPages}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
@@ -1295,34 +1321,25 @@ function Page3({sh}){
       </div>
     </div>
     {forms.length>0&&<div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>2?"1fr 1fr":"1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
-      {forms.map(name=>{const b=WILDSHAPE_BEASTS[name];if(!b)return null;return(
-        <div key={name} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:"6px 8px",breakInside:"avoid"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:3}}>
-            <span style={{fontSize:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
-            <span style={{fontSize:6.5,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
-          </div>
-          <div style={{fontSize:7,fontFamily:"sans-serif",color:"#333",marginBottom:2}}>
-            <b>AC</b> {b.ac} · <b>HP</b> {b.hp} · <b>{t("Speed")}</b> {b.speed}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
-            {ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5.5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
-          </div>
-          <div style={{fontSize:6.6,fontFamily:"sans-serif",color:"#333",lineHeight:1.5}}>
-            {b.skills&&<div><b>{t("Skills")}:</b> {b.skills}</div>}
-            {b.resist&&<div><b>Resistances:</b> {b.resist}</div>}
-            <div><b>{t("Senses")}:</b> {b.senses}</div>
-            <div><b>{t("Languages")}:</b> {b.lang}</div>
-          </div>
-          {b.traits.length>0&&<div style={{marginTop:3}}>{b.traits.map(([tn,td])=><div key={tn} style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginBottom:2}}><b style={{fontStyle:"italic"}}>{tn}.</b> {td}</div>)}</div>}
-          <div style={{fontSize:6.8,fontFamily:"sans-serif",color:"#222",lineHeight:1.4,marginTop:3,paddingTop:2,borderTop:"0.5px solid "+RULE}}><b>{t("Attack")}:</b> {b.atk}</div>
-        </div>
-      );})}
+      {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
     </div>}
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 3 of {sh.subclass==="Wild Magic Sorcery"?4:3}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 3 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
 
-function Page4({sh}){
+function FormsPage({sh,forms,pageNum,totalPages}){
+  return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Creature Forms")}</div></div>
+    </div>
+    <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
+      {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
+    </div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
+  </div>);
+}
+
+function Page4({sh,pageNum,totalPages}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Wild Magic Surge")}</div></div>
@@ -1334,7 +1351,7 @@ function Page4({sh}){
         <div style={{fontSize:7,lineHeight:1.5,color:"#222",fontFamily:"sans-serif"}}>{txt[CURRENT_LANG==="da"?1:0]}</div>
       </div>)}
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2, p.150</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 4 of 4</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2, p.150</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum||4} of {totalPages||4}</span></div>
   </div>);
 }
 
@@ -1549,7 +1566,6 @@ export default function App(){
   const [dragonColor,setDragonColor]=useState("Red");
   const [giantAncestry,setGiantAncestry]=useState("Stone Giant");
   const [selWildShapes,setSelWildShapes]=useState([]);
-  const [selFamiliarForm,setSelFamiliarForm]=useState("");
   const [landType,setLandType]=useState("Temperate");
   const [cname,setCname]=useState("");
   const [playerName,setPlayerName]=useState("");
@@ -1675,7 +1691,6 @@ export default function App(){
   const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"]||lessonsFeat==="Magic Initiate";
   const miClassEff=miClass||miForcedClass||MAGIC_INITIATE_CLASSES[0];
   const hasFindFamiliar=Object.values(selSp).flat().includes("Find Familiar")||miSpell==="Find Familiar"||selRituals.includes("Find Familiar");
-  useEffect(()=>{if(hasFindFamiliar&&!selFamiliarForm)setSelFamiliarForm(FAMILIAR_FORMS[0]);if(!hasFindFamiliar&&selFamiliarForm)setSelFamiliarForm("");},[hasFindFamiliar]);
   const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
   const init=dm+(hasAlert?pb:0);
   const armorStrReq=equipped.armor&&ARMOR_ITEMS[equipped.armor]?.str;
@@ -1734,10 +1749,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,selFamiliarForm,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.selFamiliarForm!==undefined)setSelFamiliarForm(d.selFamiliarForm);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2022,14 +2037,21 @@ export default function App(){
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
     const nextResource2=hasLucky?{name:"Lucky",uses:3,recharge:"all/Long Rest",desc:["Spend a Luck Point to give yourself Advantage on an attack roll, ability check, or saving throw, or to impose Disadvantage on an attack roll against you.","Brug et Luck Point til at give dig selv Advantage på et angrebstjek, ability-tjek eller saving throw, eller til at give Disadvantage på et angrebstjek mod dig."]}:null;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:[...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar&&selFamiliarForm?[selFamiliarForm]:[])],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
   }
 
   if(view==="sheet"&&sheet){
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {(sheet.subclass==="Wild Magic Sorcery"?"4 ":"3 ")+t("pages")}</span></div><div className="print-area"><FancySheet sh={sheet}/><Page2 sh={sheet}/><Page3 sh={sheet}/>{sheet.subclass==="Wild Magic Sorcery"&&<Page4 sh={sheet}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    const allForms=sheet.wildShapeForms||[];
+    const page3Forms=allForms.slice(0,FORMS_PAGE1_CAP);
+    const overflowForms=allForms.slice(FORMS_PAGE1_CAP);
+    const extraFormPages=[];
+    for(let i=0;i<overflowForms.length;i+=FORMS_EXTRA_CAP)extraFormPages.push(overflowForms.slice(i,i+FORMS_EXTRA_CAP));
+    const wildMagic=sheet.subclass==="Wild Magic Sorcery";
+    const totalPages=3+extraFormPages.length+(wildMagic?1:0);
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={()=>window.print()} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Print / PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{t("Set page margins to None.")} {totalPages+" "+t("pages")}</span></div><div className="print-area"><FancySheet sh={sheet} totalPages={totalPages}/><Page2 sh={sheet} totalPages={totalPages}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((chunk,i)=><FormsPage key={i} sh={sheet} forms={chunk} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
@@ -2230,8 +2252,7 @@ export default function App(){
       );})()}
       {hasFindFamiliar&&(
         <div style={{marginTop:"1rem",background:G.card,borderRadius:"0.75rem",padding:"0.75rem"}}>
-          <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.35rem"}}>{t("Familiar Form")} — {t("choose one")}</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>{FAMILIAR_FORMS.map(name=>{const b=WILDSHAPE_BEASTS[name];const sel=selFamiliarForm===name;return <button key={name} title={b?`AC ${b.ac} · HP ${b.hp} · ${b.speed}`:""} onClick={()=>setSelFamiliarForm(sel?"":name)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+          <div style={{fontSize:"0.75rem",color:G.muted}}>{t("Find Familiar: all possible animal forms are shown on the character sheet.")}</div>
         </div>
       )}
       {cn==="Druid"&&sub==="Circle of the Land"&&level>=3&&(
