@@ -2468,9 +2468,6 @@ export default function App(){
               </div>
             </div>
           </div>
-          <div style={{marginTop:"0.75rem"}}>
-            <CPanel title={panelMeta.spells.title} icon={panelMeta.spells.icon} collapsed={!!collapsed.spells} onToggle={()=>togCollapsed("spells")}>{panelContent.spells}</CPanel>
-          </div>
         </PanelGroup>
       </div>
 
