@@ -2455,6 +2455,10 @@ export default function App(){
         </div>
       </div>
 
+      <div style={{marginBottom:"1rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+        {panelOrder.filter(pid=>pid==="overview").map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
+      </div>
+
       <div style={{marginBottom:"1rem"}}>
         <PanelGroup title={t("Character Creator")} icon={<Shield size={16}/>} collapsed={groupCollapsed.creator} onToggle={()=>setGroupCollapsed(g=>({...g,creator:!g.creator}))}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
@@ -2472,7 +2476,7 @@ export default function App(){
       </div>
 
       <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-        {panelOrder.filter(pid=>pid!=="spells"||isCaster).map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
+        {panelOrder.filter(pid=>pid!=="overview"&&(pid!=="spells"||isCaster)).map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
       </div>
     </div>
   </div>);
