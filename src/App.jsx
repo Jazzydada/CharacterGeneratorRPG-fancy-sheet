@@ -1360,17 +1360,6 @@ const tabSt=(active,ac="#fcd34d",at="#020817")=>({padding:"0.25rem 0.65rem",bord
 function GFld({label,children}){return <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{label}</div>{children}</div>;}
 function GBtn({onClick,children,gold,amber,small}){return <button onClick={onClick} style={{display:"flex",alignItems:"center",gap:"0.4rem",padding:small?"0.3rem 0.65rem":"0.5rem 1rem",borderRadius:"0.75rem",border:"1px solid #334155",cursor:"pointer",fontWeight:600,fontSize:small?"0.75rem":"0.85rem",background:gold?G.gold:amber?"#7a5c1e":"transparent",color:gold?G.bg:amber?"#f7f0e0":"#f1f5f9"}}>{children}</button>;}
 
-function PanelGroup({title,icon,collapsed,onToggle,children}){
-  return(<div style={{border:"1px solid #334155",borderRadius:"1.25rem",overflow:"hidden",background:"rgba(15,23,42,0.5)"}}>
-    <div onClick={onToggle} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.9rem 1.25rem",cursor:"pointer",userSelect:"none",background:"rgba(252,211,77,0.07)",borderBottom:collapsed?"none":"1px solid #334155"}}>
-      <span style={{color:G.gold,flexShrink:0}}>{icon}</span>
-      <span style={{fontWeight:800,fontSize:"1rem",color:G.gold,flex:1,letterSpacing:"0.03em"}}>{title}</span>
-      {collapsed?<ChevronDown size={16} style={{color:G.gold}}/>:<ChevronUp size={16} style={{color:G.gold}}/>}
-    </div>
-    {!collapsed&&<div style={{display:"flex",flexDirection:"column",gap:"0.6rem",padding:"0.75rem"}}>{children}</div>}
-  </div>);
-}
-
 function CPanel({title,icon,children,collapsed,onToggle,dragging,onDragStart,onDrop}){
   return(<div onDragOver={e=>e.preventDefault()} onDrop={onDrop} style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+(dragging?"#fcd34d":G.border),borderRadius:"1.25rem",overflow:"hidden"}}>
     <div style={{display:"flex",alignItems:"center",gap:"0.5rem",padding:"0.85rem 1.25rem",userSelect:"none"}}>
@@ -1625,9 +1614,8 @@ export default function App(){
   CURRENT_LANG=lang;
   const switchLang=l=>{setLang(l);setLangState(l);};
   const [featTab,setFeatTab]=useState("General");
-  const [panelOrder,setPanelOrder]=useState(["overview","spells","equipment","notes"]);
-  const [collapsed,setCollapsed]=useState({overview:true,spells:true,equipment:true,notes:true});
-  const [groupCollapsed,setGroupCollapsed]=useState({creator:true});
+  const [panelOrder,setPanelOrder]=useState(["overview","creator","spells","equipment","notes"]);
+  const [collapsed,setCollapsed]=useState({overview:true,creator:true,spells:true,equipment:true,notes:true});
   const [draggingPanel,setDraggingPanel]=useState(null);
   const [classLocked,setClassLocked]=useState(false);
   const [speciesLocked,setSpeciesLocked]=useState(false);
@@ -2383,8 +2371,19 @@ export default function App(){
     <GFld label={t("Backstory")}><textarea value={backstory} onChange={e=>setBackstory(e.target.value)} placeholder={t("Where did your character come from? What happened before the adventure began?")} style={{...inp,minHeight:"100px",resize:"vertical"}}/></GFld>
   </div>);
 
-  const panelContent={overview:buildOverview(),spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons}/>,notes:notesPanel};
-  const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
+  const creatorPanel=(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
+    <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Identity")}</div>{identityPanel}</div>
+    <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
+      <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Ability Scores & Skills")}</div>
+      {statsPanel}
+      <div style={{marginTop:"1rem",borderTop:"1px solid "+G.border,paddingTop:"1rem"}}>
+        <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Feats")}</div>
+        {buildFeatsPanel()}
+      </div>
+    </div>
+  </div>);
+  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons}/>,notes:notesPanel};
+  const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},creator:{title:t("Character Creator"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
     <style>{`button:active{opacity:1!important}button:focus{outline:none}*{-webkit-tap-highlight-color:transparent}input,textarea,select{user-select:text!important;-webkit-user-select:text!important}`}</style>
@@ -2395,7 +2394,7 @@ export default function App(){
           <h1 style={{fontSize:"clamp(1.6rem,4vw,2.5rem)",fontWeight:900,margin:0,lineHeight:1.1}}>CharacterGeneratorRPG</h1>
           <div style={{fontSize:"0.8rem",color:G.dim,marginTop:"0.3rem"}}>{t("Generate and customize your RPG character with stats, spells and gear — in seconds.")} {t("Made by")} <a href="https://asaheim.dk" target="_blank" rel="noopener noreferrer" style={{color:G.gold,textDecoration:"underline"}}>asaheim.dk</a></div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",alignItems:"flex-end"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",alignItems:"flex-start"}}>
           <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
             <div style={{display:"flex",border:"1px solid "+G.border,borderRadius:"0.6rem",overflow:"hidden"}}>
               {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
@@ -2459,28 +2458,8 @@ export default function App(){
         </div>
       </div>
 
-      <div style={{marginBottom:"1rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-        {panelOrder.filter(pid=>pid==="overview").map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
-      </div>
-
-      <div style={{marginBottom:"1rem"}}>
-        <PanelGroup title={t("Character Creator")} icon={<Shield size={16}/>} collapsed={groupCollapsed.creator} onToggle={()=>setGroupCollapsed(g=>({...g,creator:!g.creator}))}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
-            <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Identity")}</div>{identityPanel}</div>
-            <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
-              <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Ability Scores & Skills")}</div>
-              {statsPanel}
-              <div style={{marginTop:"1rem",borderTop:"1px solid "+G.border,paddingTop:"1rem"}}>
-                <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Feats")}</div>
-                {buildFeatsPanel()}
-              </div>
-            </div>
-          </div>
-        </PanelGroup>
-      </div>
-
       <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-        {panelOrder.filter(pid=>pid!=="overview"&&(pid!=="spells"||isCaster)).map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
+        {panelOrder.filter(pid=>pid!=="spells"||isCaster).map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
       </div>
     </div>
   </div>);
