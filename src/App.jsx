@@ -1858,6 +1858,7 @@ export default function App(){
   // END PATCH RAND-SPELLS
 
   function rand(){
+    setUploadedPortrait("");setPortraitMode("blank");
     const clsLocked=classLockedRef.current,spLocked=speciesLockedRef.current,lvLocked=levelLockedRef.current;
     const rs=pick(Object.keys(SPECIES)),rc=pick(Object.keys(CLASSES)),rb=pick(Object.keys(BGS));
     const rl=Math.ceil(Math.random()*20);
