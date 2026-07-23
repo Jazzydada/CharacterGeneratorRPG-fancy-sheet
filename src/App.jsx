@@ -98,7 +98,7 @@ const DA={
   Speed:"Fart",
   "Saving Throws":"Saving Throws",
   "Passive Perception":"Passiv opmærksomhed",
-  "Attacks & Spellcasting":"Angreb & magi",
+  "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -1137,7 +1137,7 @@ function FancySheet({sh,totalPages}){
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.1mm",color:"#6e4a17",marginBottom:"0.6mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}{weaponRows.map((w,i)=>{const showMastery=w.masteredActive&&w.mastery!=="—";const DA=CURRENT_LANG==="da";return <div key={i}>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.1mm",color:"#6e4a17",marginBottom:"0.6mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Grapple/Escape DC")}: {8+statMod("STR")+(sh.profBonus||0)}</div>{weaponRows.map((w,i)=>{const showMastery=w.masteredActive&&w.mastery!=="—";const DA=CURRENT_LANG==="da";return <div key={i}>
         <div className="attack-row" style={{borderBottom:showMastery?"none":undefined}}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>
         {showMastery&&<div style={{position:"relative",fontSize:"1.7mm",lineHeight:1.25,color:"#6e4a17",borderBottom:".25mm solid rgba(107,75,22,.27)",paddingBottom:"0.6mm",marginBottom:"0.6mm"}}><b style={{fontWeight:700,color:"#7c2d12",fontStyle:"normal"}}>{w.mastery}:</b> <span style={{fontStyle:"italic"}}>{(DA?MASTERY_DESC_DA[w.mastery]:MASTERY_DESC[w.mastery])||""}</span></div>}
       </div>;})}
