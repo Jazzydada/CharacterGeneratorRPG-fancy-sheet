@@ -519,6 +519,33 @@ function repairPackLines(text){
     return contents?prefix+rest.trim()+" ("+contents.join(", ")+")":line;
   }).join("\n");
 }
+// Weapons table (PHB p.215), verified against the book. [amount, denomination]. "Net" and "Unarmed strike" have no listed price in the 2024 PHB.
+const WEAPON_COST={
+  Club:[1,"sp"],Dagger:[2,"gp"],Greatclub:[2,"sp"],Handaxe:[5,"gp"],Javelin:[5,"sp"],"Light hammer":[2,"gp"],Mace:[5,"gp"],Quarterstaff:[2,"sp"],Sickle:[1,"gp"],Spear:[1,"gp"],
+  Dart:[5,"cp"],"Light crossbow":[25,"gp"],Shortbow:[25,"gp"],Sling:[1,"sp"],
+  Battleaxe:[10,"gp"],Flail:[10,"gp"],Glaive:[20,"gp"],Greataxe:[30,"gp"],Greatsword:[50,"gp"],Halberd:[20,"gp"],Lance:[10,"gp"],Longsword:[15,"gp"],Maul:[10,"gp"],Morningstar:[15,"gp"],Pike:[5,"gp"],Rapier:[25,"gp"],Scimitar:[25,"gp"],Shortsword:[10,"gp"],Trident:[5,"gp"],Warhammer:[15,"gp"],"War pick":[5,"gp"],Whip:[2,"gp"],
+  Blowgun:[10,"gp"],"Hand crossbow":[75,"gp"],"Heavy crossbow":[50,"gp"],Longbow:[50,"gp"],Musket:[500,"gp"],Pistol:[250,"gp"],
+};
+// Armor table (PHB p.219), verified against the book.
+const ARMOR_COST={
+  "Padded armor":[5,"gp"],"Leather armor":[10,"gp"],"Studded leather":[45,"gp"],
+  "Hide armor":[10,"gp"],"Chain shirt":[50,"gp"],"Scale mail":[50,"gp"],"Breastplate":[400,"gp"],"Half plate":[750,"gp"],
+  "Ring mail":[30,"gp"],"Chain mail":[75,"gp"],"Splint armor":[200,"gp"],"Plate armor":[1500,"gp"],
+};
+const SHIELD_COST=[10,"gp"];
+// Which weapons/armor/shield a class's normal starting equipment already includes (so those don't need buying).
+function startingGearNames(cn){
+  const names=new Set();
+  (EQUIP[cn]||[]).forEach(entry=>{
+    const s=entry.replace(/^\d+x\s*/i,"").replace(/\s*x\d+$/i,"").trim();
+    [s,s.replace(/s$/,"")].forEach(c=>{
+      if(WD[c])names.add(c);
+      if(ARMOR_ITEMS[c])names.add(c);
+      if(c==="Shield")names.add("Shield");
+    });
+  });
+  return names;
+}
 // Adventuring Gear table (PHB p.223-224), verified against the book. [name, weight in lb (null if —), cost amount, cost denomination]
 const ADVENTURING_GEAR=[
   ["Acid",1,25,"gp"],["Alchemist's Fire",1,50,"gp"],["Antitoxin",null,50,"gp"],["Backpack",5,2,"gp"],
@@ -1352,17 +1379,33 @@ function CreatureCard({name,b,compact}){
   </div>);
 }
 
+function parsePackLine(line){
+  const m=/^(.+?)\s*\((.+)\)$/.exec(line.trim());
+  if(!m)return null;
+  const base=m[1].replace(/'/g,"");
+  if(!PACK_CONTENTS[base])return null;
+  return{name:m[1],contents:m[2].split(", ")};
+}
 function Page3({sh,forms,totalPages}){
+  const invLines=(sh.inventory||"").split("\n").filter(Boolean);
+  const packLines=[],normalLines=[];
+  invLines.forEach(l=>{const p=parsePackLine(l);if(p)packLines.push(p);else normalLines.push(l);});
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
     </div>
     <div style={{flex:"0 0 auto",marginBottom:8}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"serif"}}>{(()=>{const c=sh.coins||{};const parts=[["pp","PP"],["gp","GP"],["ep","EP"],["sp","SP"],["cp","CP"]].filter(([k])=>c[k]).map(([k,l])=>c[k]+" "+l);return parts.length?parts.join(" "):"0 GP";})()}</span></div>
-      <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"55mm":"110mm",overflow:"hidden"}}>
-        <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",columnCount:forms.length?1:2,columnGap:14}}>
-          {(sh.inventory||"").split("\n").filter(Boolean).map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
-          {Array.from({length:forms.length?7:16}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
+      <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"55mm":"110mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
+          {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
+          {Array.from({length:forms.length?4:10}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
+        </div>
+        <div style={{fontSize:7.4,lineHeight:1.5,fontFamily:"sans-serif",color:"#222"}}>
+          {packLines.map((p,i)=><div key={i} style={{marginBottom:4,breakInside:"avoid"}}>
+            <div style={{fontWeight:700,color:"#a37a1c"}}>{p.name}</div>
+            {p.contents.map((c,j)=><div key={j} style={{paddingLeft:5}}>✓ {c}</div>)}
+          </div>)}
         </div>
       </div>
     </div>
@@ -1502,8 +1545,10 @@ function FeatCard({name,feat,sel,onToggle,children}){
   </div>);
 }
 
-function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons,inventory,setInventory,purchases,setPurchases}){
+function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons,inventory,setInventory,purchases,setPurchases,ownedExtra,setOwnedExtra}){
   const [gearSearch,setGearSearch]=useState("");
+  const startingSet=startingGearNames(cn);
+  const isOwned=name=>startingSet.has(name)||ownedExtra.includes(name);
   function buyGear(name,weight,amt,denom){
     if(!canAffordCost(coins,amt,denom))return;
     setCoins(c=>deductCost(c,amt,denom));
@@ -1511,6 +1556,14 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
     const bulletLine="• "+line;
     setInventory(prev=>(prev?prev+"\n":"")+bulletLine);
     setPurchases(prev=>[...prev,{id:Date.now()+"-"+Math.random(),name,weight,amt,denom,line:bulletLine}]);
+  }
+  function buyEquipItem(name,amt,denom,kind){
+    if(!canAffordCost(coins,amt,denom))return;
+    setCoins(c=>deductCost(c,amt,denom));
+    const bulletLine="• "+name;
+    setInventory(prev=>(prev?prev+"\n":"")+bulletLine);
+    setOwnedExtra(prev=>[...prev,name]);
+    setPurchases(prev=>[...prev,{id:Date.now()+"-"+Math.random(),name,weight:null,amt,denom,line:bulletLine,kind}]);
   }
   function undoPurchase(p){
     setCoins(c=>addCost(c,p.amt,p.denom));
@@ -1521,6 +1574,12 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
       lines.splice(idx,1);
       return lines.join("\n");
     });
+    if(p.kind){
+      setOwnedExtra(prev=>prev.filter(x=>x!==p.name));
+      if(p.kind==="weapon"&&equipped.weapon===p.name)equipItem(p.name);
+      if(p.kind==="armor"&&equipped.armor===p.name)equipItem(p.name);
+      if(p.kind==="shield"&&equipped.shield)equipItem("Shield");
+    }
     setPurchases(prev=>prev.filter(x=>x.id!==p.id));
   }
   const [eqTab,setEqTab]=useState("weapons");
@@ -1535,6 +1594,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
   const q=eqSearch.toLowerCase();
   const weaponRows=Object.entries(WD).filter(([n])=>n!=="Unarmed strike").filter(([n])=>{if(q&&!n.toLowerCase().includes(q))return false;if(!showNonProf&&!canUseWeapon(n))return false;return true;}).map(([wn,w])=>{
     const isProf=canUseWeapon(wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;const bonus=isProf?am+pb:am;const isEq=equipped.weapon===wn;const inAttacks=selWeapons.includes(wn);
+    const owned=isOwned(wn)||!WEAPON_COST[wn];const cost=WEAPON_COST[wn];const afford=cost&&canAffordCost(coins,cost[0],cost[1]);
     return(<div key={wn} style={{display:"grid",gridTemplateColumns:"1fr 52px 64px 60px 70px 60px 64px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,background:isEq?"#14532d22":"transparent",border:"1px solid "+(isEq?"#4ade8044":G.border),marginBottom:4}}>
       <div><span style={{fontSize:"0.82rem",color:isEq?"#4ade80":"#e2e8f0",fontWeight:isEq?700:400}}>{wn}</span>{isProf?<span style={{fontSize:"0.6rem",color:"#4ade80",marginLeft:5,border:"1px solid #4ade80",borderRadius:3,padding:"0 3px",fontWeight:700}}>prof</span>:<span style={{fontSize:"0.6rem",color:"#f87171",marginLeft:5,border:"1px solid #f87171",borderRadius:3,padding:"0 3px"}}>non-prof</span>}<div style={{fontSize:"0.65rem",color:G.dimmer,marginTop:1}}>{w.pr}</div></div>
       <span style={{fontSize:"0.9rem",fontWeight:800,color:G.gold,textAlign:"center"}}>{sgn(bonus)}</span>
@@ -1545,17 +1605,20 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
                 :<span style={{fontSize:"0.75rem",color:G.dimmer}}>—</span>
               }</div>
       <div style={{textAlign:"center"}}><input type="checkbox" title={t("Show this weapon under Attacks & Spellcasting")} checked={inAttacks} onChange={()=>setSelWeapons(prev=>prev.includes(wn)?prev.filter(x=>x!==wn):[...prev,wn])} style={{accentColor:G.gold,width:15,height:15,cursor:"pointer"}}/></div>
-      <button onClick={()=>equipItem(wn)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#14532d":"transparent",color:isEq?"#4ade80":G.dim,borderColor:isEq?"#4ade80":"#334155"}}>{isEq?"Unequip":"Equip"}</button>
+      {owned?<button onClick={()=>equipItem(wn)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#14532d":"transparent",color:isEq?"#4ade80":G.dim,borderColor:isEq?"#4ade80":"#334155"}}>{isEq?"Unequip":"Equip"}</button>:
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"0.15rem"}}><span style={{fontSize:"0.62rem",color:G.dimmer}}>{cost[0]} {cost[1]}</span><button disabled={!afford} onClick={()=>buyEquipItem(wn,cost[0],cost[1],"weapon")} style={{padding:"0.1rem 0.35rem",borderRadius:"0.4rem",fontSize:"0.65rem",border:"1px solid "+(afford?G.gold:"#334155"),cursor:afford?"pointer":"not-allowed",fontWeight:600,background:"transparent",color:afford?G.gold:G.dimmer,opacity:afford?1:0.5}}>{t("Buy")}</button></div>}
     </div>);
   });
   const armorRows=Object.entries(ARMOR_ITEMS).filter(([n])=>{if(q&&!n.toLowerCase().includes(q))return false;if(!showNonProf&&!canUseArmor(n))return false;return true;}).map(([an,a])=>{
     const isProf=canUseArmor(an);const calcAC=a.ac?a.ac:(a.acFn?a.acFn(dm):10);const isEq=equipped.armor===an;const cat=a.light?"Light":a.medium?"Medium":"Heavy";
+    const owned=isOwned(an)||!ARMOR_COST[an];const cost=ARMOR_COST[an];const afford=cost&&canAffordCost(coins,cost[0],cost[1]);
     return(<div key={an} style={{display:"grid",gridTemplateColumns:"1fr 52px 60px 60px 64px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,background:isEq?"#1e3a5f44":"transparent",border:"1px solid "+(isEq?"#60a5fa66":G.border),marginBottom:4}}>
       <div><span style={{fontSize:"0.82rem",color:isEq?"#60a5fa":"#e2e8f0",fontWeight:isEq?700:400}}>{an}</span>{!isProf&&<span style={{fontSize:"0.6rem",color:"#f87171",marginLeft:5,border:"1px solid #f87171",borderRadius:3,padding:"0 3px"}}>non-prof</span>}{a.stealth&&<span style={{fontSize:"0.6rem",color:"#fb923c",marginLeft:5,border:"1px solid #fb923c",borderRadius:3,padding:"0 3px"}}>stealth disadv.</span>}</div>
       <span style={{fontSize:"0.9rem",fontWeight:800,color:"#60a5fa",textAlign:"center"}}>AC {calcAC}</span>
       <span style={{fontSize:"0.65rem",color:G.dimmer,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em"}}>{cat}</span>
       <span style={{fontSize:"0.65rem",color:G.dimmer,textAlign:"center"}}>{a.medium?"DEX+2":a.light?"DEX":"—"}</span>
-      <button onClick={()=>equipItem(an)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#1e3a5f":"transparent",color:isEq?"#60a5fa":G.dim,borderColor:isEq?"#60a5fa":"#334155"}}>{isEq?"Unequip":"Equip"}</button>
+      {owned?<button onClick={()=>equipItem(an)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:isEq?"#1e3a5f":"transparent",color:isEq?"#60a5fa":G.dim,borderColor:isEq?"#60a5fa":"#334155"}}>{isEq?"Unequip":"Equip"}</button>:
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"0.15rem"}}><span style={{fontSize:"0.62rem",color:G.dimmer}}>{cost[0]} {cost[1]}</span><button disabled={!afford} onClick={()=>buyEquipItem(an,cost[0],cost[1],"armor")} style={{padding:"0.1rem 0.35rem",borderRadius:"0.4rem",fontSize:"0.65rem",border:"1px solid "+(afford?G.gold:"#334155"),cursor:afford?"pointer":"not-allowed",fontWeight:600,background:"transparent",color:afford?G.gold:G.dimmer,opacity:afford?1:0.5}}>{t("Buy")}</button></div>}
     </div>);
   });
   const shieldVisible=(!q||"shield".includes(q))&&(showNonProf||armorProfs.includes("shield"));
@@ -1585,7 +1648,8 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
         <span style={{fontSize:"0.9rem",fontWeight:800,color:"#60a5fa",textAlign:"center"}}>+2</span>
         <span style={{fontSize:"0.65rem",color:G.dimmer,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em"}}>Shield</span>
         <span style={{fontSize:"0.65rem",color:G.dimmer,textAlign:"center"}}>—</span>
-        <button onClick={()=>equipItem("Shield")} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:equipped.shield?"#1e3a5f":"transparent",color:equipped.shield?"#60a5fa":G.dim,borderColor:equipped.shield?"#60a5fa":"#334155"}}>{equipped.shield?"Unequip":"Equip"}</button>
+        {(isOwned("Shield"))?<button onClick={()=>equipItem("Shield")} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid",cursor:"pointer",fontWeight:600,background:equipped.shield?"#1e3a5f":"transparent",color:equipped.shield?"#60a5fa":G.dim,borderColor:equipped.shield?"#60a5fa":"#334155"}}>{equipped.shield?"Unequip":"Equip"}</button>:
+        (()=>{const afford=canAffordCost(coins,SHIELD_COST[0],SHIELD_COST[1]);return <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"0.15rem"}}><span style={{fontSize:"0.62rem",color:G.dimmer}}>{SHIELD_COST[0]} {SHIELD_COST[1]}</span><button disabled={!afford} onClick={()=>buyEquipItem("Shield",SHIELD_COST[0],SHIELD_COST[1],"shield")} style={{padding:"0.1rem 0.35rem",borderRadius:"0.4rem",fontSize:"0.65rem",border:"1px solid "+(afford?G.gold:"#334155"),cursor:afford?"pointer":"not-allowed",fontWeight:600,background:"transparent",color:afford?G.gold:G.dimmer,opacity:afford?1:0.5}}>{t("Buy")}</button></div>;})()}
       </div>)}
     </div>)}
     {eqTab==="starting"&&(<div>
@@ -1677,6 +1741,7 @@ export default function App(){
   const [backstory,setBackstory]=useState("");
   const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+higherLevelGold(initChar.level),pp:0}));
   const [purchases,setPurchases]=useState([]);
+  const [ownedExtra,setOwnedExtra]=useState([]);
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
   const [lessonsFeat,setLessonsFeat]=useState("");
@@ -1824,7 +1889,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);setPurchases([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);setPurchases([]);setOwnedExtra([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1835,10 +1900,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2487,7 +2552,7 @@ export default function App(){
       </div>
     </div>
   </div>);
-  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory} purchases={purchases} setPurchases={setPurchases}/>,notes:notesPanel};
+  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory} purchases={purchases} setPurchases={setPurchases} ownedExtra={ownedExtra} setOwnedExtra={setOwnedExtra}/>,notes:notesPanel};
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},creator:{title:t("Character Creator"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div className="mob-page-pad" style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
