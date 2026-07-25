@@ -99,7 +99,7 @@ const DA={
   "Saving Throws":"Saving Throws",
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
-  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris",
+  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -543,14 +543,18 @@ const ADVENTURING_GEAR=[
 const COIN_TO_CP={cp:1,sp:10,ep:50,gp:100,pp:1000};
 function coinsTotalCP(coins){return Object.entries(coins||{}).reduce((s,[k,v])=>s+(v||0)*(COIN_TO_CP[k]||0),0);}
 function canAffordCost(coins,amt,denom){return coinsTotalCP(coins)>=amt*COIN_TO_CP[denom];}
-function deductCost(coins,amt,denom){
-  const totalCP=coinsTotalCP(coins)-amt*COIN_TO_CP[denom];
-  if(totalCP<0)return coins;
+function coinsWithDeltaCP(coins,deltaCP){
+  const totalCP=Math.max(0,coinsTotalCP(coins)+deltaCP);
   let rem=totalCP;const next={pp:0,gp:0,ep:0,sp:0,cp:0};
   ["pp","gp","ep","sp","cp"].forEach(d=>{next[d]=Math.floor(rem/COIN_TO_CP[d]);rem-=next[d]*COIN_TO_CP[d];});
   next.cp+=rem;
   return next;
 }
+function deductCost(coins,amt,denom){
+  if(!canAffordCost(coins,amt,denom))return coins;
+  return coinsWithDeltaCP(coins,-amt*COIN_TO_CP[denom]);
+}
+function addCost(coins,amt,denom){return coinsWithDeltaCP(coins,amt*COIN_TO_CP[denom]);}
 const EQUIP={Barbarian:["Greataxe","4x Handaxe","Explorers Pack","15 GP"],Bard:["Leather armor","Rapier","Diplomats Pack","Lute","Dagger","15 GP"],Cleric:["Chain shirt","Shield","Mace","Holy symbol","Priests Pack","10 GP"],Druid:["Leather armor","Shield","Scimitar","Druidic focus","Explorers Pack","9 GP"],Fighter:["Chain mail","Longsword","Shield","Light crossbow","20 bolts","Dungeoneers Pack","4 GP"],Monk:["Shortsword","10x Darts","Explorers Pack","5 GP"],Paladin:["Chain mail","Shield","Longsword","6x Javelins","Priests Pack","Holy symbol","9 GP"],Ranger:["Scale mail","Longbow","20 arrows","Shortsword x2","Dungeoneers Pack","Quiver","10 GP"],Rogue:["Leather armor","Rapier","Shortbow","20 arrows","Thieves tools","Burglars Pack","Dagger x2","8 GP"],Sorcerer:["Spear","2x Daggers","Arcane focus","Dungeoneers Pack","50 GP"],Warlock:["Leather armor","Dagger x2","Arcane focus","Scholars Pack","15 GP"],Wizard:["Quarterstaff","Spellbook","2x Daggers","Arcane focus","Scholars Pack","5 GP"]};
 
 const ALL_FEATS={Alert:{desc:"Add Prof. Bonus to Initiative. Cannot be surprised while conscious.",cat:"General"},Crafter:{desc:"Proficiency in 3 artisan tools. Craft at 20% discount.",cat:"General"},Healer:{desc:"Healer kit: restore 1d6+4+HD HP once per creature per rest.",cat:"General"},Lucky:{desc:"3 luck points per long rest. Reroll any d20 and choose either result.",cat:"General"},"Magic Initiate":{desc:"Learn 2 cantrips and 1 1st-level spell from any class.",cat:"General"},"Savage Attacker":{desc:"Once per turn, reroll melee weapon damage and use either result.",cat:"General"},Skilled:{desc:"Gain proficiency in any 3 skills or tools.",cat:"General",skilled:true},"Tavern Brawler":{desc:"Unarmed strikes use d4+STR. Bonus action grapple on hit.",cat:"General"},Tough:{desc:"HP maximum +2 per level (retroactive).",cat:"General",tough:true},"War Caster":{desc:"Advantage on CON concentration saves. Cast spells as OA.",cat:"General"},"Great Weapon Master":{desc:"+1 STR. Heavy weapon hits deal +Prof.Bonus damage. Hew: bonus attack on crit/kill.",cat:"General"},Mobile:{desc:"Speed +10 ft. Dash through difficult terrain. No OA from attacked creatures.",cat:"General",speed:10},Resilient:{desc:"Proficiency in one saving throw. +1 to that ability.",cat:"General"},Sentinel:{desc:"OA reduces speed to 0. OA on Disengage. React when ally targeted.",cat:"General"},Sharpshooter:{desc:"+1 DEX. Ranged attacks ignore half and three-quarters cover.",cat:"General"},"Inspiring Leader":{desc:"10-min speech: up to 6 allies gain temp HP = level+CHA.",cat:"General"},Skulker:{desc:"Hide when lightly obscured. Missed ranged attack does not reveal you.",cat:"General"},Durable:{desc:"+1 CON. Min HP from Hit Dice = 2x CON mod.",cat:"General"},"Spell Sniper":{desc:"Double range of attack spells. Ignore half and 3/4 cover.",cat:"General"},"Polearm Master":{desc:"Bonus butt-end attack (1d4). OA when enemy enters reach.",cat:"General"},Actor:{desc:"+1 CHA. Advantage on Deception/Performance checks to impersonate. Mimic sounds and speech.",cat:"General"},
@@ -1489,13 +1493,26 @@ function FeatCard({name,feat,sel,onToggle,children}){
   </div>);
 }
 
-function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons,inventory,setInventory}){
+function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons,inventory,setInventory,purchases,setPurchases}){
   const [gearSearch,setGearSearch]=useState("");
   function buyGear(name,weight,amt,denom){
     if(!canAffordCost(coins,amt,denom))return;
     setCoins(c=>deductCost(c,amt,denom));
     const line=PACK_CONTENTS[name.replace(/'/g,"")]?name+" ("+PACK_CONTENTS[name.replace(/'/g,"")].join(", ")+")":name;
-    setInventory(prev=>(prev?prev+"\n":"")+"• "+line);
+    const bulletLine="• "+line;
+    setInventory(prev=>(prev?prev+"\n":"")+bulletLine);
+    setPurchases(prev=>[...prev,{id:Date.now()+"-"+Math.random(),name,weight,amt,denom,line:bulletLine}]);
+  }
+  function undoPurchase(p){
+    setCoins(c=>addCost(c,p.amt,p.denom));
+    setInventory(prev=>{
+      const lines=(prev||"").split("\n");
+      const idx=lines.lastIndexOf(p.line);
+      if(idx===-1)return prev;
+      lines.splice(idx,1);
+      return lines.join("\n");
+    });
+    setPurchases(prev=>prev.filter(x=>x.id!==p.id));
   }
   const [eqTab,setEqTab]=useState("weapons");
   const [eqSearch,setEqSearch]=useState("");
@@ -1575,6 +1592,14 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
         <input value={gearSearch} onChange={e=>setGearSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"140px",padding:"0.25rem 0.6rem",fontSize:"0.78rem"}}/>
         <span style={{marginLeft:"auto",fontSize:"0.75rem",color:G.gold,fontWeight:700}}>{coins.pp?coins.pp+" pp ":""}{coins.gp||0} gp {coins.ep?coins.ep+" ep ":""}{coins.sp||0} sp {coins.cp||0} cp</span>
       </div>
+      {purchases.length>0&&<div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
+        <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.4rem"}}>{t("Purchased")}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>{purchases.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+          <span style={{fontSize:"0.78rem",color:"#e2e8f0",flex:1}}>{p.name}</span>
+          <span style={{fontSize:"0.7rem",color:G.dimmer}}>{p.amt} {p.denom}</span>
+          <button onClick={()=>undoPurchase(p)} style={{padding:"0.15rem 0.45rem",borderRadius:"0.4rem",fontSize:"0.68rem",border:"1px solid #f87171",cursor:"pointer",fontWeight:600,background:"transparent",color:"#f87171"}}>{t("Undo")}</button>
+        </div>)}</div>
+      </div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Weight","Cost",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t(h)}</div>)}</div>
       {rows.map(([name,weight,amt,denom])=>{const afford=canAffordCost(coins,amt,denom);return(
         <div key={name} style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"1px solid "+G.border,marginBottom:4}}>
@@ -1639,6 +1664,7 @@ export default function App(){
   const [flaws,setFlaws]=useState("");
   const [backstory,setBackstory]=useState("");
   const [coins,setCoins]=useState({cp:0,sp:0,ep:0,gp:0,pp:0});
+  const [purchases,setPurchases]=useState([]);
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
   const [lessonsFeat,setLessonsFeat]=useState("");
@@ -1786,7 +1812,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);setPurchases([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1797,10 +1823,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2447,7 +2473,7 @@ export default function App(){
       </div>
     </div>
   </div>);
-  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory}/>,notes:notesPanel};
+  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory} purchases={purchases} setPurchases={setPurchases}/>,notes:notesPanel};
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},creator:{title:t("Character Creator"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div className="mob-page-pad" style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
