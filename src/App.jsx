@@ -1597,9 +1597,12 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
       </div>
     </div>)}
     {eqTab==="gear"&&(()=>{const gq=gearSearch.toLowerCase();const rows=ADVENTURING_GEAR.filter(([n])=>!gq||n.toLowerCase().includes(gq));return(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
+      <div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
+        <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.35rem"}}>{t("Currency")}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.3rem"}}/></div>)}</div>
+      </div>
       <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.5rem",alignItems:"center"}}>
         <input value={gearSearch} onChange={e=>setGearSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"140px",padding:"0.25rem 0.6rem",fontSize:"0.78rem"}}/>
-        <span style={{marginLeft:"auto",fontSize:"0.75rem",color:G.gold,fontWeight:700}}>{coins.pp?coins.pp+" pp ":""}{coins.gp||0} gp {coins.ep?coins.ep+" ep ":""}{coins.sp||0} sp {coins.cp||0} cp</span>
       </div>
       {purchases.length>0&&<div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
         <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.4rem"}}>{t("Purchased")}</div>
