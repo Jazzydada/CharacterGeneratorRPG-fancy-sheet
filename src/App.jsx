@@ -1672,7 +1672,7 @@ export default function App(){
   const [bonds,setBonds]=useState("");
   const [flaws,setFlaws]=useState("");
   const [backstory,setBackstory]=useState("");
-  const [coins,setCoins]=useState({cp:0,sp:0,ep:0,gp:0,pp:0});
+  const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+higherLevelGold(initChar.level),pp:0}));
   const [purchases,setPurchases]=useState([]);
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
@@ -1878,7 +1878,7 @@ export default function App(){
     setSavedChars(prev=>prev.filter(s=>s.id!==id));
     if(activeSlotId===id)setActiveSlotId(null);
   }
-  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}return prev+1;});}
+  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+higherLevelGold(next))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
 
   // START PATCH RAND-SPELLS — helper: pick random spells for a caster on randomize
   function randomizeSpellsForCharacter(className,charLevel,spellAbilityMod){
