@@ -99,7 +99,7 @@ const DA={
   "Saving Throws":"Saving Throws",
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
-  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd",
+  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd","Gear":"Udstyr",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -1631,8 +1631,8 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
       <span style={{marginLeft:"auto",background:G.gold,color:G.bg,borderRadius:"0.5rem",padding:"0.2rem 0.6rem",fontSize:"0.8rem",fontWeight:800}}>AC {ac}</span>
     </div>
     <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.65rem",flexWrap:"wrap",alignItems:"center"}}>
-      {[["weapons","Weapons"],["armor","Armor & Shields"],["starting","Starting Gear"],["gear",t("Adventuring Gear")]].map(([id,label])=>(<button key={id} onClick={()=>{setEqTab(id);setEqSearch("");setGearSearch("");}} style={tabSt(eqTab===id)}>{label}</button>))}
-      {eqTab!=="starting"&&eqTab!=="gear"&&<><input value={eqSearch} onChange={e=>setEqSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"110px",padding:"0.25rem 0.6rem",fontSize:"0.78rem",marginLeft:"auto"}}/><label style={{display:"flex",alignItems:"center",gap:"0.3rem",fontSize:"0.72rem",color:G.muted,cursor:"pointer",whiteSpace:"nowrap"}}><input type="checkbox" checked={showNonProf} onChange={e=>setShowNonProf(e.target.checked)} style={{accentColor:G.gold}}/>Non-prof</label></>}
+      {[["weapons","Weapons"],["armor","Armor & Shields"],["gear",t("Gear")],["shop",t("Adventuring Gear")]].map(([id,label])=>(<button key={id} onClick={()=>{setEqTab(id);setEqSearch("");setGearSearch("");}} style={tabSt(eqTab===id)}>{label}</button>))}
+      {eqTab!=="gear"&&eqTab!=="shop"&&<><input value={eqSearch} onChange={e=>setEqSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"110px",padding:"0.25rem 0.6rem",fontSize:"0.78rem",marginLeft:"auto"}}/><label style={{display:"flex",alignItems:"center",gap:"0.3rem",fontSize:"0.72rem",color:G.muted,cursor:"pointer",whiteSpace:"nowrap"}}><input type="checkbox" checked={showNonProf} onChange={e=>setShowNonProf(e.target.checked)} style={{accentColor:G.gold}}/>Non-prof</label></>}
     </div>
     {eqTab==="weapons"&&(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
       <div style={{fontSize:"0.75rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",borderRadius:"0.5rem",background:"#14532d22",border:"1px solid #4ade8055",color:"#e2e8f0"}}><span style={{color:"#4ade80",fontWeight:800}}>✓ Proficient:</span> {CLASSES[cn].weapons} <span style={{color:G.dim}}>— {t("green = proficient, red = not proficient")}</span></div>
@@ -1652,23 +1652,14 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
         (()=>{const afford=canAffordCost(coins,SHIELD_COST[0],SHIELD_COST[1]);return <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"0.15rem"}}><span style={{fontSize:"0.62rem",color:G.dimmer}}>{SHIELD_COST[0]} {SHIELD_COST[1]}</span><button disabled={!afford} onClick={()=>buyEquipItem("Shield",SHIELD_COST[0],SHIELD_COST[1],"shield")} style={{padding:"0.1rem 0.35rem",borderRadius:"0.4rem",fontSize:"0.65rem",border:"1px solid "+(afford?G.gold:"#334155"),cursor:afford?"pointer":"not-allowed",fontWeight:600,background:"transparent",color:afford?G.gold:G.dimmer,opacity:afford?1:0.5}}>{t("Buy")}</button></div>;})()}
       </div>)}
     </div>)}
-    {eqTab==="starting"&&(<div>
-      <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Starting equipment for {cn}:</div>
-      {EQUIP[cn].map((item,i)=><EquipRow key={i} item={item} equipped={equipped} onEquip={()=>equipItem(item)}/>)}
-      <div style={{marginTop:"0.75rem"}}>
-        <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{t("Currency")}</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.62rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.35rem"}}/></div>)}</div>
-      </div>
-    </div>)}
-    {eqTab==="gear"&&(()=>{const gq=gearSearch.toLowerCase();const rows=ADVENTURING_GEAR.filter(([n])=>!gq||n.toLowerCase().includes(gq));return(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
+    {eqTab==="gear"&&(<div>
       <div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
         <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.35rem"}}>{t("Currency")}</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.3rem"}}/></div>)}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.35rem"}}/></div>)}</div>
       </div>
-      <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.5rem",alignItems:"center"}}>
-        <input value={gearSearch} onChange={e=>setGearSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"140px",padding:"0.25rem 0.6rem",fontSize:"0.78rem"}}/>
-      </div>
-      {purchases.length>0&&<div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
+      <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Starting equipment for {cn}:</div>
+      {EQUIP[cn].map((item,i)=><EquipRow key={i} item={item} equipped={equipped} onEquip={()=>equipItem(item)}/>)}
+      {purchases.length>0&&<div style={{marginTop:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
         <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.4rem"}}>{t("Purchased")}</div>
         <div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>{purchases.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
           <span style={{fontSize:"0.78rem",color:"#e2e8f0",flex:1}}>{p.name}</span>
@@ -1676,6 +1667,15 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
           <button onClick={()=>undoPurchase(p)} style={{padding:"0.15rem 0.45rem",borderRadius:"0.4rem",fontSize:"0.68rem",border:"1px solid #f87171",cursor:"pointer",fontWeight:600,background:"transparent",color:"#f87171"}}>{t("Undo")}</button>
         </div>)}</div>
       </div>}
+    </div>)}
+    {eqTab==="shop"&&(()=>{const gq=gearSearch.toLowerCase();const rows=ADVENTURING_GEAR.filter(([n])=>!gq||n.toLowerCase().includes(gq));return(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
+      <div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
+        <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.35rem"}}>{t("Currency")}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.3rem"}}/></div>)}</div>
+      </div>
+      <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.5rem",alignItems:"center"}}>
+        <input value={gearSearch} onChange={e=>setGearSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"140px",padding:"0.25rem 0.6rem",fontSize:"0.78rem"}}/>
+      </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Weight","Cost",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t(h)}</div>)}</div>
       {rows.map(([name,weight,amt,denom])=>{const afford=canAffordCost(coins,amt,denom);return(
         <div key={name} style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"1px solid "+G.border,marginBottom:4}}>
