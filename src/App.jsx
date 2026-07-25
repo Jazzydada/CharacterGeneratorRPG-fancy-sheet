@@ -99,6 +99,7 @@ const DA={
   "Saving Throws":"Saving Throws",
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
+  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -517,6 +518,38 @@ function repairPackLines(text){
     const contents=PACK_CONTENTS[rest.trim()];
     return contents?prefix+rest.trim()+" ("+contents.join(", ")+")":line;
   }).join("\n");
+}
+// Adventuring Gear table (PHB p.223-224), verified against the book. [name, weight in lb (null if —), cost amount, cost denomination]
+const ADVENTURING_GEAR=[
+  ["Acid",1,25,"gp"],["Alchemist's Fire",1,50,"gp"],["Antitoxin",null,50,"gp"],["Backpack",5,2,"gp"],
+  ["Ball Bearings",2,1,"gp"],["Barrel",70,2,"gp"],["Basket",2,4,"sp"],["Bedroll",7,1,"gp"],["Bell",null,1,"gp"],
+  ["Blanket",3,5,"sp"],["Block and Tackle",5,1,"gp"],["Book",5,25,"gp"],["Bottle, Glass",2,2,"gp"],["Bucket",2,5,"cp"],
+  ["Burglar's Pack",42,16,"gp"],["Caltrops",2,1,"gp"],["Candle",null,1,"cp"],["Case, Crossbow Bolt",1,1,"gp"],
+  ["Case, Map or Scroll",1,1,"gp"],["Chain",10,5,"gp"],["Chest",25,5,"gp"],["Climber's Kit",12,25,"gp"],
+  ["Clothes, Fine",6,15,"gp"],["Clothes, Traveler's",4,2,"gp"],["Component Pouch",2,25,"gp"],["Costume",4,5,"gp"],
+  ["Crowbar",5,2,"gp"],["Diplomat's Pack",39,39,"gp"],["Dungeoneer's Pack",55,12,"gp"],["Entertainer's Pack",58.5,40,"gp"],
+  ["Explorer's Pack",55,10,"gp"],["Flask",1,2,"cp"],["Grappling Hook",4,2,"gp"],["Healer's Kit",3,5,"gp"],
+  ["Holy Water",1,25,"gp"],["Hunting Trap",25,5,"gp"],["Ink",null,10,"gp"],["Ink Pen",null,2,"cp"],["Jug",4,2,"cp"],
+  ["Ladder",25,1,"sp"],["Lamp",1,5,"sp"],["Lantern, Bullseye",2,10,"gp"],["Lantern, Hooded",2,5,"gp"],["Lock",1,10,"gp"],
+  ["Magnifying Glass",null,100,"gp"],["Manacles",6,2,"gp"],["Map",null,1,"gp"],["Mirror",0.5,5,"gp"],["Net",3,1,"gp"],
+  ["Oil",1,1,"sp"],["Paper",null,2,"sp"],["Parchment",null,1,"sp"],["Perfume",null,5,"gp"],["Poison, Basic",null,100,"gp"],
+  ["Pole",7,5,"cp"],["Pot, Iron",10,2,"gp"],["Potion of Healing",0.5,50,"gp"],["Pouch",1,5,"sp"],["Priest's Pack",29,33,"gp"],
+  ["Quiver",1,1,"gp"],["Ram, Portable",35,4,"gp"],["Rations",2,5,"sp"],["Robe",4,1,"gp"],["Rope",5,1,"gp"],
+  ["Sack",0.5,1,"cp"],["Scholar's Pack",22,40,"gp"],["Shovel",5,2,"gp"],["Signal Whistle",null,5,"cp"],
+  ["Spell Scroll (Cantrip)",null,30,"gp"],["Spell Scroll (Level 1)",null,50,"gp"],["Spikes, Iron",5,1,"gp"],
+  ["Spyglass",1,1000,"gp"],["String",null,1,"sp"],["Tent",20,2,"gp"],["Tinderbox",1,5,"sp"],["Torch",1,1,"cp"],
+  ["Vial",null,1,"gp"],["Waterskin",5,2,"sp"],
+];
+const COIN_TO_CP={cp:1,sp:10,ep:50,gp:100,pp:1000};
+function coinsTotalCP(coins){return Object.entries(coins||{}).reduce((s,[k,v])=>s+(v||0)*(COIN_TO_CP[k]||0),0);}
+function canAffordCost(coins,amt,denom){return coinsTotalCP(coins)>=amt*COIN_TO_CP[denom];}
+function deductCost(coins,amt,denom){
+  const totalCP=coinsTotalCP(coins)-amt*COIN_TO_CP[denom];
+  if(totalCP<0)return coins;
+  let rem=totalCP;const next={pp:0,gp:0,ep:0,sp:0,cp:0};
+  ["pp","gp","ep","sp","cp"].forEach(d=>{next[d]=Math.floor(rem/COIN_TO_CP[d]);rem-=next[d]*COIN_TO_CP[d];});
+  next.cp+=rem;
+  return next;
 }
 const EQUIP={Barbarian:["Greataxe","4x Handaxe","Explorers Pack","15 GP"],Bard:["Leather armor","Rapier","Diplomats Pack","Lute","Dagger","15 GP"],Cleric:["Chain shirt","Shield","Mace","Holy symbol","Priests Pack","10 GP"],Druid:["Leather armor","Shield","Scimitar","Druidic focus","Explorers Pack","9 GP"],Fighter:["Chain mail","Longsword","Shield","Light crossbow","20 bolts","Dungeoneers Pack","4 GP"],Monk:["Shortsword","10x Darts","Explorers Pack","5 GP"],Paladin:["Chain mail","Shield","Longsword","6x Javelins","Priests Pack","Holy symbol","9 GP"],Ranger:["Scale mail","Longbow","20 arrows","Shortsword x2","Dungeoneers Pack","Quiver","10 GP"],Rogue:["Leather armor","Rapier","Shortbow","20 arrows","Thieves tools","Burglars Pack","Dagger x2","8 GP"],Sorcerer:["Spear","2x Daggers","Arcane focus","Dungeoneers Pack","50 GP"],Warlock:["Leather armor","Dagger x2","Arcane focus","Scholars Pack","15 GP"],Wizard:["Quarterstaff","Spellbook","2x Daggers","Arcane focus","Scholars Pack","5 GP"]};
 
@@ -1221,7 +1254,7 @@ function Page1({sh}){
       </PSec>
       <div style={{display:"flex",flexDirection:"column",gap:4}}>{[["Personality Traits",traits],["Ideals",ideals],["Bonds",bonds],["Flaws",flaws]].map(([l,v])=><div key={l} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"4px 6px"}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:3,paddingBottom:2}}>{l}</div><div style={{fontSize:7.5,lineHeight:1.55,fontFamily:"sans-serif"}}>{v||"—"}</div></div>)}</div>
       <div style={{display:"flex",flexDirection:"column",gap:4}}>
-        <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px"}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>Currency</div><div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:3,textAlign:"center"}}>{[["CP","#b87333"],["SP","#aaa"],["EP","#8fbc8f"],["GP","#d4af37"],["PP","#e5e4e2"]].map(([l,c])=><div key={l} style={{textAlign:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid "+RULE,background:c+"22",margin:"0 auto"}}/><div style={{...capL,textAlign:"center",marginTop:4,fontSize:6}}>{l}</div></div>)}</div></div>
+        <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px"}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>Currency</div><div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:3,textAlign:"center"}}>{[["cp","CP","#b87333"],["sp","SP","#aaa"],["ep","EP","#8fbc8f"],["gp","GP","#d4af37"],["pp","PP","#e5e4e2"]].map(([k,l,c])=><div key={l} style={{textAlign:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid "+RULE,background:c+"22",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:INK}}>{(sh.coins&&sh.coins[k])||0}</div><div style={{...capL,textAlign:"center",marginTop:4,fontSize:6}}>{l}</div></div>)}</div></div>
         <PSec title="Equipment" style={{flex:1}}><div style={{fontSize:7,whiteSpace:"pre-wrap",lineHeight:1.5,fontFamily:"sans-serif"}}>{equipment}</div></PSec>
       </div>
     </div>
@@ -1312,7 +1345,7 @@ function Page3({sh,forms,totalPages}){
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
     </div>
     <div style={{flex:"0 0 auto",marginBottom:8}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"serif"}}>{sh.gp||0} GP</span></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"serif"}}>{(()=>{const c=sh.coins||{};const parts=[["pp","PP"],["gp","GP"],["ep","EP"],["sp","SP"],["cp","CP"]].filter(([k])=>c[k]).map(([k,l])=>c[k]+" "+l);return parts.length?parts.join(" "):"0 GP";})()}</span></div>
       <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"55mm":"110mm",overflow:"hidden"}}>
         <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",columnCount:forms.length?1:2,columnGap:14}}>
           {(sh.inventory||"").split("\n").filter(Boolean).map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
@@ -1456,7 +1489,14 @@ function FeatCard({name,feat,sel,onToggle,children}){
   </div>);
 }
 
-function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons}){
+function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,masteredWeapons,setMasteredWeapons,selWeapons,setSelWeapons,inventory,setInventory}){
+  const [gearSearch,setGearSearch]=useState("");
+  function buyGear(name,weight,amt,denom){
+    if(!canAffordCost(coins,amt,denom))return;
+    setCoins(c=>deductCost(c,amt,denom));
+    const line=PACK_CONTENTS[name.replace(/'/g,"")]?name+" ("+PACK_CONTENTS[name.replace(/'/g,"")].join(", ")+")":name;
+    setInventory(prev=>(prev?prev+"\n":"")+"• "+line);
+  }
   const [eqTab,setEqTab]=useState("weapons");
   const [eqSearch,setEqSearch]=useState("");
   const [showNonProf,setShowNonProf]=useState(false);
@@ -1502,8 +1542,8 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,master
       <span style={{marginLeft:"auto",background:G.gold,color:G.bg,borderRadius:"0.5rem",padding:"0.2rem 0.6rem",fontSize:"0.8rem",fontWeight:800}}>AC {ac}</span>
     </div>
     <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.65rem",flexWrap:"wrap",alignItems:"center"}}>
-      {[["weapons","Weapons"],["armor","Armor & Shields"],["starting","Starting Gear"]].map(([id,label])=>(<button key={id} onClick={()=>{setEqTab(id);setEqSearch("");}} style={tabSt(eqTab===id)}>{label}</button>))}
-      {eqTab!=="starting"&&<><input value={eqSearch} onChange={e=>setEqSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"110px",padding:"0.25rem 0.6rem",fontSize:"0.78rem",marginLeft:"auto"}}/><label style={{display:"flex",alignItems:"center",gap:"0.3rem",fontSize:"0.72rem",color:G.muted,cursor:"pointer",whiteSpace:"nowrap"}}><input type="checkbox" checked={showNonProf} onChange={e=>setShowNonProf(e.target.checked)} style={{accentColor:G.gold}}/>Non-prof</label></>}
+      {[["weapons","Weapons"],["armor","Armor & Shields"],["starting","Starting Gear"],["gear",t("Adventuring Gear")]].map(([id,label])=>(<button key={id} onClick={()=>{setEqTab(id);setEqSearch("");setGearSearch("");}} style={tabSt(eqTab===id)}>{label}</button>))}
+      {eqTab!=="starting"&&eqTab!=="gear"&&<><input value={eqSearch} onChange={e=>setEqSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"110px",padding:"0.25rem 0.6rem",fontSize:"0.78rem",marginLeft:"auto"}}/><label style={{display:"flex",alignItems:"center",gap:"0.3rem",fontSize:"0.72rem",color:G.muted,cursor:"pointer",whiteSpace:"nowrap"}}><input type="checkbox" checked={showNonProf} onChange={e=>setShowNonProf(e.target.checked)} style={{accentColor:G.gold}}/>Non-prof</label></>}
     </div>
     {eqTab==="weapons"&&(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
       <div style={{fontSize:"0.75rem",marginBottom:"0.5rem",padding:"0.35rem 0.65rem",borderRadius:"0.5rem",background:"#14532d22",border:"1px solid #4ade8055",color:"#e2e8f0"}}><span style={{color:"#4ade80",fontWeight:800}}>✓ Proficient:</span> {CLASSES[cn].weapons} <span style={{color:G.dim}}>— {t("green = proficient, red = not proficient")}</span></div>
@@ -1525,8 +1565,26 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,gp,setGp,ac,master
     {eqTab==="starting"&&(<div>
       <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Starting equipment for {cn}:</div>
       {EQUIP[cn].map((item,i)=><EquipRow key={i} item={item} equipped={equipped} onEquip={()=>equipItem(item)}/>)}
-      <div style={{marginTop:"0.75rem"}}><GFld label="Starting Gold (GP)"><input type="number" min={0} value={gp} onChange={e=>setGp(Number(e.target.value))} style={inp}/></GFld></div>
+      <div style={{marginTop:"0.75rem"}}>
+        <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{t("Currency")}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.62rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.35rem"}}/></div>)}</div>
+      </div>
     </div>)}
+    {eqTab==="gear"&&(()=>{const gq=gearSearch.toLowerCase();const rows=ADVENTURING_GEAR.filter(([n])=>!gq||n.toLowerCase().includes(gq));return(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
+      <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.5rem",alignItems:"center"}}>
+        <input value={gearSearch} onChange={e=>setGearSearch(e.target.value)} placeholder="Search..." style={{...inp,width:"140px",padding:"0.25rem 0.6rem",fontSize:"0.78rem"}}/>
+        <span style={{marginLeft:"auto",fontSize:"0.75rem",color:G.gold,fontWeight:700}}>{coins.pp?coins.pp+" pp ":""}{coins.gp||0} gp {coins.ep?coins.ep+" ep ":""}{coins.sp||0} sp {coins.cp||0} cp</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",gap:6,padding:"0 8px",marginBottom:4}}>{["Name","Weight","Cost",""].map(h=><div key={h} style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t(h)}</div>)}</div>
+      {rows.map(([name,weight,amt,denom])=>{const afford=canAffordCost(coins,amt,denom);return(
+        <div key={name} style={{display:"grid",gridTemplateColumns:"1fr 60px 70px 60px",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,border:"1px solid "+G.border,marginBottom:4}}>
+          <span style={{fontSize:"0.82rem",color:"#e2e8f0"}}>{name}</span>
+          <span style={{fontSize:"0.72rem",color:G.dimmer,textAlign:"center"}}>{weight?weight+" lb":"—"}</span>
+          <span style={{fontSize:"0.78rem",color:G.muted,textAlign:"center"}}>{amt} {denom}</span>
+          <button disabled={!afford} onClick={()=>buyGear(name,weight,amt,denom)} style={{padding:"0.2rem 0.4rem",borderRadius:"0.4rem",fontSize:"0.7rem",border:"1px solid "+(afford?G.gold:"#334155"),cursor:afford?"pointer":"not-allowed",fontWeight:600,background:"transparent",color:afford?G.gold:G.dimmer,opacity:afford?1:0.5}}>{t("Buy")}</button>
+        </div>
+      );})}
+    </div>);})()}
   </div>);
 }
 
@@ -1580,7 +1638,7 @@ export default function App(){
   const [bonds,setBonds]=useState("");
   const [flaws,setFlaws]=useState("");
   const [backstory,setBackstory]=useState("");
-  const [gp,setGp]=useState(0);
+  const [coins,setCoins]=useState({cp:0,sp:0,ep:0,gp:0,pp:0});
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
   const [lessonsFeat,setLessonsFeat]=useState("");
@@ -1739,10 +1797,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,gp,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.gp!==undefined)setGp(d.gp);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2028,7 +2086,7 @@ export default function App(){
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
     const nextResource2=hasLucky?{name:"Lucky",uses:3,recharge:"all/Long Rest",desc:["Spend a Luck Point to give yourself Advantage on an attack roll, ability check, or saving throw, or to impose Disadvantage on an attack roll against you.","Brug et Luck Point til at give dig selv Advantage på et angrebstjek, ability-tjek eller saving throw, eller til at give Disadvantage på et angrebstjek mod dig."]}:null;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,gp,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
@@ -2389,7 +2447,7 @@ export default function App(){
       </div>
     </div>
   </div>);
-  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} gp={gp} setGp={setGp} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons}/>,notes:notesPanel};
+  const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory}/>,notes:notesPanel};
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},creator:{title:t("Character Creator"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div className="mob-page-pad" style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
