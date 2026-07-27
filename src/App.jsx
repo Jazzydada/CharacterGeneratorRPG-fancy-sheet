@@ -336,6 +336,13 @@ function wildShapeLimit(level){if(level>=8)return{cr:1,fly:true};if(level>=4)ret
 // PHB p.80 Beast Shapes table: Wild Shape uses scale 2/3/4 at levels 2/6/17; Known Forms scale 4/6/8 at levels 2/4/8.
 function wildShapeUses(level){return level>=17?4:level>=6?3:2;}
 function wildShapeKnownForms(level){return level>=8?8:level>=4?6:4;}
+function pickWildShapeForms(level){
+  const lim=wildShapeLimit(level);const maxForms=wildShapeKnownForms(level);
+  const pool=Object.entries(WILDSHAPE_BEASTS).filter(([,b])=>b.cr<=lim.cr&&(!b.fly||lim.fly)).map(([name])=>name);
+  const chosen=[];
+  while(chosen.length<maxForms&&pool.length){chosen.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);}
+  return chosen;
+}
 // 2024 Barbarian Rage table (PHB p.52): uses and bonus damage scale with level; recharges 1/Short Rest, all/Long Rest.
 function barbarianRage(level){const rages=level>=17?6:level>=12?5:level>=6?4:level>=3?3:2;const dmg=level>=16?4:level>=9?3:2;return{rages,dmg};}
 // Channel Divinity uses (PHB Cleric p.70: 2/6/18; Paladin p.109: 2/11).
@@ -1889,7 +1896,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes([]);setPurchases([]);setOwnedExtra([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -2039,6 +2046,7 @@ export default function App(){
     const rlvl=lvLocked?level:rl;
     setCoins({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(useCn)+higherLevelGold(rlvl),pp:0});
     setPurchases([]);
+    setSelWildShapes(useCn==="Druid"&&rlvl>=2?pickWildShapeForms(rlvl):[]);
     const asiCount=[4,8,12,16,19].filter(x=>x<=rlvl).length+(useCn==="Fighter"?[6,14].filter(x=>x<=rlvl).length:useCn==="Rogue"&&rlvl>=10?1:0)+(useSp==="Human"?1:0);
     const pool=[...new Set([...(SPECIES[useSp]?.racialFeats||[]),...(CLASSES[useCn].classFeatChoices||[])])].filter(f=>ALL_FEATS[f]&&ALL_FEATS[f].cat!=="Fighting Style");
     const chosen={};let left=asiCount;while(left>0&&pool.length){const f=pool.splice(Math.floor(Math.random()*pool.length),1)[0];if(!chosen[f]){chosen[f]=true;left--;}}
