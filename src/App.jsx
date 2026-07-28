@@ -1191,7 +1191,9 @@ function FancySheet({sh,totalPages}){
         .panel{background:#f0e0bd!important;backdrop-filter:none!important}
         .panel-titlebar{background:#1c1208!important}
         .langs{background:#241207!important}
-        /* iOS's print/PDF pipeline (same WebKit engine in both Safari and Chrome on iPad) fails to render the background photo, leaving the base dark fill visible; the .orn-bg:before radial-gradient highlight is designed to blend softly into that photo, so without it the highlight shows up alone as a stark white blob. Force a flat safe fill and drop the highlight/filter entirely for print. */
+      }
+      /* iOS's print/PDF pipeline (same WebKit engine in both Safari and Chrome on iPad/touch devices) fails to render the background photo, leaving the base dark fill visible; the .orn-bg:before radial-gradient highlight is designed to blend softly into that photo, so without it the highlight shows up alone as a stark white blob. Scoped to touch devices only (pointer:coarse) so desktop print — where the photo renders fine — keeps its real background. */
+      @media print and (pointer: coarse){
         .orn-bg{filter:none!important;background:#e7dcb8!important}
         .orn-bg:before{display:none!important}
         .orn-veil{background:rgba(248,237,195,.28)!important}
