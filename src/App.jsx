@@ -1154,11 +1154,12 @@ function FancySheet({sh,totalPages}){
         linear-gradient(rgba(255,246,212,.22),rgba(69,39,12,.42));pointer-events:none;}
       .orn-veil{position:absolute;inset:7mm;z-index:1;border-radius:2mm;background:rgba(248,237,195,.12);pointer-events:none;}
       .orn-bg:after{content:"";position:absolute;inset:5mm;border:1.15mm solid #6b4616;border-radius:3.2mm;box-shadow:inset 0 0 0 .55mm #d9b86a,inset 0 0 0 1.4mm rgba(41,24,5,.38),inset 0 0 24mm rgba(73,42,12,.24),0 0 18mm rgba(0,0,0,.28);pointer-events:none;}
-      .theme-cleric .orn-bg{filter:hue-rotate(7deg) saturate(1.08) brightness(1.04)}
-      .theme-druid .orn-bg{filter:hue-rotate(55deg) saturate(1.05) brightness(.98)}
-      .theme-wizard .orn-bg,.theme-sorcerer .orn-bg,.theme-warlock .orn-bg{filter:hue-rotate(190deg) saturate(1.12) brightness(.92)}
-      .theme-rogue .orn-bg{filter:hue-rotate(205deg) saturate(.92) brightness(.82)}
-      .theme-fighter .orn-bg,.theme-barbarian .orn-bg,.theme-paladin .orn-bg{filter:hue-rotate(-10deg) saturate(1.18) brightness(.96)}
+      /* Theming via a colored tint layer (plain background-color) instead of CSS filter:hue-rotate — filter was unreliable in iOS's print pipeline (photo printed fine once it became an <img>, but the theme color was lost), while a flat tint color is the same technique already confirmed to print correctly everywhere. */
+      .theme-cleric .orn-bg-tint{background:rgba(255,235,180,.4)}
+      .theme-druid .orn-bg-tint{background:rgba(150,195,130,.44)}
+      .theme-wizard .orn-bg-tint,.theme-sorcerer .orn-bg-tint,.theme-warlock .orn-bg-tint{background:rgba(120,140,210,.44)}
+      .theme-rogue .orn-bg-tint{background:rgba(70,90,120,.5)}
+      .theme-fighter .orn-bg-tint,.theme-barbarian .orn-bg-tint,.theme-paladin .orn-bg-tint{background:rgba(220,140,90,.4)}
       .rune-ring{position:absolute;left:46mm;top:35mm;width:128mm;height:128mm;border-radius:50%;border:.35mm dashed rgba(255,225,145,.42);box-shadow:0 0 18mm rgba(255,202,76,.18),inset 0 0 17mm rgba(255,240,180,.18);z-index:1}.rune-ring:before{content:"✦ ✧ ✧ ✦ ✧ ✧ ✦ ✧ ✧ ✦";position:absolute;inset:5mm;border-radius:50%;font-size:5mm;letter-spacing:2mm;color:rgba(61,42,16,.23);display:flex;align-items:center;justify-content:center;transform:rotate(-17deg)}
       .rune-ring:after{content:"";position:absolute;inset:16mm;border-radius:50%;border:.25mm solid rgba(255,236,181,.25);background:conic-gradient(from 20deg,transparent 0 12deg,rgba(255,226,122,.14) 12deg 14deg,transparent 14deg 40deg,rgba(52,35,12,.12) 40deg 42deg,transparent 42deg 100deg);mask:radial-gradient(circle,transparent 0 45%,#000 46% 48%,transparent 49% 100%)}
       .brand{position:absolute;left:13mm;top:2.6mm;font-family:system-ui,sans-serif;font-size:2.2mm;font-weight:900;letter-spacing:.19em;color:#412807;text-transform:uppercase;z-index:8}.brand:after{content:"";display:block;width:54mm;height:.45mm;margin-top:1mm;background:linear-gradient(90deg,#a77922,transparent)}
