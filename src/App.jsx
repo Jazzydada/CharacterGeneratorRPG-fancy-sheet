@@ -99,7 +99,7 @@ const DA={
   "Saving Throws":"Saving Throws",
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
-  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd","Gear":"Udstyr",
+  "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd","Gear":"Udstyr","None":"Ingen",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -1081,7 +1081,7 @@ const r4d6=()=>Array.from({length:4},()=>Math.ceil(Math.random()*6)).sort((a,b)=
 const FALLBACK_ORDER=["CON","DEX","WIS","CHA","INT","STR"];
 function assignByPriority(cn,values){const pri=CLASSES[cn].pri;const sorted=[...values].sort((a,b)=>b-a);const res={};pri.forEach((ab,i)=>{res[ab]=sorted[i];});const remaining=sorted.slice(pri.length);const leftoverAbs=FALLBACK_ORDER.filter(ab=>!pri.includes(ab));leftoverAbs.forEach((ab,i)=>{res[ab]=remaining[i];});return res;}
 function assignArr(cn){return assignByPriority(cn,STD);}
-function applyBoosts(stats,bg,mode,pick2,pick1){const b={...stats},opts=BGS[bg].ab;if(mode==="+2/+1"){const p2=opts.includes(pick2)?pick2:opts[0];const p1=(opts.includes(pick1)&&pick1!==p2)?pick1:opts.find(a=>a!==p2);b[p2]=(b[p2]||10)+2;b[p1]=(b[p1]||10)+1;}else opts.forEach(a=>b[a]=(b[a]||10)+1);return b;}
+function applyBoosts(stats,bg,mode,pick2,pick1){if(mode==="None")return{...stats};const b={...stats},opts=BGS[bg].ab;if(mode==="+2/+1"){const p2=opts.includes(pick2)?pick2:opts[0];const p1=(opts.includes(pick1)&&pick1!==p2)?pick1:opts.find(a=>a!==p2);b[p2]=(b[p2]||10)+2;b[p1]=(b[p1]||10)+1;}else opts.forEach(a=>b[a]=(b[a]||10)+1);return b;}
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -2380,8 +2380,8 @@ export default function App(){
         <GBtn onClick={()=>{const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(cn,rolls);setRstats(ns);setMstats(ns);setSmode("Rolled");}} gold={smode==="Rolled"} small><RefreshCw size={12}/> {t("Roll 4d6")}</GBtn>
       </div>
       <GFld label={t("Background Ability Boost")}>
-        <select value={boost} onChange={e=>setBoost(e.target.value)} style={inp}><option value="+2/+1">+2/+1</option><option value="+1/+1/+1">+1/+1/+1</option></select>
-        {boost==="+2/+1"?(
+        <select value={boost} onChange={e=>setBoost(e.target.value)} style={inp}><option value="+2/+1">+2/+1</option><option value="+1/+1/+1">+1/+1/+1</option><option value="None">{t("None")}</option></select>
+        {boost==="None"?null:boost==="+2/+1"?(
           <div style={{marginTop:"0.35rem",display:"flex",flexDirection:"column",gap:"0.3rem"}}>
             <div style={{fontSize:"0.68rem",color:G.dim}}>{t("Click to choose (2024 rules — pick from")} {bgo.ab.join(", ")}):</div>
             <div style={{display:"flex",gap:"0.35rem",alignItems:"center",flexWrap:"wrap"}}>
