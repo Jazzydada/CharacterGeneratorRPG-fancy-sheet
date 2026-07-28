@@ -1191,8 +1191,9 @@ function FancySheet({sh,totalPages}){
         .panel{background:#f0e0bd!important;backdrop-filter:none!important}
         .panel-titlebar{background:#1c1208!important}
         .langs{background:#241207!important}
-        /* Mobile Safari's print/PDF pipeline renders CSS filter (theme hue-rotate) and the background photo unreliably, showing up as a solid black page with a stray white blob; drop the filter and force a safe fallback fill so print never looks broken even if the photo fails to load */
-        .orn-bg{filter:none!important;background-color:#e7dcb8!important}
+        /* iOS's print/PDF pipeline (same WebKit engine in both Safari and Chrome on iPad) fails to render the background photo, leaving the base dark fill visible; the .orn-bg:before radial-gradient highlight is designed to blend softly into that photo, so without it the highlight shows up alone as a stark white blob. Force a flat safe fill and drop the highlight/filter entirely for print. */
+        .orn-bg{filter:none!important;background:#e7dcb8!important}
+        .orn-bg:before{display:none!important}
         .orn-veil{background:rgba(248,237,195,.28)!important}
       }
     `}</style>
