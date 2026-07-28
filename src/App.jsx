@@ -1144,9 +1144,9 @@ function FancySheet({sh,totalPages}){
     <style>{`
       .ornate-sheet{width:210mm;height:297mm;margin:0 auto;position:relative;overflow:hidden;box-sizing:border-box;background:#130e08;color:#241305;font-family:Georgia,'Times New Roman',serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
       .ornate-sheet *{box-sizing:border-box;}
-      .orn-bg{position:absolute;inset:0;overflow:hidden;background:
-        linear-gradient(rgba(244,224,170,.34),rgba(244,224,170,.34)),
-        url('/fantasy-sheet-bg.jpg');background-size:cover;background-position:center;}
+      .orn-bg{position:absolute;inset:0;overflow:hidden;background:#e7dcb8;}
+      .orn-bg-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+      .orn-bg-tint{position:absolute;inset:0;background:rgba(244,224,170,.34);pointer-events:none;}
       .orn-bg:before{content:"";position:absolute;inset:0;background:
         radial-gradient(circle at 52% 42%,rgba(255,253,245,.91) 0 18%,rgba(255,250,235,.34) 32%,rgba(16,10,5,0) 50%),
         radial-gradient(circle at 18% 76%,rgba(255,220,190,.16),transparent 18%),
@@ -1192,14 +1192,12 @@ function FancySheet({sh,totalPages}){
         .panel-titlebar{background:#1c1208!important}
         .langs{background:#241207!important}
       }
-      /* iOS's print/PDF pipeline (same WebKit engine in both Safari and Chrome on iPad/touch devices) fails to render the background photo, leaving the base dark fill visible; the .orn-bg:before radial-gradient highlight is designed to blend softly into that photo, so without it the highlight shows up alone as a stark white blob. Scoped to touch devices only (pointer:coarse) so desktop print — where the photo renders fine — keeps its real background. */
+      /* The background photo used to be a CSS background-image, which iOS's print/PDF pipeline (same WebKit engine in both Safari and Chrome on iPad) failed to render, leaving the .orn-bg:before radial-gradient highlight stranded alone as a stark white blob. It's now a real <img> tag instead — <img> elements were confirmed to print fine on iPad (the portrait already did) — so this override just keeps a flat safe fallback fill behind the photo on touch devices in case it still doesn't load, without hiding the highlight or disabling the theme filter anymore. */
       @media print and (pointer: coarse){
-        .orn-bg{filter:none!important;background:#e7dcb8!important}
-        .orn-bg:before{display:none!important}
-        .orn-veil{background:rgba(248,237,195,.28)!important}
+        .orn-bg{background:#e7dcb8!important}
       }
     `}</style>
-    <div className="orn-bg"/><div className="orn-veil"/><div className="rune-ring"/><div className="dragon-mark">☽</div><div className="left-sword"/>
+    <div className="orn-bg"><img className="orn-bg-photo" src="/fantasy-sheet-bg.jpg" alt=""/><div className="orn-bg-tint"/></div><div className="orn-veil"/><div className="rune-ring"/><div className="dragon-mark">☽</div><div className="left-sword"/>
     <div className="brand">Asaheim Fantasy Sheet</div>
     <div className="name-plaque"><b>{sh.name}</b></div>
     <div className="top-scroll">
