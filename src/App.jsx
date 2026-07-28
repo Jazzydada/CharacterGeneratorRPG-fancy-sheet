@@ -1191,6 +1191,9 @@ function FancySheet({sh,totalPages}){
         .panel{background:#f0e0bd!important;backdrop-filter:none!important}
         .panel-titlebar{background:#1c1208!important}
         .langs{background:#241207!important}
+        /* Mobile Safari's print/PDF pipeline renders CSS filter (theme hue-rotate) and the background photo unreliably, showing up as a solid black page with a stray white blob; drop the filter and force a safe fallback fill so print never looks broken even if the photo fails to load */
+        .orn-bg{filter:none!important;background-color:#e7dcb8!important}
+        .orn-veil{background:rgba(248,237,195,.28)!important}
       }
     `}</style>
     <div className="orn-bg"/><div className="orn-veil"/><div className="rune-ring"/><div className="dragon-mark">☽</div><div className="left-sword"/>
