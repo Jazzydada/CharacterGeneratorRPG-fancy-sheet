@@ -100,6 +100,7 @@ const DA={
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC",
   "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd","Gear":"Udstyr","None":"Ingen",
+  "Metamagic":"Metamagic","Spend Sorcery Points to modify spells you cast":"Brug Sorcery Points til at modificere spells du caster",
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
@@ -192,6 +193,20 @@ const PB_COST={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
 const PB_BUDGET=27;
 function pointBuySpent(stats){return Object.values(stats).reduce((s,v)=>s+(PB_COST[v]??0),0);}
 // Warlock Eldritch Invocations (2024). Names are canon (kept English); desc is [en, da].
+// Metamagic Options (PHB 2024 p.141-142), verified against the book.
+const METAMAGIC_OPTIONS={
+  "Careful Spell":["Protect up to your CHA-modifier of creatures from a saving throw spell you cast — they auto-succeed and take no damage on a normally half-damage save.","Beskyt op til dit CHA-modifier antal væsener mod et saving-throw-spell du caster — de består automatisk og tager ingen skade ved normalt halv skade.","1 SP"],
+  "Distant Spell":["Double a spell's range (5+ ft), or extend a Touch-range spell to 30 ft.","Fordobl et spells rækkevidde (5+ ft), eller udvid et Touch-spell til 30 ft.","1 SP"],
+  "Empowered Spell":["Reroll a number of the spell's damage dice up to your CHA modifier, and use the new rolls.","Slå et antal af spellets skadeterninger om, op til din CHA-modifier, og brug de nye slag.","1 SP"],
+  "Extended Spell":["Double a spell's duration (1 minute+) to a maximum of 24 hours.","Fordobl et spells varighed (1 minut+) til maks 24 timer.","1 SP"],
+  "Heightened Spell":["Give one target of a saving-throw spell Disadvantage on its save.","Giv ét mål for et saving-throw-spell Disadvantage på sit save.","2 SP"],
+  "Quickened Spell":["Change a spell's casting time from an action to a bonus action.","Ændr et spells cast-tid fra en action til en bonus action.","2 SP"],
+  "Seeking Spell":["Reroll a missed spell attack roll and use the new result.","Slå et forbi-ramt spell-angrebstjek om og brug det nye resultat.","1 SP"],
+  "Subtle Spell":["Cast a spell without Verbal or Somatic components.","Cast et spell uden Verbal- eller Somatic-komponenter.","1 SP"],
+  "Transmuted Spell":["Change a spell's damage type to Acid, Cold, Fire, Lightning, Poison, or Thunder.","Ændr et spells skadetype til Acid, Cold, Fire, Lightning, Poison eller Thunder.","1 SP"],
+  "Twinned Spell":["Increase a single-target spell's effective level by 1 to also target a second creature.","Forøg et enkelt-mål-spells effektive niveau med 1 for også at ramme et andet væsen.","1 SP"],
+};
+function metamagicKnown(level){return level>=17?6:level>=10?4:level>=2?2:0;}
 const ELDRITCH_INVOCATIONS={
   "Agonizing Blast":["Add your CHA modifier to Eldritch Blast damage.","Læg din CHA-modifier til Eldritch Blast-skade.","Eldritch Blast cantrip"],
   "Armor of Shadows":["Cast Mage Armor on yourself at will, without a spell slot.","Cast Mage Armor på dig selv frit, uden spell slot.",""],
@@ -1767,6 +1782,7 @@ export default function App(){
   const [ownedExtra,setOwnedExtra]=useState([]);
   const [selSp,setSelSp]=useState({});
   const [selInv,setSelInv]=useState([]);
+  const [selMetamagic,setSelMetamagic]=useState([]);
   const [lessonsFeat,setLessonsFeat]=useState("");
   const [classOrder,setClassOrder]=useState(()=>defaultOrder(initChar.cn));
   const [selRituals,setSelRituals]=useState([]);
@@ -1878,6 +1894,10 @@ export default function App(){
   const ct=CTYPE[cn];
   const isWarlock=cn==="Warlock"||(mc&&cn2==="Warlock");
   const warlockLvl=cn==="Warlock"?lv1e:(mc&&cn2==="Warlock"?lv2c:0);
+  const isSorcerer=cn==="Sorcerer"||(mc&&cn2==="Sorcerer");
+  const sorcererLvl=cn==="Sorcerer"?lv1e:(mc&&cn2==="Sorcerer"?lv2c:0);
+  const metamagicLimit=isSorcerer?metamagicKnown(sorcererLvl):0;
+  function togMetamagic(name){setSelMetamagic(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=metamagicLimit)return prev;return[...prev,name];});}
   const invLimit=isWarlock?invocationsKnown(warlockLvl):0;
   function togInv(name){setSelInv(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=invLimit)return prev;return[...prev,name];});}
   function togRitual(name){setSelRituals(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=2)return prev;return[...prev,name];});}
@@ -1912,7 +1932,7 @@ export default function App(){
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1923,10 +1943,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2197,12 +2217,14 @@ export default function App(){
     const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:null;return d?label+": "+d:label;}).join("\n");
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
     const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
+    const metamagicLine=(isSorcerer&&selMetamagic.length)?selMetamagic.map(n=>{const d=METAMAGIC_OPTIONS[n];return "• "+n+" ("+d[2]+"): "+d[da?1:0];}).join("\n"):"";
+    const metamagicBlockTxt=metamagicLine?"Metamagic:\n"+metamagicLine:"";
     const wildShapeLine=(cn==="Druid"&&selWildShapes.length)?"Wild Shape ("+wildShapeUses(level)+"/short or long rest):\n"+selWildShapes.map(n=>"• "+n+" — see page 3 for full stat block").join("\n"):"";
     const rageLine=cn==="Barbarian"?(()=>{const r=barbarianRage(level);return "Rage: "+r.rages+" uses (regain 1 per Short Rest, all per Long Rest), +"+r.dmg+" damage on Strength-based hits";})():"";
     const channelDivinityLine=(cn==="Cleric"&&level>=2)?"Channel Divinity: "+clericChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":(cn==="Paladin"&&level>=3)?"Channel Divinity: "+paladinChannelDivinity(level)+" uses (regain 1 per Short Rest, all per Long Rest)":"";
     const sorceryPointsLine=(cn==="Sorcerer"&&level>=2)?"Sorcery Points: "+sorceryPoints(level)+" (regain all per Long Rest)":"";
     const unarmoredMoveLine=(cn==="Monk"&&level>=2)?"Unarmored Movement: +"+monkUnarmoredMovement(level)+" ft Speed while not wearing armor or wielding a Shield":"";
-    const combinedFeatures=[orderLine,featsList,invBlock,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,unarmoredMoveLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
+    const combinedFeatures=[orderLine,featsList,invBlock,metamagicBlockTxt,wildShapeLine,rageLine,channelDivinityLine,sorceryPointsLine,unarmoredMoveLine,classFeaturesTxt,racialTraitsTxt].filter(Boolean).join("\n\n--\n\n");
     const allLangs=[...new Set([...(speciesData?.languages||["Common"]),...selLangs])];
     const allTools=[bgo.tools,...skilledTools].filter(Boolean).join(", ");
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
@@ -2498,8 +2520,23 @@ export default function App(){
         </div>);})}</div>
     </div>}
   </div>):null;
+  const metamagicBlock=isSorcerer&&sorcererLvl>=2?(<div style={{marginBottom:"1rem",background:"#1a1035",border:"1px solid #4c1d95",borderRadius:"1rem",padding:"0.85rem 1rem"}}>
+    <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>
+      <span style={{fontSize:"0.85rem",fontWeight:800,color:"#c4b5fd"}}>{t("Metamagic")}</span>
+      <span style={{fontSize:"0.75rem",fontWeight:700,color:selMetamagic.length>=metamagicLimit?"#4ade80":"#c4b5fd",background:"#2e1065",border:"1px solid #6d28d9",borderRadius:"0.5rem",padding:"0.15rem 0.5rem"}}>{selMetamagic.length} / {metamagicLimit}</span>
+      <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Spend Sorcery Points to modify spells you cast")}</span>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:"0.3rem",maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
+      {Object.entries(METAMAGIC_OPTIONS).map(([name,info])=>{const sel=selMetamagic.includes(name);const atMax=selMetamagic.length>=metamagicLimit;const blocked=!sel&&atMax;return(
+        <div key={name} onClick={()=>!blocked&&togMetamagic(name)} style={{display:"flex",alignItems:"flex-start",gap:"0.5rem",padding:"0.4rem 0.6rem",borderRadius:"0.6rem",cursor:blocked?"not-allowed":"pointer",opacity:blocked?0.4:1,background:sel?"#4c1d9544":"transparent",border:"1px solid "+(sel?"#a78bfa":"#332255")}}>
+          <span style={{flexShrink:0,width:"1.1rem",height:"1.1rem",borderRadius:"0.3rem",border:"1px solid "+(sel?"#a78bfa":"#555"),background:sel?"#7c3aed":"transparent",color:"#fff",fontSize:"0.8rem",fontWeight:900,textAlign:"center",lineHeight:"1.05rem",marginTop:"1px"}}>{sel?"✓":""}</span>
+          <div style={{flex:1}}><div style={{fontSize:"0.8rem",fontWeight:700,color:sel?"#e9d5ff":"#e2e8f0"}}>{name}<span style={{fontSize:"0.6rem",color:"#a78bfa",marginLeft:"0.4rem",border:"1px solid #6d28d9",borderRadius:"0.3rem",padding:"0 0.3rem"}}>{info[2]}</span></div><div style={{fontSize:"0.72rem",color:G.muted,lineHeight:1.35}}>{info[CURRENT_LANG==="da"?1:0]}</div></div>
+        </div>);})}
+    </div>
+  </div>):null;
   const spellsPanel=isCaster?(<div>
     {invocationsBlock}
+    {metamagicBlock}
     <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.75rem",flexWrap:"wrap"}}>
       <div style={{display:"flex",gap:"0.5rem"}}>{[[sab||"—","Ability"],[sgn(smod+pb),"Spell Atk"],[String(8+smod+pb),"Save DC"]].map(([v,l])=>(<div key={l} style={{background:G.gold,color:G.bg,borderRadius:"0.75rem",padding:"0.4rem 0.7rem",textAlign:"center",minWidth:"70px"}}><div style={{fontSize:"0.6rem",textTransform:"uppercase",opacity:0.6}}>{l}</div><div style={{fontSize:"1.2rem",fontWeight:900,lineHeight:1}}>{v}</div></div>))}</div>
       <span style={{marginLeft:"auto",fontSize:"0.65rem",color:"#4ade80",fontWeight:700,border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.15rem 0.5rem"}}>{RULES_VERSION} Rules</span>
