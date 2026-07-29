@@ -505,6 +505,19 @@ const WD={
 const ARMOR_ITEMS={"Padded armor":{acFn:d=>11+d,light:true,stealth:"Disadvantage"},"Leather armor":{acFn:d=>11+d,light:true},"Studded leather":{acFn:d=>12+d,light:true},"Hide armor":{acFn:d=>12+Math.min(d,2),medium:true},"Chain shirt":{acFn:d=>13+Math.min(d,2),medium:true},"Scale mail":{acFn:d=>14+Math.min(d,2),medium:true,stealth:"Disadvantage"},"Breastplate":{acFn:d=>14+Math.min(d,2),medium:true},"Half plate":{acFn:d=>15+Math.min(d,2),medium:true,stealth:"Disadvantage"},"Ring mail":{ac:14,heavy:true,stealth:"Disadvantage"},"Chain mail":{ac:16,heavy:true,stealth:"Disadvantage",str:13},"Splint armor":{ac:17,heavy:true,stealth:"Disadvantage",str:15},"Plate armor":{ac:18,heavy:true,stealth:"Disadvantage",str:15}};
 const ARMOR_PROF={Barbarian:["light","medium","shield"],Bard:["light"],Cleric:["light","medium","shield"],Druid:["light","medium","shield"],Fighter:["light","medium","heavy","shield"],Monk:[],Paladin:["light","medium","heavy","shield"],Ranger:["light","medium","shield"],Rogue:["light"],Sorcerer:[],Warlock:["light"],Wizard:[]};
 const WEAPON_PROF={Barbarian:["simple","martial"],Bard:["simple","bard-martial"],Cleric:["simple"],Druid:["simple"],Fighter:["simple","martial"],Monk:["simple","martial"],Paladin:["simple","martial"],Ranger:["simple","martial"],Rogue:["simple","rogue-martial"],Sorcerer:["simple"],Warlock:["simple"],Wizard:["simple"]};
+const BARD_MARTIAL=["Hand crossbow","Longsword","Rapier","Shortsword"];
+const ROGUE_MARTIAL=["Hand crossbow","Longsword","Rapier","Shortsword"];
+function isWeaponProficient(weapProfs,name){
+  const w=WD[name];if(!w)return false;
+  if(w.type==="simple")return weapProfs.includes("simple");
+  if(w.type==="martial"){
+    if(weapProfs.includes("martial"))return true;
+    if(weapProfs.includes("bard-martial"))return BARD_MARTIAL.includes(name);
+    if(weapProfs.includes("rogue-martial"))return ROGUE_MARTIAL.includes(name);
+    return false;
+  }
+  return false;
+}
 const CW={Barbarian:["Greataxe","Handaxe","Unarmed strike"],Bard:["Rapier","Dagger","Unarmed strike"],Cleric:["Mace","Unarmed strike"],Druid:["Scimitar","Unarmed strike"],Fighter:["Longsword","Light crossbow","Unarmed strike"],Monk:["Shortsword","Dart","Unarmed strike"],Paladin:["Longsword","Javelin","Unarmed strike"],Ranger:["Shortsword","Longbow","Unarmed strike"],Rogue:["Rapier","Shortbow","Dagger","Unarmed strike"],Sorcerer:["Spear","Dagger","Unarmed strike"],Warlock:["Dagger","Unarmed strike"],Wizard:["Quarterstaff","Dagger","Unarmed strike"]};
 // Starting-gear pack contents (PHB p.225-228), verified against the book.
 const PACK_CONTENTS={
@@ -1600,9 +1613,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
   const armorProfs=ARMOR_PROF[cn]||[];
   const weapProfs=WEAPON_PROF[cn]||[];
   const canUseArmor=name=>{const a=ARMOR_ITEMS[name];if(!a)return false;if(a.light)return armorProfs.includes("light");if(a.medium)return armorProfs.includes("medium");if(a.heavy)return armorProfs.includes("heavy");return false;};
-  const BARD_MARTIAL=["Hand crossbow","Longsword","Rapier","Shortsword"];
-  const ROGUE_MARTIAL=["Hand crossbow","Longsword","Rapier","Shortsword"];
-  const canUseWeapon=name=>{const w=WD[name];if(!w)return false;if(w.type==="simple")return weapProfs.includes("simple");if(w.type==="martial"){if(weapProfs.includes("martial"))return true;if(weapProfs.includes("bard-martial"))return BARD_MARTIAL.includes(name);if(weapProfs.includes("rogue-martial"))return ROGUE_MARTIAL.includes(name);return false;}return false;};
+  const canUseWeapon=name=>isWeaponProficient(weapProfs,name);
   const q=eqSearch.toLowerCase();
   const weaponRows=Object.entries(WD).filter(([n])=>n!=="Unarmed strike").filter(([n])=>{if(q&&!n.toLowerCase().includes(q))return false;if(!showNonProf&&!canUseWeapon(n))return false;return true;}).map(([wn,w])=>{
     const isProf=canUseWeapon(wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;const bonus=isProf?am+pb:am;const isEq=equipped.weapon===wn;const inAttacks=selWeapons.includes(wn);
@@ -1906,8 +1917,8 @@ export default function App(){
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
     const wd=n=>n==="Unarmed strike"&&hasTavernBrawler?{...WD[n],dmg:"1d4"}:WD[n];
-    if(wname&&wd(wname)){const w=wd(wname);const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wname)});}
-    selWeapons.filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const isProf=weapProfs.includes(w.type);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wn)});});
+    if(wname&&wd(wname)){const w=wd(wname);const isProf=isWeaponProficient(weapProfs,wname);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wname,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wname)});}
+    selWeapons.filter(n=>n!==wname).slice(0,3).forEach(wn=>{const w=wd(wn);if(!w)return;const isProf=isWeaponProficient(weapProfs,wn);const am=w.ab==="fin"?(dm>=sm?dm:sm):w.ab==="DEX"?dm:sm;weapons.push({name:wn,atk:sgn(isProf?am+pb:am),dmg:w.dmg+" "+sgn(am),props:w.pr,mastery:w.mastery||"—",masteredActive:masteredWeapons.includes(wn)});});
     return weapons.slice(0,4);
   }
 
