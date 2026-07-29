@@ -2091,7 +2091,6 @@ export default function App(){
   // END PATCH A
   function togPrep(name){setSpPrep(prev=>({...prev,[name]:!prev[name]}));}
   function togFeat(name){
-    if(level===1&&name!==bgo?.feat)return;
     setFeatMap(prev=>({...prev,[name]:!prev[name]}));
   }
   function defaultMasteredWeaponsForClass(cn){
