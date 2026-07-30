@@ -628,55 +628,55 @@ function higherLevelGold(level){
   return 20000+roll10()*250;
 }
 
-const ALL_FEATS={Alert:{desc:"Add Prof. Bonus to Initiative. Cannot be surprised while conscious.",cat:"General"},Crafter:{desc:"Proficiency in 3 artisan tools. Craft at 20% discount.",cat:"General"},Healer:{desc:"Healer kit: restore 1d6+4+HD HP once per creature per rest.",cat:"General"},Lucky:{desc:"3 luck points per long rest. Reroll any d20 and choose either result.",cat:"General"},"Magic Initiate":{desc:"Learn 2 cantrips and 1 1st-level spell from any class.",cat:"General"},"Savage Attacker":{desc:"Once per turn, reroll melee weapon damage and use either result.",cat:"General"},Skilled:{desc:"Gain proficiency in any 3 skills or tools.",cat:"General",skilled:true},"Tavern Brawler":{desc:"Unarmed strikes use d4+STR. Bonus action grapple on hit.",cat:"General"},Tough:{desc:"HP maximum +2 per level (retroactive).",cat:"General",tough:true},"War Caster":{desc:"Advantage on CON concentration saves. Cast spells as OA.",cat:"General"},"Great Weapon Master":{desc:"+1 STR. Heavy weapon hits deal +Prof.Bonus damage. Hew: bonus attack on crit/kill.",cat:"General"},Mobile:{desc:"Speed +10 ft. Dash through difficult terrain. No OA from attacked creatures.",cat:"General",speed:10},Resilient:{desc:"Proficiency in one saving throw. +1 to that ability.",cat:"General"},Sentinel:{desc:"OA reduces speed to 0. OA on Disengage. React when ally targeted.",cat:"General"},Sharpshooter:{desc:"+1 DEX. Ranged attacks ignore half and three-quarters cover.",cat:"General"},"Inspiring Leader":{desc:"10-min speech: up to 6 allies gain temp HP = level+CHA.",cat:"General"},Skulker:{desc:"Hide when lightly obscured. Missed ranged attack does not reveal you.",cat:"General"},Durable:{desc:"+1 CON. Min HP from Hit Dice = 2x CON mod.",cat:"General"},"Spell Sniper":{desc:"Double range of attack spells. Ignore half and 3/4 cover.",cat:"General"},"Polearm Master":{desc:"Bonus butt-end attack (1d4). OA when enemy enters reach.",cat:"General"},Actor:{desc:"+1 CHA. Advantage on Deception/Performance checks to impersonate. Mimic sounds and speech.",cat:"General"},
-  Athlete:{desc:"+1 STR or DEX. Climb Speed = your Speed. Stand from prone for only 5 ft of movement.",cat:"General"},
-  Charger:{desc:"+1 STR or DEX. Dash gains +10 ft. Charge attack: +1d8 damage or push 10 ft.",cat:"General"},
-  Chef:{desc:"+1 CON or WIS. Proficiency with Cook's Utensils. Cook healing treats/meals after rests.",cat:"General"},
-  "Crossbow Expert":{desc:"+1 DEX. Ignore Loading on crossbows. No disadvantage on ranged attacks in melee.",cat:"General"},
-  Crusher:{desc:"+1 STR or CON. Bludgeoning hit can push 5 ft. Crit gives allies advantage vs target.",cat:"General"},
-  "Defensive Duelist":{desc:"+1 DEX. Reaction with a Finesse weapon: add Prof. Bonus to AC against one melee attack.",cat:"General"},
-  "Dual Wielder":{desc:"+1 STR or DEX. Extra Light-weapon attack can use any melee weapon. Draw/stow two weapons at once.",cat:"General"},
-  "Elemental Adept":{desc:"+1 INT/WIS/CHA. Spells ignore Resistance to a chosen damage type; treat 1s as 2s.",cat:"General"},
-  "Fey-Touched":{desc:"+1 INT/WIS/CHA. Always-prepared Misty Step + a Divination/Enchantment spell, castable free 1/long rest.",cat:"General"},
-  Grappler:{desc:"+1 STR or DEX. Unarmed hit can also Grapple. Advantage attacking a creature you've grappled.",cat:"General"},
-  "Heavily Armored":{desc:"+1 STR or CON. Gain training with Heavy armor.",cat:"General"},
-  "Heavy Armor Master":{desc:"+1 STR or CON. Reduce Bludgeoning/Piercing/Slashing damage taken by Prof. Bonus while in Heavy armor.",cat:"General"},
-  "Keen Mind":{desc:"+1 INT. Always know which way is north, hours until sunrise/sunset, and recall anything seen/heard in the past month.",cat:"General"},
-  "Lightly Armored":{desc:"+1 STR or DEX. Gain training with Light armor.",cat:"General"},
-  "Mage Slayer":{desc:"+1 STR/DEX/INT/WIS/CHA. OA against a caster whose spell you can see. Advantage on saves vs spells cast within 5 ft.",cat:"General"},
-  "Martial Weapon Training":{desc:"+1 STR or DEX. Gain proficiency with all Martial weapons.",cat:"General"},
-  "Medium Armor Master":{desc:"+1 STR or DEX. Gain training with Medium armor and Shields.",cat:"General"},
-  "Moderately Armored":{desc:"+1 STR or DEX. Gain training with Medium armor and Shields.",cat:"General"},
-  "Mounted Combatant":{desc:"+1 STR/DEX/WIS. Advantage on melee attacks vs smaller unmounted creatures; redirect attacks against your mount to yourself.",cat:"General"},
-  Observant:{desc:"+1 INT or WIS. +5 Passive Perception/Investigation. Read lips.",cat:"General"},
-  Piercer:{desc:"+1 STR or DEX. Reroll one Piercing damage die per hit. Crit adds an extra Piercing die.",cat:"General"},
-  Poisoner:{desc:"+1 DEX or INT. Poison damage ignores Resistance. Proficiency with Poisoner's Kit to brew doses.",cat:"General"},
-  "Ritual Caster":{desc:"+1 INT/WIS/CHA. Always-prepared Ritual spells (count = Prof. Bonus) castable as Rituals.",cat:"General"},
-  "Shadow-Touched":{desc:"+1 INT/WIS/CHA. Always-prepared Invisibility + an Illusion/Necromancy spell, castable free 1/long rest.",cat:"General"},
-  "Shield Master":{desc:"+1 STR. Shield Bash: attack forces a STR save or pushes/knocks prone. Reaction: no damage on a successful DEX save.",cat:"General"},
-  "Skill Expert":{desc:"+1 any ability. Gain one skill proficiency, and Expertise in a skill you're already proficient in.",cat:"General"},
-  Slasher:{desc:"+1 STR or DEX. Slashing hit reduces target's Speed by 10 ft. Crit gives disadvantage on attacks.",cat:"General"},
-  Speedy:{desc:"+1 DEX or CON. Speed +10 ft. Dash ignores difficult terrain. Advantage against Opportunity Attacks.",cat:"General"},
-  Telekinetic:{desc:"+1 INT/WIS/CHA. Learn Mage Hand (invisible, no components). Bonus Action shove a creature telekinetically.",cat:"General"},
-  Telepathic:{desc:"+1 INT/WIS/CHA. Speak telepathically to any creature you can see within 60 ft. Always-prepared Detect Thoughts, castable free 1/long rest.",cat:"General"},
-  "Weapon Master":{desc:"+1 STR or DEX. Use the mastery property of one weapon kind you're proficient with; swap it on a Long Rest.",cat:"General"},
-  Defense:{desc:"Fighting Style: +1 AC while wearing armor.",cat:"Fighting Style",acBonus:1},Dueling:{desc:"Fighting Style: +2 damage with one melee weapon.",cat:"Fighting Style"},"Two-Weapon Fighting":{desc:"Fighting Style: Add ability mod to off-hand attack damage.",cat:"Fighting Style"},Archery:{desc:"Fighting Style: +2 to ranged weapon attack rolls.",cat:"Fighting Style"},Protection:{desc:"Fighting Style: Reaction to impose disadv on attack vs ally (shield).",cat:"Fighting Style"},"Blind Fighting":{desc:"Fighting Style: Blindsight 10 ft.",cat:"Fighting Style"},
-  "Great Weapon Fighting":{desc:"Fighting Style: Reroll 1s and 2s on damage dice for two-handed/Versatile melee weapons.",cat:"Fighting Style"},
-  Interception:{desc:"Fighting Style: Reaction reduces damage to a nearby ally by 1d10+Prof.Bonus. Requires Shield or weapon.",cat:"Fighting Style"},
-  "Thrown Weapon Fighting":{desc:"Fighting Style: +2 damage on hits with thrown weapons.",cat:"Fighting Style"},
-  "Unarmed Fighting":{desc:"Fighting Style: Unarmed Strike damage becomes 1d6 (1d8 if empty-handed); bonus 1d4 to a grappled creature each turn.",cat:"Fighting Style"},"Elven Accuracy":{desc:"(Elf) +1 DEX/INT/WIS/CHA. Triple advantage reroll.",cat:"Racial"},"Fey Teleportation":{desc:"(Elf) +1 INT/CHA. Speak Sylvan. 1/short rest: Misty Step.",cat:"Racial"},"Wood Elf Magic":{desc:"(Wood Elf) Longstrider, Pass without Trace, one druid cantrip.",cat:"Racial"},"High Elf Cantrip":{desc:"(High Elf) One wizard cantrip (INT).",cat:"Racial"},"Dwarven Fortitude":{desc:"(Dwarf) +1 CON. Dodge action: spend 1 HD to heal.",cat:"Racial"},"Orcish Fury":{desc:"(Orc) +1 STR/CON. Extra damage die on weapon attacks.",cat:"Racial"},"Bountiful Luck":{desc:"(Halfling) Reaction to grant ally Lucky reroll on a 1.",cat:"Racial"},"Second Chance":{desc:"(Halfling) +1 DEX/CON/CHA. Reaction to force reroll when attacked.",cat:"Racial"},"Squat Nimbleness":{desc:"(Small) +1 STR/DEX. Speed +5. Move through larger creatures.",cat:"Racial"},Hunter:{desc:"(Ranger) Colossus Slayer, Giant Killer, or Horde Breaker.",cat:"Class"},"Dragon Fear":{desc:"(Dragonborn) +1 STR/CON/CHA. Breathe fear instead of energy.",cat:"Racial"},"Dragon Hide":{desc:"(Dragonborn) +1 STR/CON/CHA. Natural AC 13+DEX, claw attacks.",cat:"Racial"},"Fade Away":{desc:"(Gnome) +1 INT/DEX. Reaction to become invisible when damaged.",cat:"Racial"},"Flames of Phlegethos":{desc:"(Tiefling) +1 INT/CHA. Reroll fire damage, fire shield aura.",cat:"Racial"},"Infernal Constitution":{desc:"(Tiefling) +1 CON. Resistance to cold/poison, advantage on poison saves.",cat:"Racial"},Musician:{desc:"Proficiency with 3 instruments. Play after a rest: allies gain Heroic Inspiration.",cat:"General"},
-"Boon of Combat Prowess":{desc:"+1 any ability (max 30). Peerless Aim: turn a missed attack into a hit, 1/turn.",cat:"Epic Boon"},
-"Boon of Dimensional Travel":{desc:"+1 any ability (max 30). Blink Steps: teleport 30 ft after Attack or Magic action.",cat:"Epic Boon"},
-"Boon of Energy Resistance":{desc:"+1 any ability (max 30). Resistance to 2 chosen damage types; redirect that damage to another creature.",cat:"Epic Boon"},
-"Boon of Fate":{desc:"+1 any ability (max 30). Improve Fate: roll 2d4 as a bonus/penalty to a D20 Test near you.",cat:"Epic Boon"},
-"Boon of Fortitude":{desc:"+1 any ability (max 30). Max HP +40; regain bonus HP (=CON mod) whenever you heal.",cat:"Epic Boon"},
-"Boon of Irresistible Offense":{desc:"+1 STR or DEX (max 30). Physical damage ignores Resistance. Nat 20 attacks deal extra damage.",cat:"Epic Boon"},
-"Boon of Recovery":{desc:"+1 any ability (max 30). Last Stand: drop to 1 HP instead of 0, once per long rest. Pool of ten d10s to heal.",cat:"Epic Boon"},
-"Boon of Skill":{desc:"+1 any ability (max 30). Proficiency in all skills, plus Expertise in one.",cat:"Epic Boon"},
-"Boon of Speed":{desc:"+1 any ability (max 30). Escape Artist: Disengage as a Bonus Action, ending Grappled. Speed +30 ft.",cat:"Epic Boon"},
-"Boon of Spell Recall":{desc:"+1 INT/WIS/CHA (max 30). Casting a level 1-4 spell has a chance to not expend the slot.",cat:"Epic Boon"},
-"Boon of the Night Spirit":{desc:"+1 any ability (max 30). In Dim Light/Darkness: Bonus Action Invisibility, Resistance to all but Psychic/Radiant.",cat:"Epic Boon"},
-"Boon of Truesight":{desc:"+1 any ability (max 30). Truesight with a range of 60 ft.",cat:"Epic Boon"}};
+const ALL_FEATS={Alert:{desc:"Add Prof. Bonus to Initiative. Cannot be surprised while conscious.",cat:"General",pg:200},Crafter:{desc:"Proficiency in 3 artisan tools. Craft at 20% discount.",cat:"General",pg:200},Healer:{desc:"Healer kit: restore 1d6+4+HD HP once per creature per rest.",cat:"General",pg:201},Lucky:{desc:"3 luck points per long rest. Reroll any d20 and choose either result.",cat:"General",pg:201},"Magic Initiate":{desc:"Learn 2 cantrips and 1 1st-level spell from any class.",cat:"General",pg:201},"Savage Attacker":{desc:"Once per turn, reroll melee weapon damage and use either result.",cat:"General",pg:201},Skilled:{desc:"Gain proficiency in any 3 skills or tools.",cat:"General",skilled:true,pg:201},"Tavern Brawler":{desc:"Unarmed strikes use d4+STR. Bonus action grapple on hit.",cat:"General",pg:202},Tough:{desc:"HP maximum +2 per level (retroactive).",cat:"General",tough:true,pg:202},"War Caster":{desc:"Advantage on CON concentration saves. Cast spells as OA.",cat:"General",pg:209},"Great Weapon Master":{desc:"+1 STR. Heavy weapon hits deal +Prof.Bonus damage. Hew: bonus attack on crit/kill.",cat:"General",pg:204},Mobile:{desc:"Speed +10 ft. Dash through difficult terrain. No OA from attacked creatures.",cat:"General",speed:10},Resilient:{desc:"Proficiency in one saving throw. +1 to that ability.",cat:"General",pg:206},Sentinel:{desc:"OA reduces speed to 0. OA on Disengage. React when ally targeted.",cat:"General",pg:207},Sharpshooter:{desc:"+1 DEX. Ranged attacks ignore half and three-quarters cover.",cat:"General",pg:207},"Inspiring Leader":{desc:"10-min speech: up to 6 allies gain temp HP = level+CHA.",cat:"General",pg:204},Skulker:{desc:"Hide when lightly obscured. Missed ranged attack does not reveal you.",cat:"General",pg:208},Durable:{desc:"+1 CON. Min HP from Hit Dice = 2x CON mod.",cat:"General",pg:203},"Spell Sniper":{desc:"Double range of attack spells. Ignore half and 3/4 cover.",cat:"General",pg:208},"Polearm Master":{desc:"Bonus butt-end attack (1d4). OA when enemy enters reach.",cat:"General",pg:206},Actor:{desc:"+1 CHA. Advantage on Deception/Performance checks to impersonate. Mimic sounds and speech.",cat:"General",pg:202},
+  Athlete:{desc:"+1 STR or DEX. Climb Speed = your Speed. Stand from prone for only 5 ft of movement.",cat:"General",pg:202},
+  Charger:{desc:"+1 STR or DEX. Dash gains +10 ft. Charge attack: +1d8 damage or push 10 ft.",cat:"General",pg:202},
+  Chef:{desc:"+1 CON or WIS. Proficiency with Cook's Utensils. Cook healing treats/meals after rests.",cat:"General",pg:202},
+  "Crossbow Expert":{desc:"+1 DEX. Ignore Loading on crossbows. No disadvantage on ranged attacks in melee.",cat:"General",pg:203},
+  Crusher:{desc:"+1 STR or CON. Bludgeoning hit can push 5 ft. Crit gives allies advantage vs target.",cat:"General",pg:203},
+  "Defensive Duelist":{desc:"+1 DEX. Reaction with a Finesse weapon: add Prof. Bonus to AC against one melee attack.",cat:"General",pg:203},
+  "Dual Wielder":{desc:"+1 STR or DEX. Extra Light-weapon attack can use any melee weapon. Draw/stow two weapons at once.",cat:"General",pg:203},
+  "Elemental Adept":{desc:"+1 INT/WIS/CHA. Spells ignore Resistance to a chosen damage type; treat 1s as 2s.",cat:"General",pg:203},
+  "Fey-Touched":{desc:"+1 INT/WIS/CHA. Always-prepared Misty Step + a Divination/Enchantment spell, castable free 1/long rest.",cat:"General",pg:204},
+  Grappler:{desc:"+1 STR or DEX. Unarmed hit can also Grapple. Advantage attacking a creature you've grappled.",cat:"General",pg:204},
+  "Heavily Armored":{desc:"+1 STR or CON. Gain training with Heavy armor.",cat:"General",pg:204},
+  "Heavy Armor Master":{desc:"+1 STR or CON. Reduce Bludgeoning/Piercing/Slashing damage taken by Prof. Bonus while in Heavy armor.",cat:"General",pg:204},
+  "Keen Mind":{desc:"+1 INT. Always know which way is north, hours until sunrise/sunset, and recall anything seen/heard in the past month.",cat:"General",pg:205},
+  "Lightly Armored":{desc:"+1 STR or DEX. Gain training with Light armor.",cat:"General",pg:205},
+  "Mage Slayer":{desc:"+1 STR/DEX/INT/WIS/CHA. OA against a caster whose spell you can see. Advantage on saves vs spells cast within 5 ft.",cat:"General",pg:205},
+  "Martial Weapon Training":{desc:"+1 STR or DEX. Gain proficiency with all Martial weapons.",cat:"General",pg:205},
+  "Medium Armor Master":{desc:"+1 STR or DEX. Gain training with Medium armor and Shields.",cat:"General",pg:205},
+  "Moderately Armored":{desc:"+1 STR or DEX. Gain training with Medium armor and Shields.",cat:"General",pg:205},
+  "Mounted Combatant":{desc:"+1 STR/DEX/WIS. Advantage on melee attacks vs smaller unmounted creatures; redirect attacks against your mount to yourself.",cat:"General",pg:205},
+  Observant:{desc:"+1 INT or WIS. +5 Passive Perception/Investigation. Read lips.",cat:"General",pg:205},
+  Piercer:{desc:"+1 STR or DEX. Reroll one Piercing damage die per hit. Crit adds an extra Piercing die.",cat:"General",pg:206},
+  Poisoner:{desc:"+1 DEX or INT. Poison damage ignores Resistance. Proficiency with Poisoner's Kit to brew doses.",cat:"General",pg:206},
+  "Ritual Caster":{desc:"+1 INT/WIS/CHA. Always-prepared Ritual spells (count = Prof. Bonus) castable as Rituals.",cat:"General",pg:206},
+  "Shadow-Touched":{desc:"+1 INT/WIS/CHA. Always-prepared Invisibility + an Illusion/Necromancy spell, castable free 1/long rest.",cat:"General",pg:207},
+  "Shield Master":{desc:"+1 STR. Shield Bash: attack forces a STR save or pushes/knocks prone. Reaction: no damage on a successful DEX save.",cat:"General",pg:207},
+  "Skill Expert":{desc:"+1 any ability. Gain one skill proficiency, and Expertise in a skill you're already proficient in.",cat:"General",pg:207},
+  Slasher:{desc:"+1 STR or DEX. Slashing hit reduces target's Speed by 10 ft. Crit gives disadvantage on attacks.",cat:"General",pg:208},
+  Speedy:{desc:"+1 DEX or CON. Speed +10 ft. Dash ignores difficult terrain. Advantage against Opportunity Attacks.",cat:"General",pg:208},
+  Telekinetic:{desc:"+1 INT/WIS/CHA. Learn Mage Hand (invisible, no components). Bonus Action shove a creature telekinetically.",cat:"General",pg:208},
+  Telepathic:{desc:"+1 INT/WIS/CHA. Speak telepathically to any creature you can see within 60 ft. Always-prepared Detect Thoughts, castable free 1/long rest.",cat:"General",pg:208},
+  "Weapon Master":{desc:"+1 STR or DEX. Use the mastery property of one weapon kind you're proficient with; swap it on a Long Rest.",cat:"General",pg:209},
+  Defense:{desc:"Fighting Style: +1 AC while wearing armor.",cat:"Fighting Style",acBonus:1,pg:209},Dueling:{desc:"Fighting Style: +2 damage with one melee weapon.",cat:"Fighting Style",pg:209},"Two-Weapon Fighting":{desc:"Fighting Style: Add ability mod to off-hand attack damage.",cat:"Fighting Style",pg:210},Archery:{desc:"Fighting Style: +2 to ranged weapon attack rolls.",cat:"Fighting Style",pg:209},Protection:{desc:"Fighting Style: Reaction to impose disadv on attack vs ally (shield).",cat:"Fighting Style",pg:209},"Blind Fighting":{desc:"Fighting Style: Blindsight 10 ft.",cat:"Fighting Style",pg:209},
+  "Great Weapon Fighting":{desc:"Fighting Style: Reroll 1s and 2s on damage dice for two-handed/Versatile melee weapons.",cat:"Fighting Style",pg:209},
+  Interception:{desc:"Fighting Style: Reaction reduces damage to a nearby ally by 1d10+Prof.Bonus. Requires Shield or weapon.",cat:"Fighting Style",pg:209},
+  "Thrown Weapon Fighting":{desc:"Fighting Style: +2 damage on hits with thrown weapons.",cat:"Fighting Style",pg:210},
+  "Unarmed Fighting":{desc:"Fighting Style: Unarmed Strike damage becomes 1d6 (1d8 if empty-handed); bonus 1d4 to a grappled creature each turn.",cat:"Fighting Style",pg:210},"Elven Accuracy":{desc:"(Elf) +1 DEX/INT/WIS/CHA. Triple advantage reroll.",cat:"Racial"},"Fey Teleportation":{desc:"(Elf) +1 INT/CHA. Speak Sylvan. 1/short rest: Misty Step.",cat:"Racial"},"Wood Elf Magic":{desc:"(Wood Elf) Longstrider, Pass without Trace, one druid cantrip.",cat:"Racial"},"High Elf Cantrip":{desc:"(High Elf) One wizard cantrip (INT).",cat:"Racial"},"Dwarven Fortitude":{desc:"(Dwarf) +1 CON. Dodge action: spend 1 HD to heal.",cat:"Racial"},"Orcish Fury":{desc:"(Orc) +1 STR/CON. Extra damage die on weapon attacks.",cat:"Racial"},"Bountiful Luck":{desc:"(Halfling) Reaction to grant ally Lucky reroll on a 1.",cat:"Racial"},"Second Chance":{desc:"(Halfling) +1 DEX/CON/CHA. Reaction to force reroll when attacked.",cat:"Racial"},"Squat Nimbleness":{desc:"(Small) +1 STR/DEX. Speed +5. Move through larger creatures.",cat:"Racial"},Hunter:{desc:"(Ranger) Colossus Slayer, Giant Killer, or Horde Breaker.",cat:"Class"},"Dragon Fear":{desc:"(Dragonborn) +1 STR/CON/CHA. Breathe fear instead of energy.",cat:"Racial"},"Dragon Hide":{desc:"(Dragonborn) +1 STR/CON/CHA. Natural AC 13+DEX, claw attacks.",cat:"Racial"},"Fade Away":{desc:"(Gnome) +1 INT/DEX. Reaction to become invisible when damaged.",cat:"Racial"},"Flames of Phlegethos":{desc:"(Tiefling) +1 INT/CHA. Reroll fire damage, fire shield aura.",cat:"Racial"},"Infernal Constitution":{desc:"(Tiefling) +1 CON. Resistance to cold/poison, advantage on poison saves.",cat:"Racial"},Musician:{desc:"Proficiency with 3 instruments. Play after a rest: allies gain Heroic Inspiration.",cat:"General",pg:201},
+"Boon of Combat Prowess":{desc:"+1 any ability (max 30). Peerless Aim: turn a missed attack into a hit, 1/turn.",cat:"Epic Boon",pg:210},
+"Boon of Dimensional Travel":{desc:"+1 any ability (max 30). Blink Steps: teleport 30 ft after Attack or Magic action.",cat:"Epic Boon",pg:210},
+"Boon of Energy Resistance":{desc:"+1 any ability (max 30). Resistance to 2 chosen damage types; redirect that damage to another creature.",cat:"Epic Boon",pg:210},
+"Boon of Fate":{desc:"+1 any ability (max 30). Improve Fate: roll 2d4 as a bonus/penalty to a D20 Test near you.",cat:"Epic Boon",pg:210},
+"Boon of Fortitude":{desc:"+1 any ability (max 30). Max HP +40; regain bonus HP (=CON mod) whenever you heal.",cat:"Epic Boon",pg:210},
+"Boon of Irresistible Offense":{desc:"+1 STR or DEX (max 30). Physical damage ignores Resistance. Nat 20 attacks deal extra damage.",cat:"Epic Boon",pg:211},
+"Boon of Recovery":{desc:"+1 any ability (max 30). Last Stand: drop to 1 HP instead of 0, once per long rest. Pool of ten d10s to heal.",cat:"Epic Boon",pg:211},
+"Boon of Skill":{desc:"+1 any ability (max 30). Proficiency in all skills, plus Expertise in one.",cat:"Epic Boon",pg:211},
+"Boon of Speed":{desc:"+1 any ability (max 30). Escape Artist: Disengage as a Bonus Action, ending Grappled. Speed +30 ft.",cat:"Epic Boon",pg:211},
+"Boon of Spell Recall":{desc:"+1 INT/WIS/CHA (max 30). Casting a level 1-4 spell has a chance to not expend the slot.",cat:"Epic Boon",pg:211},
+"Boon of the Night Spirit":{desc:"+1 any ability (max 30). In Dim Light/Darkness: Bonus Action Invisibility, Resistance to all but Psychic/Radiant.",cat:"Epic Boon",pg:211},
+"Boon of Truesight":{desc:"+1 any ability (max 30). Truesight with a range of 60 ft.",cat:"Epic Boon",pg:211}};
 
 // 2024 PHB Origin Feats (granted by background; Human's Versatile trait grants one extra)
 const ORIGIN_FEATS=["Alert","Crafter","Healer","Lucky","Magic Initiate","Musician","Savage Attacker","Skilled","Tavern Brawler","Tough"];
@@ -1581,6 +1581,7 @@ function FeatCard({name,feat,sel,onToggle,children}){
           <span style={{fontSize:"0.58rem",textTransform:"uppercase",letterSpacing:"0.08em",color:catColor,fontWeight:700,border:"1px solid",borderColor:catColor,borderRadius:"0.3rem",padding:"0 0.3rem"}}>{t(feat.cat)}</span>
         </div>
         <div style={{fontSize:"0.72rem",color:G.muted,marginTop:"1px",lineHeight:1.4}}>{featDescL(name,feat.desc)}</div>
+        {feat.pg&&<div style={{fontSize:"0.62rem",color:G.dimmer,marginTop:"2px"}}>PHB p.{feat.pg}</div>}
       </div>
     </div>
     {children}
@@ -2197,11 +2198,12 @@ export default function App(){
     setGender(nextGenderRoll);
     const da=CURRENT_LANG==="da";
     const featDesc=n=>da?(FEATDESC_DA[n]||ALL_FEATS[n]?.desc||""):(ALL_FEATS[n]?.desc||"");
+    const featPgTxt=n=>ALL_FEATS[n]?.pg?" (PHB p."+ALL_FEATS[n].pg+")":"";
     const orderInfo=CLASS_ORDER[cn]?CLASS_ORDER[cn].options.find(o=>o[0]===classOrder):null;
     const orderLine=orderInfo?CLASS_ORDER[cn].label+": "+orderInfo[0]+" — "+orderInfo[1][da?1:0]:"";
     const originWord=da?"Oprindelse":"Origin";
-    const originFeatLine=bgo.feat+" ("+originWord+"): "+featDesc(bgo.feat);
-    const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return d?f+": "+d:f;})].join("\n");
+    const originFeatLine=bgo.feat+" ("+originWord+"): "+featDesc(bgo.feat)+featPgTxt(bgo.feat);
+    const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return(d?f+": "+d:f)+featPgTxt(f);})].join("\n");
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
     const subPg=(sub&&SUBCLASS_PG[cn]?.[sub])||null;
