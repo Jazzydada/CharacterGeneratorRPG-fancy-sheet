@@ -639,23 +639,7 @@ export default function App(){
       const pageEls=Array.from(document.querySelectorAll(".print-area .page"));
       const pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait"});
       for(let i=0;i<pageEls.length;i++){
-        const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,onclone:(doc)=>{
-          const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";
-          // html2canvas doesn't support CSS object-fit (stretches images instead of cropping),
-          // so convert any object-fit:cover <img> into an equivalent background-image on its parent.
-          doc.querySelectorAll("img").forEach(img=>{
-            if(img.style.objectFit==="cover"){
-              const parent=img.parentElement;
-              if(parent){
-                parent.style.backgroundImage=`url("${img.src}")`;
-                parent.style.backgroundSize="cover";
-                parent.style.backgroundPosition=img.style.objectPosition||"center";
-                parent.style.backgroundRepeat="no-repeat";
-                img.style.opacity="0";
-              }
-            }
-          });
-        }});
+        const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
         const img=canvas.toDataURL("image/jpeg",0.92);
         if(i>0)pdf.addPage();
         pdf.addImage(img,"JPEG",0,0,210,297);
