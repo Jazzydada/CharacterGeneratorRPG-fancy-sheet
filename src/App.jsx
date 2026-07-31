@@ -1151,7 +1151,7 @@ export default function App(){
       "Damage Resistance":"Resistance to "+DRACONIC_ANCESTRY[dragonColor]+" damage",
     };
     const goliathTraitDetail={
-      "Giant Ancestry":giantAncestry+": "+GIANT_ANCESTRY[giantAncestry][da?1:0]+" ("+pb+"x, "+(da?"genopret alle ved lang hvile":"regain all on Long Rest")+")",
+      "Giant Ancestry":giantAncestry+": "+GIANT_ANCESTRY[giantAncestry][da?1:0]+" ("+pb+"x, "+(da?"genopret alle ved Long Rest":"regain all on Long Rest")+")",
     };
     const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=(sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:null)||TRAIT_DESC[tr]?.[da?1:0];return d?label+": "+d:label;}).join("\n");
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
