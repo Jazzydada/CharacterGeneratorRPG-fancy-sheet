@@ -3,7 +3,7 @@ import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVer
 import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
 import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC}from"./sheet_da.js";
 
-import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -786,11 +786,13 @@ export default function App(){
   const armorSpeedPenalty=(armorStrReq&&fin.STR<armorStrReq)?10:0;
   const unarmoredMoveBonus=(cn==="Monk"&&!equipped.armor&&!equipped.shield)?monkUnarmoredMovement(level):0;
   const speed=Math.max(0,(speciesData?.speed||30)+(hasMobile?10:0)+unarmoredMoveBonus-armorSpeedPenalty);
-  const isCaster=!!CTYPE[cn]||(mc&&!!CTYPE[cn2]);
+  const isThird=thirdCasterOf(cn,sub);
+  const thirdLvl=isThird?lv1e:0;
+  const isCaster=!!CTYPE[cn]||(mc&&!!CTYPE[cn2])||thirdLvl>=3;
   const isMcCaster=mc&&!!CTYPE[cn2]&&CTYPE[cn2]!=="warlock"&&!!CTYPE[cn]&&CTYPE[cn]!=="warlock";
-  const sab=SAB[cn]||(mc?SAB[cn2]:"");
+  const sab=SAB[cn]||(thirdLvl>=3?"INT":(mc?SAB[cn2]:""));
   const smod=sab?mf(fin[sab]):0;
-  const ct=CTYPE[cn];
+  const ct=CTYPE[cn]||(thirdLvl>=3?"third":undefined);
   const isWarlock=cn==="Warlock"||(mc&&cn2==="Warlock");
   const warlockLvl=cn==="Warlock"?lv1e:(mc&&cn2==="Warlock"?lv2c:0);
   const isSorcerer=cn==="Sorcerer"||(mc&&cn2==="Sorcerer");
@@ -816,7 +818,7 @@ export default function App(){
   const ct2=mc?CTYPE[cn2]:null;
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
-  const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):Array(9).fill(0);
+  const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):ct==="third"?(SS.third[lv1e]||Array(9).fill(0)):Array(9).fill(0);
   const autoName=useMemo(()=>pickName(sp),[sp]);
   const dispName=cname||autoName;
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
@@ -826,15 +828,17 @@ export default function App(){
   const avSp=useMemo(()=>{
     const res={};
     [cn,...(mc&&CTYPE[cn2]?[cn2]:[])].forEach(c=>{
-      const sd=CS[c]||{};const cct=CTYPE[c];const cMaxSL=cct?maxSpellLevel(cct,c===cn?lv1e:lv2c):0;
+      const cIsThird=thirdCasterOf(c,sub);
+      const sd=CS[cIsThird?"Wizard":c]||{};const cct=CTYPE[c]||(cIsThird?"third":undefined);const cMaxSL=cct?maxSpellLevel(cct,c===cn?lv1e:lv2c):0;
       Object.entries(sd).forEach(([l,ns])=>{const li=Number(l);if(li>cMaxSL)return;if(!res[li])res[li]=new Set();ns.forEach(n=>res[li].add(n));});
     });
     return res;
-  },[cn,cn2,mc,lv1e,lv2c]);
+  },[cn,cn2,mc,lv1e,lv2c,sub]);
   // All cantrips from any class — only used for the Pact of the Tome extra-cantrip picker.
   const allCantrips=useMemo(()=>[...new Set(Object.values(CS).flatMap(sd=>sd[0]||[]))].sort(),[]);
   const knownStr=ct?spellsKnown(cn,lv1e,smod):(mc&&ct2?spellsKnown(cn2,lv2c,smod):null);
-  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0)+orderCantripBonus(cn,classOrder);
+  const thirdCantrips=thirdLvl>=3?(cn==="Fighter"?(thirdLvl>=10?3:2):(thirdLvl>=10?4:3)):0;
+  const cantripLimit=cantripsKnown(cn,lv1e)+(mc&&ct2?cantripsKnown(cn2,lv2c):0)+orderCantripBonus(cn,classOrder)+thirdCantrips;
   const primaryAb=cls?.pri?.[0]||"STR";
   const racialFeatSuggestions=speciesData?.racialFeats||[];
   const classFeatSuggestions=cls?.classFeatChoices||[];
