@@ -100,6 +100,7 @@ const DA={
   "Passive Perception":"Passiv opmærksomhed",
   "Attacks & Spellcasting":"Angreb & magi","Grapple/Escape DC":"Greb/Undslip DC","Sneak Attack":"Snigangreb",
   "Savant":"Savant","Free":"Gratis","spells added to your spellbook":"spells tilføjet gratis til din spellbog",
+  "Magical Discoveries":"Magiske opdagelser","Always-prepared spells from the Cleric, Druid, or Wizard list":"Altid-forberedte spells fra Cleric-, Druid- eller Wizard-listen",
   "Currency":"Valuta","Buy":"Køb","Adventuring Gear":"Eventyrudstyr","Weight":"Vægt","Cost":"Pris","Purchased":"Købt","Undo":"Fortryd","Gear":"Udstyr","None":"Ingen",
   "Metamagic":"Metamagic","Spend Sorcery Points to modify spells you cast":"Brug Sorcery Points til at modificere spells du caster",
   "Hit Points":"Livspoint",
@@ -702,6 +703,9 @@ const SUBCLASSES={
 };
 // Bonus spells granted by subclass (Domain/Oath/Patron spells) — always prepared, don't count against known/prepared limits.
 const SUBCLASS_SPELLS={
+  Bard:{
+    "College of Glamour":{3:["Charm Person","Mirror Image"],6:["Command"]},
+  },
   Cleric:{
     "Life Domain":{3:["Aid","Bless","Cure Wounds","Lesser Restoration"],5:["Mass Healing Word","Revivify"],7:["Aura of Life","Death Ward"],9:["Greater Restoration","Mass Cure Wounds"]},
     "Light Domain":{3:["Burning Hands","Faerie Fire","Scorching Ray","See Invisibility"],5:["Daylight","Fireball"],7:["Arcane Eye","Wall of Fire"],9:["Flame Strike","Scrying"]},
@@ -1791,6 +1795,7 @@ export default function App(){
   const [selInv,setSelInv]=useState([]);
   const [selMetamagic,setSelMetamagic]=useState([]);
   const [selSavant,setSelSavant]=useState([]);
+  const [selLore,setSelLore]=useState([]);
   const [lessonsFeat,setLessonsFeat]=useState("");
   const [classOrder,setClassOrder]=useState(()=>defaultOrder(initChar.cn));
   const [selRituals,setSelRituals]=useState([]);
@@ -1914,6 +1919,12 @@ export default function App(){
   const savantMaxLvl=wizSchool?maxSpellLevel("full",wizardLvl):0;
   const savantPool=wizSchool?Object.entries(CS.Wizard||{}).filter(([lvl])=>Number(lvl)<=savantMaxLvl).flatMap(([,names])=>names).filter(n=>SD[n]?.sc===wizSchool):[];
   function togSavant(name){setSelSavant(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=savantBudget)return prev;return[...prev,name];});}
+  const bardLvl=cn==="Bard"?lv1e:(mc&&cn2==="Bard"?lv2c:0);
+  const isLore=bardLvl>0&&sub==="College of Lore"&&bardLvl>=6;
+  const loreBudget=isLore?2:0;
+  const loreMaxLvl=isLore?maxSpellLevel("full",bardLvl):0;
+  const lorePool=isLore?[...new Set(["Cleric","Druid","Wizard"].flatMap(c=>Object.entries(CS[c]||{}).filter(([lvl])=>Number(lvl)<=loreMaxLvl).flatMap(([,names])=>names)))]:[];
+  function togLore(name){setSelLore(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=loreBudget)return prev;return[...prev,name];});}
   function togRitual(name){setSelRituals(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=2)return prev;return[...prev,name];});}
   function togTomeCantrip(name){setSelTomeCantrips(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=3)return prev;return[...prev,name];});}
   const ct2=mc?CTYPE[cn2]:null;
@@ -1945,7 +1956,7 @@ export default function App(){
   const featsByTab=useMemo(()=>{const tabs={Origin:[],General:[],"Fighting Style":[],Species:[],Class:[],"Epic Boon":[]};Object.entries(ALL_FEATS).forEach(([name,feat])=>{const cat=feat.cat||"General";if(tabs[cat])tabs[cat].push(name);});return tabs;},[]);
 
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
-  React.useEffect(()=>{setSelSavant([]);},[cn,sub]);
+  React.useEffect(()=>{setSelSavant([]);setSelLore([]);},[cn,sub]);
 
   function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
 
@@ -1958,10 +1969,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selSavant,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -2202,6 +2213,9 @@ export default function App(){
     }
     if(wizSchool){
       selSavant.forEach(name=>addBonus(name,sub));
+    }
+    if(isLore){
+      selLore.forEach(name=>addBonus(name,sub));
     }
     return res;
   }
@@ -2568,9 +2582,22 @@ export default function App(){
       );})}
     </div>
   </div>):null;
+  const loreBlock=isLore?(<div style={{marginBottom:"1rem",background:"#1a1035",border:"1px solid #4c1d95",borderRadius:"1rem",padding:"0.85rem 1rem"}}>
+    <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>
+      <span style={{fontSize:"0.85rem",fontWeight:800,color:"#c4b5fd"}}>{t("Magical Discoveries")}</span>
+      <span style={{fontSize:"0.75rem",fontWeight:700,color:selLore.length>=loreBudget?"#4ade80":"#c4b5fd",background:"#2e1065",border:"1px solid #6d28d9",borderRadius:"0.5rem",padding:"0.15rem 0.5rem"}}>{selLore.length} / {loreBudget}</span>
+      <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Always-prepared spells from the Cleric, Druid, or Wizard list")}</span>
+    </div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
+      {lorePool.map(name=>{const sel=selLore.includes(name);const atMax=selLore.length>=loreBudget;const blocked=!sel&&atMax;return(
+        <button key={name} disabled={blocked} onClick={()=>togLore(name)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?"#a78bfa":"#332255"),cursor:blocked?"not-allowed":"pointer",opacity:blocked?0.4:1,background:sel?"#4c1d9544":"transparent",color:sel?"#e9d5ff":"#e2e8f0",fontWeight:sel?700:400}}>{name}</button>
+      );})}
+    </div>
+  </div>):null;
   const spellsPanel=isCaster?(<div>
     {invocationsBlock}
     {savantBlock}
+    {loreBlock}
     {metamagicBlock}
     <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.75rem",flexWrap:"wrap"}}>
       <div style={{display:"flex",gap:"0.5rem"}}>{[[sab||"—","Ability"],[sgn(smod+pb),"Spell Atk"],[String(8+smod+pb),"Save DC"]].map(([v,l])=>(<div key={l} style={{background:G.gold,color:G.bg,borderRadius:"0.75rem",padding:"0.4rem 0.7rem",textAlign:"center",minWidth:"70px"}}><div style={{fontSize:"0.6rem",textTransform:"uppercase",opacity:0.6}}>{l}</div><div style={{fontSize:"1.2rem",fontWeight:900,lineHeight:1}}>{v}</div></div>))}</div>
