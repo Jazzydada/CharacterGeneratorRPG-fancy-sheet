@@ -142,7 +142,7 @@ function FancySheet({sh,totalPages}){
 
     <StatCard ab="STR" className="str"/><StatCard ab="DEX" className="dex"/><StatCard ab="CON" className="con"/><StatCard ab="INT" className="int"/><StatCard ab="WIS" className="wis"/><StatCard ab="CHA" className="cha"/>
 
-    <div className="portrait-frame"><div className="portrait-wrap">{sh.portraitMode==="blank"?<div className="portrait-blank">{t("Draw your portrait here")}</div>:sh.portraitMode==="upload"?(sh.uploadedPortrait?<img src={sh.uploadedPortrait} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>:<div className="portrait-blank">{t("No image uploaded")}</div>):<>{portraitFailed?<div className="portrait-fail">{t("Portrait could not load.")}<br/>{t("Try Generate Sheet again.")}</div>:portraitLoading?<div className="portrait-loading"><span style={{fontSize:"6mm"}}>🎨</span><span>{t("Painting portrait…")}</span></div>:null}{!portraitFailed&&<img src={portrait} crossOrigin="anonymous" onLoad={()=>setPortraitLoading(false)} onError={()=>{setPortraitFailed(true);setPortraitLoading(false);}} style={{display:portraitLoading?"none":"block",width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.08) contrast(1.04)"}}/>}</>}</div></div><div className="portrait-cap"/>
+    <div className="portrait-frame"><div className="portrait-wrap">{sh.portraitMode==="blank"?<div className="portrait-blank">{t("Draw your portrait here")}</div>:sh.portraitMode==="upload"?(sh.uploadedPortrait?<img src={sh.uploadedPortrait} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>:<div className="portrait-blank">{t("No image uploaded")}</div>):<>{portraitFailed?<div className="portrait-fail">{t("Portrait could not load.")}<br/>{t("Try Generate Sheet again.")}</div>:portraitLoading?<div className="portrait-loading"><span style={{fontSize:"6mm"}}>🎨</span><span>{t("Painting portrait…")}</span></div>:null}{!portraitFailed&&<img src={portrait} className="ai-portrait-img" onLoad={()=>setPortraitLoading(false)} onError={()=>{setPortraitFailed(true);setPortraitLoading(false);}} style={{display:portraitLoading?"none":"block",width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",filter:"saturate(1.08) contrast(1.04)"}}/>}</>}</div></div><div className="portrait-cap"/>
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
@@ -639,7 +639,11 @@ export default function App(){
       const pageEls=Array.from(document.querySelectorAll(".print-area .page"));
       const pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait"});
       for(let i=0;i<pageEls.length;i++){
-        const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
+        const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,
+          // Skip the AI portrait if it's a remote (non-data-URI) image: without CORS headers from
+          // that host, drawing it taints the canvas and toDataURL() below throws for the whole page.
+          ignoreElements:(el)=>el.tagName==="IMG"&&el.classList?.contains("ai-portrait-img")&&!(el.getAttribute("src")||"").startsWith("data:"),
+          onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
         const img=canvas.toDataURL("image/jpeg",0.92);
         if(i>0)pdf.addPage();
         pdf.addImage(img,"JPEG",0,0,210,297);
