@@ -416,14 +416,14 @@ const SKILL_LIST=[{name:"Acrobatics",ab:"DEX"},{name:"Animal Handling",ab:"WIS"}
 const SPECIES={
   Human:{speed:30,languages:["Common","One extra"],traits:["Resourceful","Skillful","Versatile"],racialFeats:["Skilled","Alert","Lucky","Tough","Magic Initiate"]},
   Elf:{speed:30,languages:["Common","Elvish"],traits:["Darkvision 60 ft","Elven Lineage","Fey Ancestry","Keen Senses","Trance"],racialFeats:["Elven Accuracy","Fey Teleportation","Wood Elf Magic","High Elf Cantrip"]},
-  Dwarf:{speed:30,languages:["Common","Dwarvish"],traits:["Darkvision 120 ft","Dwarven Resilience","Dwarven Toughness","Stonecunning","Tool Proficiency"],racialFeats:["Dwarven Fortitude","Squat Nimbleness","Durable"]},
-  Halfling:{speed:30,languages:["Common","Halfling"],traits:["Brave","Halfling Nimbleness","Lucky","Naturally Stealthy"],racialFeats:["Bountiful Luck","Second Chance","Squat Nimbleness"]},
-  Orc:{speed:30,languages:["Common","Orc"],traits:["Adrenaline Rush","Darkvision 120 ft","Powerful Build","Relentless Endurance"],racialFeats:["Orcish Fury","Squat Nimbleness","Durable"]},
+  Dwarf:{speed:30,languages:["Common","Dwarvish"],traits:["Darkvision 120 ft","Dwarven Resilience","Dwarven Toughness","Stonecunning"],racialFeats:["Dwarven Fortitude","Squat Nimbleness","Durable"]},
+  Halfling:{speed:30,languages:["Common","Halfling"],traits:["Brave","Halfling Nimbleness","Luck","Naturally Stealthy"],racialFeats:["Bountiful Luck","Second Chance","Squat Nimbleness"]},
+  Orc:{speed:30,languages:["Common","Orc"],traits:["Adrenaline Rush","Darkvision 120 ft","Relentless Endurance"],racialFeats:["Orcish Fury","Squat Nimbleness","Durable"]},
   Goliath:{speed:35,languages:["Common","Giant"],traits:["Giant Ancestry","Large Form","Powerful Build"],racialFeats:["Squat Nimbleness","Tough","Alert"]},
   Gnome:{speed:30,languages:["Common","Gnomish"],traits:["Darkvision 60 ft","Gnomish Cunning","Gnomish Lineage"],racialFeats:["Fade Away","Squat Nimbleness","Skilled"]},
   Tiefling:{speed:30,languages:["Common","Infernal"],traits:["Darkvision 60 ft","Fiendish Legacy","Otherworldly Presence"],racialFeats:["Flames of Phlegethos","Infernal Constitution","Magic Initiate"]},
-  Dragonborn:{speed:30,languages:["Common","Draconic"],traits:["Draconic Ancestry","Breath Weapon","Damage Resistance"],racialFeats:["Dragon Fear","Dragon Hide","Skilled"]},
-  Aasimar:{speed:30,languages:["Common","Celestial"],traits:["Celestial Revelation","Darkvision 60 ft","Healing Hands","Light Bearer"],racialFeats:["Magic Initiate","Skilled","Tough"]}
+  Dragonborn:{speed:30,languages:["Common","Draconic"],traits:["Draconic Ancestry","Breath Weapon","Damage Resistance","Darkvision 60 ft","Draconic Flight"],racialFeats:["Dragon Fear","Dragon Hide","Skilled"]},
+  Aasimar:{speed:30,languages:["Common","Celestial"],traits:["Celestial Resistance","Celestial Revelation","Darkvision 60 ft","Healing Hands","Light Bearer"],racialFeats:["Magic Initiate","Skilled","Tough"]}
 };
 
 const MASTERY_SLOTS={Barbarian:2,Bard:0,Cleric:0,Druid:0,Fighter:3,Monk:2,Paladin:2,Ranger:2,Rogue:2,Sorcerer:0,Warlock:0,Wizard:0};
