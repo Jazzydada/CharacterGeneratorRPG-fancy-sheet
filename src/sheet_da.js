@@ -138,7 +138,7 @@ export const TRAIT_PG={
 export const FEATDESC_DA={
   "Alert":"Læg Proficiency Bonus til Initiativ. Kan ikke overraskes når du er ved bevidsthed.",
   "Crafter":"Proficiency i 3 håndværksværktøjer. Håndværk med 20% rabat.",
-  "Healer":"Healer-kit: genopret 1d6+4+HD HP én gang pr. væsen pr. Rest.",
+  "Healer":"Battle Medic: brug en anvendelse af et Healer's Kit til at lade et væsen inden for 5 ft bruge en Hit Die (genopret slag+Prof.Bonus HP). Kast om ved 1'ere på enhver helings-terning.",
   "Lucky":"3 heldpoint pr. Long Rest. Kast en d20 om og vælg resultatet.",
   "Magic Initiate":"Lær 2 cantrips og 1 spell af 1. niveau fra en vilkårlig klasse.",
   "Savage Attacker":"Én gang pr. tur: kast nærkampsskade om og vælg resultatet.",
@@ -177,7 +177,7 @@ export const FEATDESC_DA={
   "Fade Away":"(Gnom) +1 INT/DEX. Reaktion: bliv usynlig når du tager skade.",
   "Flames of Phlegethos":"(Tiefling) +1 INT/CHA. Kast ildskade om, ildskjolds-aura.",
   "Infernal Constitution":"(Tiefling) +1 CON. Modstand mod kulde/gift, fordel på poison saves.",
-  "Musician":"Proficiency med 3 instrumenter. Spil efter en Rest: allierede får Heroisk inspiration.",
+  "Musician":"Proficiency med 3 instrumenter. Spil efter en Short eller Long Rest: allierede der hører det får Heroisk inspiration.",
   "Fey-Touched":"+1 INT/WIS/CHA. Altid-forberedt Misty Step + et Spådom- eller Fortryllelse-spell, castbart gratis 1/Long Rest.",
   "Shadow-Touched":"+1 INT/WIS/CHA. Altid-forberedt Invisibility + et Illusion- eller Nekromanti-spell, castbart gratis 1/Long Rest.",
 };
