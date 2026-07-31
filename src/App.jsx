@@ -46,7 +46,7 @@ function FancySheet({sh,totalPages}){
   const stats=sh.finalStats||{};
   const stat=(ab)=>stats[ab]??10;
   const statMod=(ab)=>mf(stat(ab));
-  const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:0)+((sh.expertise||[]).includes(sk.name)?sh.profBonus:0)+((sh.wisSkills||[]).includes(sk.name)?(sh.wisMod||0):0));
+  const skillBonus=(sk)=>sgn(statMod(sk.ab)+(sh.skills?.includes(sk.name)?sh.profBonus:(sh.jackOfAllTrades?Math.floor(sh.profBonus/2):0))+((sh.expertise||[]).includes(sk.name)?sh.profBonus:0)+((sh.wisSkills||[]).includes(sk.name)?(sh.wisMod||0):0));
   const saveBonus=(ab)=>sgn(statMod(ab)+(sh.saves?.includes(ab)?sh.profBonus:0));
   const portrait=sh.portraitUrl||pollinationsImageUrl(buildPortraitPromptFromSheet(sh),sh.portraitSeed||1);
   const skillRows=SKILL_LIST;
@@ -784,7 +784,8 @@ export default function App(){
   const hasMagicInitiate=featBaseName(bgo.feat)==="Magic Initiate"||!!featMap["Magic Initiate"]||lessonsFeat==="Magic Initiate";
   const miClassEff=miClass||miForcedClass||MAGIC_INITIATE_CLASSES[0];
   const hasFindFamiliar=Object.values(selSp).flat().includes("Find Familiar")||miSpell==="Find Familiar"||selRituals.includes("Find Familiar");
-  const passPerc=10+wm+(skProfs.includes("Perception")?pb:0);
+  const jackOfAllTradesEarly=(cn==="Bard"&&lv1e>=2)||(mc&&cn2==="Bard"&&lv2c>=2);
+  const passPerc=10+wm+(skProfs.includes("Perception")?pb:(jackOfAllTradesEarly?Math.floor(pb/2):0));
   const init=dm+(hasAlert?pb:0);
   const armorStrReq=equipped.armor&&ARMOR_ITEMS[equipped.armor]?.str;
   const armorSpeedPenalty=(armorStrReq&&fin.STR<armorStrReq)?10:0;
@@ -817,6 +818,7 @@ export default function App(){
   const savantPool=wizSchool?Object.entries(CS.Wizard||{}).filter(([lvl])=>Number(lvl)<=savantMaxLvl).flatMap(([,names])=>names).filter(n=>SD[n]?.sc===wizSchool):[];
   function togSavant(name){setSelSavant(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=savantBudget)return prev;return[...prev,name];});}
   const bardLvl=cn==="Bard"?lv1e:(mc&&cn2==="Bard"?lv2c:0);
+  const hasJackOfAllTrades=bardLvl>=2;
   const isLore=bardLvl>0&&sub==="College of Lore"&&bardLvl>=6;
   const loreBudget=isLore?2:0;
   const loreMaxLvl=isLore?maxSpellLevel("full",bardLvl):0;
@@ -1180,7 +1182,7 @@ export default function App(){
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
@@ -1199,7 +1201,7 @@ export default function App(){
   const buildOverview=()=>{
     const abilRows=AB.map(a=>{const score=fin[a],mod=mf(score),saveProf=saves.includes(a),saveBonus=mod+(saveProf?pb:0);return{ab:a,score,mod,saveProf,saveBonus};});
     const orderWis=orderWisSkills(cn,classOrder);const wm2=mf(fin.WIS);
-    const skillRows=SKILL_LIST.map(sk=>{const prof=skProfs.includes(sk.name),expert=selExpertise.includes(sk.name),fromBg=bgo.sk.includes(sk.name),bonus=mf(fin[sk.ab])+(prof?pb:0)+(expert?pb:0)+(orderWis.includes(sk.name)?wm2:0);return{...sk,prof,expert,fromBg,bonus};});
+    const skillRows=SKILL_LIST.map(sk=>{const prof=skProfs.includes(sk.name),expert=selExpertise.includes(sk.name),fromBg=bgo.sk.includes(sk.name),bonus=mf(fin[sk.ab])+(prof?pb:(hasJackOfAllTrades?Math.floor(pb/2):0))+(expert?pb:0)+(orderWis.includes(sk.name)?wm2:0);return{...sk,prof,expert,fromBg,bonus};});
     const weaponDisplay=[...buildW(),...(sp==="Dragonborn"?[{name:"Breath Weapon ("+dragonColor+")",atk:"DC "+(8+cm+pb),dmg:breathWeaponDice(level)+" "+DRACONIC_ANCESTRY[dragonColor],props:"15-ft Cone or 30x5-ft Line",mastery:"—"}]:[])];
     return(<div>
       <div style={{marginBottom:"1rem"}}>
