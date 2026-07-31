@@ -1122,7 +1122,9 @@ export default function App(){
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
     const subPg=(sub&&SUBCLASS_PG[cn]?.[sub])||null;
-    const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>name+" ("+sub+"): "+txt[da?1:0]+(subPg?" (PHB p."+subPg+")":"")):[];
+    const trSc=s=>da?s.replace(/Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation/g,trSchool):s;
+    const subLabel=da&&WIZARD_SCHOOL[sub]?trSchool(WIZARD_SCHOOL[sub]):sub;
+    const subFeatureLines=(sub&&level>=3)?subclassFeaturesAtLevel(cn,sub,level).map(([name,txt])=>trSc(name)+" ("+subLabel+"): "+trSc(txt[da?1:0])+(subPg?" (PHB p."+subPg+")":"")):[];
     const classFeaturesTxt=[...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
     const breathDC=8+cm+pb;
     const dragonTraitDetail={
@@ -1458,9 +1460,9 @@ export default function App(){
   </div>):null;
   const savantBlock=wizSchool?(<div style={{marginBottom:"1rem",background:"#1a1035",border:"1px solid #4c1d95",borderRadius:"1rem",padding:"0.85rem 1rem"}}>
     <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>
-      <span style={{fontSize:"0.85rem",fontWeight:800,color:"#c4b5fd"}}>{sub} {t("Savant")}</span>
+      <span style={{fontSize:"0.85rem",fontWeight:800,color:"#c4b5fd"}}>{CURRENT_LANG==="da"?trSchool(wizSchool):sub} {t("Savant")}</span>
       <span style={{fontSize:"0.75rem",fontWeight:700,color:selSavant.length>=savantBudget?"#4ade80":"#c4b5fd",background:"#2e1065",border:"1px solid #6d28d9",borderRadius:"0.5rem",padding:"0.15rem 0.5rem"}}>{selSavant.length} / {savantBudget}</span>
-      <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Free")} {wizSchool} {t("spells added to your spellbook")}</span>
+      <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Free")} {CURRENT_LANG==="da"?trSchool(wizSchool):wizSchool} {t("spells added to your spellbook")}</span>
     </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
       {savantPool.map(name=>{const sel=selSavant.includes(name);const atMax=selSavant.length>=savantBudget;const blocked=!sel&&atMax;return(
