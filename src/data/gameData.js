@@ -83,6 +83,7 @@ const DA={
   // sheet button bar
   Back:"Tilbage",
   "Print / PDF":"Print / PDF",
+  "Download image PDF":"Download billede-PDF","Generating…":"Genererer…","Could not create image PDF":"Kunne ikke oprette billede-PDF",
   "Set page margins to None.":"Sæt sidemargener til Ingen.",
   "2 pages":"2 sider","1 page":"1 side","pages":"sider","Features & Spells":"Evner, træk & magi","Descriptions on page 2":"Beskrivelser på side 2",
   // sheet static labels
