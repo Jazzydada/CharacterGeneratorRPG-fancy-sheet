@@ -2,7 +2,7 @@ import React,{useMemo,useState,useRef,useCallback,useEffect}from"react";
 import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVertical,Package,Lock,Unlock,RefreshCw}from"lucide-react";
 import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
 import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC}from"./sheet_da.js";
-import html2canvas from"html2canvas";
+import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
 import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
@@ -633,62 +633,35 @@ export default function App(){
   const initChar=initRef.current;
   const [view,setView]=useState("gen");
   const [exportingImg,setExportingImg]=useState(false);
-  // html2canvas doesn't support CSS object-fit (it stretches images instead of cropping them
-  // proportionally), so for any same-origin/data-URI image using object-fit:cover, pre-crop it
-  // to a plain canvas matching its rendered box's aspect ratio, then temporarily swap the img to
-  // that cropped image with objectFit:"fill" (which needs no cropping, so html2canvas renders it
-  // correctly). Restored right after each page is captured.
-  function precropCoverImages(pageEl){
-    const imgs=Array.from(pageEl.querySelectorAll("img")).filter(im=>{
-      if(getComputedStyle(im).objectFit!=="cover")return false;
-      const src=im.getAttribute("src")||"";
-      return !(/^https?:\/\//i.test(src)&&!src.startsWith(window.location.origin));
-    });
-    const restoreFns=[];
-    for(const im of imgs){
-      try{
-        const rect=im.getBoundingClientRect();
-        const boxW=rect.width,boxH=rect.height;
-        if(!boxW||!boxH||!im.naturalWidth||!im.naturalHeight)continue;
-        const pos=(getComputedStyle(im).objectPosition||"50% 50%").split(" ");
-        const px=pos[0]&&pos[0].includes("%")?parseFloat(pos[0])/100:0.5;
-        const py=pos[1]&&pos[1].includes("%")?parseFloat(pos[1])/100:(pos[1]==="top"?0:pos[1]==="bottom"?1:0.5);
-        const natW=im.naturalWidth,natH=im.naturalHeight;
-        const boxAspect=boxW/boxH,natAspect=natW/natH;
-        let sw,sh,sx,sy;
-        if(natAspect>boxAspect){sh=natH;sw=natH*boxAspect;sy=0;sx=(natW-sw)*px;}
-        else{sw=natW;sh=natW/boxAspect;sx=0;sy=(natH-sh)*py;}
-        const cv=document.createElement("canvas");
-        cv.width=Math.max(1,Math.round(sw));cv.height=Math.max(1,Math.round(sh));
-        cv.getContext("2d").drawImage(im,sx,sy,sw,sh,0,0,cv.width,cv.height);
-        const cropped=cv.toDataURL("image/jpeg",0.95);
-        const origSrc=im.src,origFit=im.style.objectFit;
-        im.src=cropped;im.style.objectFit="fill";
-        restoreFns.push(()=>{im.src=origSrc;im.style.objectFit=origFit;});
-      }catch(err){/* leave this image as-is (e.g. still tainted) if cropping fails */}
-    }
-    return()=>restoreFns.forEach(fn=>fn());
-  }
+  // html-to-image renders via a real browser pass (SVG foreignObject), unlike html2canvas which
+  // manually reimplements CSS layout/painting — so it correctly handles object-fit, gradients,
+  // custom fonts etc. Each sheet page still gets rasterized to a flat JPEG (which is the whole
+  // point: a printer only has to handle a picture per page, not lots of separate text/font
+  // objects, which is what was stalling some printers on the text-dense Features & Spells page).
   async function downloadImagePdf(){
     setExportingImg(true);
     try{
       const pageEls=Array.from(document.querySelectorAll(".print-area .page"));
       const pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait"});
       for(let i=0;i<pageEls.length;i++){
-        const restore=precropCoverImages(pageEls[i]);
-        let canvas;
-        try{
-          canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,
-            // Skip the AI portrait if it's a remote (non-data-URI) image: without CORS headers from
-            // that host, drawing it taints the canvas and toDataURL() below throws for the whole page.
-            ignoreElements:(el)=>el.tagName==="IMG"&&el.classList?.contains("ai-portrait-img")&&!(el.getAttribute("src")||"").startsWith("data:"),
-            onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
-        }finally{
-          restore();
-        }
-        const img=canvas.toDataURL("image/jpeg",0.92);
+        const dataUrl=await toJpeg(pageEls[i],{
+          quality:0.95,
+          backgroundColor:"#ffffff",
+          width:PAGE_W_PX,
+          height:PAGE_H_PX,
+          pixelRatio:2,
+          // The AI portrait is served without CORS headers, so drawing its pixels to canvas taints
+          // it and the export throws — skip only that image (when it's a remote, non-data-URI src);
+          // everything else (uploaded/data-URI portraits, the background photo) renders normally.
+          filter:(node)=>{
+            if(node.tagName==="IMG"&&node.classList?.contains("ai-portrait-img")){
+              return(node.getAttribute("src")||"").startsWith("data:");
+            }
+            return true;
+          },
+        });
         if(i>0)pdf.addPage();
-        pdf.addImage(img,"JPEG",0,0,210,297);
+        pdf.addImage(dataUrl,"JPEG",0,0,210,297);
       }
       pdf.save((sheet?.name||"character")+".pdf");
     }catch(e){
