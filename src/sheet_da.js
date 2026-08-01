@@ -196,7 +196,7 @@ export const FEATURE_DESC={
   "Primal Knowledge Lvl3":["Extra skill proficiency; while raging, use STR instead of certain skills' normal ability.","Ekstra færdigheds-proficiency; brug STR i stedet for visse færdigheders normale evne mens du raser."],
   "Deft Explorer Lvl1":["Expertise in a skill plus extra languages.","Expertise i en færdighed plus ekstra sprog."],
   "Divine Order Lvl1":["Choose Protector (martial) or Thaumaturge (extra cantrip).","Vælg Protector (kamp) eller Thaumaturge (ekstra cantrip)."],
-  "Divine Smite Lvl2":["Spend a spell slot for extra radiant damage on a hit.","Brug et spell slot for ekstra strålende skade ved træf."],
+  "Divine Smite Lvl2":["Bonus Action right after a melee/unarmed hit: 2d8 Radiant damage (+1d8 vs. a Fiend or Undead), +1d8 per spell slot level above 1st. (PHB p.265)","Bonus-handling lige efter et ramt nærkamps-/ubevæbnet angreb: 2d8 Radiant-skade (+1d8 mod en Fiend eller Undead), +1d8 pr. spell slot-niveau over 1. (PHB p.265)"],
   "Druidic language":["You know the secret language of druids.","Du kan druidernes hemmelige sprog."],
   "Eldritch Invocations Lvl1":["Special magical abilities you pick and can swap.","Særlige magiske evner du vælger og kan bytte."],
   "Expertise Lvl1":["Double your proficiency bonus in chosen skills.","Fordobl din proficiency bonus i valgte færdigheder."],
