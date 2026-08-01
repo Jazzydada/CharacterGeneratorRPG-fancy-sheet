@@ -633,17 +633,59 @@ export default function App(){
   const initChar=initRef.current;
   const [view,setView]=useState("gen");
   const [exportingImg,setExportingImg]=useState(false);
+  // html2canvas doesn't support CSS object-fit (it stretches images instead of cropping them
+  // proportionally), so for any same-origin/data-URI image using object-fit:cover, pre-crop it
+  // to a plain canvas matching its rendered box's aspect ratio, then temporarily swap the img to
+  // that cropped image with objectFit:"fill" (which needs no cropping, so html2canvas renders it
+  // correctly). Restored right after each page is captured.
+  function precropCoverImages(pageEl){
+    const imgs=Array.from(pageEl.querySelectorAll("img")).filter(im=>{
+      if(getComputedStyle(im).objectFit!=="cover")return false;
+      const src=im.getAttribute("src")||"";
+      return !(/^https?:\/\//i.test(src)&&!src.startsWith(window.location.origin));
+    });
+    const restoreFns=[];
+    for(const im of imgs){
+      try{
+        const rect=im.getBoundingClientRect();
+        const boxW=rect.width,boxH=rect.height;
+        if(!boxW||!boxH||!im.naturalWidth||!im.naturalHeight)continue;
+        const pos=(getComputedStyle(im).objectPosition||"50% 50%").split(" ");
+        const px=pos[0]&&pos[0].includes("%")?parseFloat(pos[0])/100:0.5;
+        const py=pos[1]&&pos[1].includes("%")?parseFloat(pos[1])/100:(pos[1]==="top"?0:pos[1]==="bottom"?1:0.5);
+        const natW=im.naturalWidth,natH=im.naturalHeight;
+        const boxAspect=boxW/boxH,natAspect=natW/natH;
+        let sw,sh,sx,sy;
+        if(natAspect>boxAspect){sh=natH;sw=natH*boxAspect;sy=0;sx=(natW-sw)*px;}
+        else{sw=natW;sh=natW/boxAspect;sx=0;sy=(natH-sh)*py;}
+        const cv=document.createElement("canvas");
+        cv.width=Math.max(1,Math.round(sw));cv.height=Math.max(1,Math.round(sh));
+        cv.getContext("2d").drawImage(im,sx,sy,sw,sh,0,0,cv.width,cv.height);
+        const cropped=cv.toDataURL("image/jpeg",0.95);
+        const origSrc=im.src,origFit=im.style.objectFit;
+        im.src=cropped;im.style.objectFit="fill";
+        restoreFns.push(()=>{im.src=origSrc;im.style.objectFit=origFit;});
+      }catch(err){/* leave this image as-is (e.g. still tainted) if cropping fails */}
+    }
+    return()=>restoreFns.forEach(fn=>fn());
+  }
   async function downloadImagePdf(){
     setExportingImg(true);
     try{
       const pageEls=Array.from(document.querySelectorAll(".print-area .page"));
       const pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait"});
       for(let i=0;i<pageEls.length;i++){
-        const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,
-          // Skip the AI portrait if it's a remote (non-data-URI) image: without CORS headers from
-          // that host, drawing it taints the canvas and toDataURL() below throws for the whole page.
-          ignoreElements:(el)=>el.tagName==="IMG"&&el.classList?.contains("ai-portrait-img")&&!(el.getAttribute("src")||"").startsWith("data:"),
-          onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
+        const restore=precropCoverImages(pageEls[i]);
+        let canvas;
+        try{
+          canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:"#ffffff",width:PAGE_W_PX,height:PAGE_H_PX,windowWidth:PAGE_W_PX,windowHeight:PAGE_H_PX,
+            // Skip the AI portrait if it's a remote (non-data-URI) image: without CORS headers from
+            // that host, drawing it taints the canvas and toDataURL() below throws for the whole page.
+            ignoreElements:(el)=>el.tagName==="IMG"&&el.classList?.contains("ai-portrait-img")&&!(el.getAttribute("src")||"").startsWith("data:"),
+            onclone:(doc)=>{const el=doc.querySelector(".sheet-fit-inner");if(el)el.style.transform="none";}});
+        }finally{
+          restore();
+        }
         const img=canvas.toDataURL("image/jpeg",0.92);
         if(i>0)pdf.addPage();
         pdf.addImage(img,"JPEG",0,0,210,297);
