@@ -244,6 +244,9 @@ function Page2({sh,totalPages}){
   // Parse the features text into readable entries (bold the label before the colon).
   const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
   const DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
+  // Any feature that costs an Action/Bonus Action/Reaction or spends Movement gets a boxed card,
+  // same as damage-dealing features — these are the ones a player needs to find quickly in play.
+  const ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
   const ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
   const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/;
   const cardEntries=[],textEntries=[];
@@ -253,7 +256,7 @@ function Page2({sh,totalPages}){
     const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
     if(isHead){textEntries.push(line);forceCard=ALWAYS_CARD_SECTIONS.test(line);return;}
     const rest=ci>0?line.slice(ci+1):"";
-    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)?cardEntries:textEntries).push(line);
+    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)||ACTION_RE.test(rest)?cardEntries:textEntries).push(line);
   });
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
