@@ -52,7 +52,7 @@ const DA={
   // stats panel
   "Stat Method":"Metode til evner",
   "Standard Array":"Standard-array","Rolled":"Kastet","Manual":"Manuel","Point Buy":"Point Buy",
-  "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips",
+  "Points left":"Point tilbage","scores 8–15":"værdier 8–15","Key ability":"Vigtigste evne","Max level":"Maks niveau","Cantrips":"Cantrips","Lvl":"Niv",
   "Portrait":"Portræt","AI image":"AI-billede","Draw your own":"Tegn selv","Draw your portrait here":"Tegn dit portræt her",
   "Upload Image":"Upload billede","Choose an image":"Vælg et billede","Remove":"Fjern","No image uploaded":"Intet billede uploadet",
   "Creature Forms":"Skabningsformer","Find Familiar: all possible animal forms are shown on the character sheet.":"Find Familiar: alle mulige dyreformer vises på karakterarket.",

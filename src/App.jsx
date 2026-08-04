@@ -867,6 +867,7 @@ export default function App(){
   const loreBudget=isLore?2:0;
   const loreMaxLvl=isLore?maxSpellLevel("full",bardLvl):0;
   const lorePool=isLore?[...new Set(["Cleric","Druid","Wizard"].flatMap(c=>Object.entries(CS[c]||{}).filter(([lvl])=>Number(lvl)<=loreMaxLvl).flatMap(([,names])=>names)))]:[];
+  const loreByLevel=isLore?Array.from({length:loreMaxLvl+1},(_,lvl)=>({lvl,names:[...new Set(["Cleric","Druid","Wizard"].flatMap(c=>CS[c]?.[lvl]||[]))].sort()})).filter(g=>g.names.length):[];
   function togLore(name){setSelLore(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=loreBudget)return prev;return[...prev,name];});}
   function togRitual(name){setSelRituals(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=2)return prev;return[...prev,name];});}
   function togTomeCantrip(name){setSelTomeCantrips(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=3)return prev;return[...prev,name];});}
@@ -1588,10 +1589,15 @@ export default function App(){
       <span style={{fontSize:"0.75rem",fontWeight:700,color:selLore.length>=loreBudget?"#4ade80":"#c4b5fd",background:"#2e1065",border:"1px solid #6d28d9",borderRadius:"0.5rem",padding:"0.15rem 0.5rem"}}>{selLore.length} / {loreBudget}</span>
       <span style={{fontSize:"0.68rem",color:G.dim}}>{t("Always-prepared spells from the Cleric, Druid, or Wizard list")}</span>
     </div>
-    <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem",maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
-      {lorePool.map(name=>{const sel=selLore.includes(name);const atMax=selLore.length>=loreBudget;const blocked=!sel&&atMax;return(
-        <button key={name} disabled={blocked} onClick={()=>togLore(name)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?"#a78bfa":"#332255"),cursor:blocked?"not-allowed":"pointer",opacity:blocked?0.4:1,background:sel?"#4c1d9544":"transparent",color:sel?"#e9d5ff":"#e2e8f0",fontWeight:sel?700:400}}>{name}</button>
-      );})}
+    <div style={{maxHeight:"46vh",overflowY:"auto",paddingRight:"0.25rem"}}>
+      {loreByLevel.map(({lvl,names})=>(<div key={lvl} style={{marginBottom:"0.5rem"}}>
+        <div style={{fontSize:"0.62rem",fontWeight:700,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.25rem"}}>{lvl===0?t("Cantrips"):t("Lvl")+" "+lvl}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>
+          {names.map(name=>{const sel=selLore.includes(name);const atMax=selLore.length>=loreBudget;const blocked=!sel&&atMax;return(
+            <button key={name} disabled={blocked} onClick={()=>togLore(name)} style={{padding:"0.25rem 0.5rem",borderRadius:"0.5rem",fontSize:"0.73rem",border:"1px solid "+(sel?"#a78bfa":"#332255"),cursor:blocked?"not-allowed":"pointer",opacity:blocked?0.4:1,background:sel?"#4c1d9544":"transparent",color:sel?"#e9d5ff":"#e2e8f0",fontWeight:sel?700:400}}>{name}</button>
+          );})}
+        </div>
+      </div>))}
     </div>
   </div>):null;
   const spellsPanel=isCaster?(<div>
