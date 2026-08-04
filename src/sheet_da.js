@@ -178,8 +178,8 @@ export const FEATDESC_DA={
   "Flames of Phlegethos":"(Tiefling) +1 INT/CHA. Kast ildskade om, ildskjolds-aura.",
   "Infernal Constitution":"(Tiefling) +1 CON. Modstand mod kulde/gift, fordel på poison saves.",
   "Musician":"Proficiency med 3 instrumenter. Spil efter en Short eller Long Rest: allierede der hører det får Heroisk inspiration.",
-  "Fey-Touched":"+1 INT/WIS/CHA. Altid-forberedt Misty Step + et Spådom- eller Fortryllelse-spell, castbart gratis 1/Long Rest.",
-  "Shadow-Touched":"+1 INT/WIS/CHA. Altid-forberedt Invisibility + et Illusion- eller Nekromanti-spell, castbart gratis 1/Long Rest.",
+  "Fey-Touched":"+1 INT/WIS/CHA. Altid-forberedt Misty Step + et valgt 1.-niveau Divination- eller Enchantment-spell; cast hver af dem gratis én gang, genoprettes efter en Long Rest.",
+  "Shadow-Touched":"+1 INT/WIS/CHA. Altid-forberedt Invisibility + et valgt 1.-niveau Illusion- eller Necromancy-spell; cast hver af dem gratis én gang, genoprettes efter en Long Rest.",
 };
 
 // Short description of what each class feature does. Keyed by the English feature string. [en, da].

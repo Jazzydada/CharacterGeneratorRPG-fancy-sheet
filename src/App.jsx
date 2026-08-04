@@ -155,7 +155,7 @@ function FancySheet({sh,totalPages}){
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
-      {(()=>{const resList=[sh.resource,sh.resource2].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
+      {(()=>{const resList=[sh.resource,sh.resource2,sh.resource3].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
           {r.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
@@ -164,7 +164,7 @@ function FancySheet({sh,totalPages}){
         </div>);})()}
       <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
         <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"1.5mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();return(!sh.resource||!t2.startsWith(sh.resource.name.toLowerCase()))&&(!sh.resource2||!t2.startsWith(sh.resource2.name.toLowerCase()));}).slice(0,sh.resource2?1:2).map((line,i)=><li key={i} style={{fontSize:"1.9mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
+        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();return[sh.resource,sh.resource2,sh.resource3].every(r=>!r||!t2.startsWith(r.name.toLowerCase()));}).slice(0,Math.max(0,2-[sh.resource2,sh.resource3].filter(Boolean).length)).map((line,i)=><li key={i} style={{fontSize:"1.9mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
@@ -690,6 +690,8 @@ export default function App(){
   const [miClass,setMiClass]=useState("");
   const [miCantrips,setMiCantrips]=useState([]);
   const [miSpell,setMiSpell]=useState("");
+  const [feySpell,setFeySpell]=useState("");
+  const [shadowSpell,setShadowSpell]=useState("");
   const [dragonColor,setDragonColor]=useState("Red");
   const [giantAncestry,setGiantAncestry]=useState("Stone Giant");
   const [selWildShapes,setSelWildShapes]=useState([]);
@@ -786,6 +788,10 @@ export default function App(){
   // Mechanical checks must also count the Origin Feat granted for free by the background,
   // even though it isn't toggled in featMap (and must not count against the ASI feat budget).
   const mechFeats=useMemo(()=>{const s=new Set(activeFeats);const originBase=featBaseName(bgo.feat);if(ALL_FEATS[originBase])s.add(originBase);if(lessonsFeat&&ALL_FEATS[lessonsFeat])s.add(lessonsFeat);return s;},[activeFeats,bgo.feat,lessonsFeat]);
+  const hasFeyTouched=mechFeats.has("Fey-Touched");
+  const hasShadowTouched=mechFeats.has("Shadow-Touched");
+  const feySpellPool=useMemo(()=>Object.keys(SD).filter(n=>(SD[n].sc==="Divination"||SD[n].sc==="Enchantment")&&spellLevelOf(n)===1).sort(),[]);
+  const shadowSpellPool=useMemo(()=>Object.keys(SD).filter(n=>(SD[n].sc==="Illusion"||SD[n].sc==="Necromancy")&&spellLevelOf(n)===1).sort(),[]);
   const cls2=mc?CLASSES[cn2]:null;
   const lv2c=mc?Math.min(lv2,level-1):0;
   const lv1e=mc?level-lv2c:level;
@@ -915,10 +921,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,feySpell,shadowSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.feySpell!==undefined)setFeySpell(d.feySpell);if(d.shadowSpell!==undefined)setShadowSpell(d.shadowSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -1062,6 +1068,18 @@ export default function App(){
     if(FS_UNLOCK_R[useCn]&&rlvl>=FS_UNLOCK_R[useCn]){const fsPool=Object.keys(ALL_FEATS).filter(f=>ALL_FEATS[f].cat==="Fighting Style");chosen[pick(fsPool)]=true;}
     setFeatMap(chosen);setSkilledSkills([]);setUsedSlots({});setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);
     setSub(rlvl>=3?pick(Object.keys(SUBCLASSES[useCn]||{}))||"":"");
+    // Also randomize the spells granted by feats (Magic Initiate/Fey-Touched/Shadow-Touched), whether
+    // the feat came from the background's fixed grant or from the random ASI feat pool above.
+    const grantedFeats=new Set([featBaseName(BGS[useBg]?.feat||""),...Object.keys(chosen)]);
+    if(grantedFeats.has("Magic Initiate")){
+      const forced=(BGS[useBg]?.feat||"").match(/\(([^)]+)\)/);
+      const miC=forced?forced[1]:pick(MAGIC_INITIATE_CLASSES);
+      const cantripPool=[...(CS[miC]?.[0]||[])];
+      const pickedCantrips=[];while(pickedCantrips.length<2&&cantripPool.length)pickedCantrips.push(cantripPool.splice(Math.floor(Math.random()*cantripPool.length),1)[0]);
+      setMiClass(miC);setMiCantrips(pickedCantrips);setMiSpell(pick(CS[miC]?.[1]||[])||"");
+    }else{setMiClass("");setMiCantrips([]);setMiSpell("");}
+    setFeySpell(grantedFeats.has("Fey-Touched")?pick(feySpellPool)||"":"");
+    setShadowSpell(grantedFeats.has("Shadow-Touched")?pick(shadowSpellPool)||"":"");
     const p=getPersonality(useBg);setTraits(p.trait);setIdeals(p.ideal);setBonds(p.bond);setFlaws(p.flaw);
     // START PATCH RAND-SPELLS-CALL — auto-pick spells for casters on randomize
     const useLevel=lvLocked?level:rl;
@@ -1157,6 +1175,14 @@ export default function App(){
     if(hasMagicInitiate){
       [...miCantrips,miSpell].filter(Boolean).forEach(name=>addBonus(name,"Magic Initiate"));
     }
+    if(hasFeyTouched){
+      addBonus("Misty Step","Fey-Touched");
+      if(feySpell)addBonus(feySpell,"Fey-Touched");
+    }
+    if(hasShadowTouched){
+      addBonus("Invisibility","Shadow-Touched");
+      if(shadowSpell)addBonus(shadowSpell,"Shadow-Touched");
+    }
     if(wizSchool){
       selSavant.forEach(name=>addBonus(name,sub));
     }
@@ -1224,10 +1250,11 @@ export default function App(){
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
     const nextResource=classResource(cn,level,mf(fin.CHA));
     const nextResource2=hasLucky?{name:"Lucky",uses:3,recharge:"all/Long Rest",desc:["Spend a Luck Point to give yourself Advantage on an attack roll, ability check, or saving throw, or to impose Disadvantage on an attack roll against you.","Brug et Luck Point til at give dig selv Advantage på et angrebstjek, ability-tjek eller saving throw, eller til at give Disadvantage på et angrebstjek mod dig."]}:null;
+    const nextResource3=sp==="Goliath"?{name:"Giant Ancestry ("+giantAncestry+")",uses:pb,recharge:"all/Long Rest",desc:GIANT_ANCESTRY[giantAncestry]}:null;
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     setView("sheet");
@@ -1284,6 +1311,14 @@ export default function App(){
       <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{spellList.map(name=>{const sel=miSpell===name;return <button key={name} onClick={()=>setMiSpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
     </div>);
   };
+  const feySpellPicker=()=>(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+    <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level Divination or Enchantment spell")}:</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{feySpellPool.map(name=>{const sel=feySpell===name;return <button key={name} onClick={()=>setFeySpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+  </div>);
+  const shadowSpellPicker=()=>(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+    <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("1st-level Illusion or Necromancy spell")}:</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{shadowSpellPool.map(name=>{const sel=shadowSpell===name;return <button key={name} onClick={()=>setShadowSpell(sel?"":name)} title={spellD(name)?.desc||""} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{name}</button>;})}</div>
+  </div>);
   const skilledPicker=()=>(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
     <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Choose 3 additional skills or tools")} ({skilledSkills.length+skilledTools.length}/3):</div>
     <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Skills")}</div>
@@ -1328,12 +1363,14 @@ export default function App(){
       <div style={{display:"flex",flexDirection:"column",gap:"0.35rem",maxHeight:"380px",overflowY:"auto"}}>
         {sorted.map(name=>{
           const feat=ALL_FEATS[name];if(!feat)return null;
-          if(featTab==="Origin"&&featBaseName(name)===featBaseName(bgo.feat))return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>{t("Granted")}</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{bgo.feat}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{featDescL(name,feat.desc)}</div>{name==="Magic Initiate"&&miPicker()}{name==="Skilled"&&skilledPicker()}</div>);
+          if(featTab==="Origin"&&featBaseName(name)===featBaseName(bgo.feat))return(<div key={name} style={{borderRadius:"0.65rem",border:"1px solid #14532d",background:"#052e1644",padding:"0.4rem 0.6rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}><span style={{fontSize:"0.68rem",fontWeight:700,color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>{t("Granted")}</span><span style={{fontSize:"0.8rem",fontWeight:600,color:"#4ade80"}}>{bgo.feat}</span></div><div style={{fontSize:"0.72rem",color:G.muted,marginTop:"0.2rem"}}>{featDescL(name,feat.desc)}</div>{name==="Magic Initiate"&&miPicker()}{name==="Skilled"&&skilledPicker()}{name==="Fey-Touched"&&feySpellPicker()}{name==="Shadow-Touched"&&shadowSpellPicker()}</div>);
           const sel=!!featMap[name];const sugg=suggested.includes(name);const allowed=featAllowed(name);
           return(<div key={name} style={{outline:sugg?"1px solid #fbbf2444":"none",outlineOffset:"-1px",borderRadius:"0.65rem",opacity:allowed?1:0.35,pointerEvents:allowed?"auto":"none"}}>
             <FeatCard name={name} feat={feat} sel={sel} onToggle={()=>allowed&&togFeat(name)}>
               {name==="Skilled"&&sel&&skilledPicker()}
               {name==="Magic Initiate"&&sel&&miPicker()}
+              {name==="Fey-Touched"&&sel&&feySpellPicker()}
+              {name==="Shadow-Touched"&&sel&&shadowSpellPicker()}
             </FeatCard>
           </div>);
         })}
