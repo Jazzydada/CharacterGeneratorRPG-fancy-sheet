@@ -155,7 +155,7 @@ function FancySheet({sh,totalPages}){
     <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
 
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
-      {(()=>{const resList=[sh.resource,sh.resource2,sh.resource3].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
+      {(()=>{const resList=[sh.resource,sh.resource2].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
           {r.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
@@ -248,7 +248,7 @@ function Page2({sh,totalPages}){
   // same as damage-dealing features — these are the ones a player needs to find quickly in play.
   const ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
   const ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
-  const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/;
+  const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom|Giant Ancestry|Kæmpe-afstamning|Adrenaline Rush|Adrenalinsus|Stonecunning|Stenkløgt|Breath Weapon|Åndevåben)\b/;
   const cardEntries=[],textEntries=[];
   let forceCard=false;
   featEntries.forEach(line=>{
@@ -739,6 +739,10 @@ export default function App(){
   const [spPrep,setSpPrep]=useState({});
   const [spTab,setSpTab]=useState(0);
   const [usedSlots,setUsedSlots]=useState({});
+  const [currentHp,setCurrentHp]=useState(null);
+  const [tempHp,setTempHp]=useState(0);
+  const [deathSaves,setDeathSaves]=useState({success:0,fail:0});
+  const [resourceUses,setResourceUses]=useState({});
   const [sheet,setSheet]=useState(null);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState(initChar.gender);
@@ -921,10 +925,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,feySpell,shadowSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,feySpell,shadowSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat,currentHp,tempHp,deathSaves,resourceUses};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.feySpell!==undefined)setFeySpell(d.feySpell);if(d.shadowSpell!==undefined)setShadowSpell(d.shadowSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.feySpell!==undefined)setFeySpell(d.feySpell);if(d.shadowSpell!==undefined)setShadowSpell(d.shadowSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);if(d.currentHp!==undefined)setCurrentHp(d.currentHp);if(d.tempHp!==undefined)setTempHp(d.tempHp);if(d.deathSaves!==undefined)setDeathSaves(d.deathSaves);if(d.resourceUses!==undefined)setResourceUses(d.resourceUses);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -1192,7 +1196,7 @@ export default function App(){
     return res;
   }
 
-  function genSheet(){
+  function genSheet(targetView){
     const nextPortraitSeed=Math.floor(Math.random()*1000000);
     setPortraitSeed(nextPortraitSeed);
     const nextGenderRoll=Math.random()<0.5?"male":"female";
@@ -1257,7 +1261,102 @@ export default function App(){
     const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
-    setView("sheet");
+    if(currentHp===null)setCurrentHp(nextSheet.hpMax);
+    setView(targetView||"sheet");
+  }
+
+  if(view==="play"&&sheet){
+    const sh=sheet;
+    const hpMax=sh.hpMax||0;
+    const hpPct=hpMax?Math.max(0,Math.min(100,Math.round((currentHp??hpMax)/hpMax*100))):100;
+    const hpColor=hpPct<=25?"#f87171":hpPct<=50?"#fbbf24":"#4ade80";
+    const resources=[sh.resource,sh.resource2,sh.resource3].filter(Boolean);
+    return(<div style={{maxWidth:"900px",margin:"0 auto",padding:"1rem"}}>
+      <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"1rem",flexWrap:"wrap"}}>
+        <GBtn onClick={()=>setView("gen")}><RotateCcw size={15}/> {t("Back")}</GBtn>
+        <div style={{marginLeft:"0.5rem"}}>
+          <div style={{fontSize:"1.3rem",fontWeight:800,color:"#f1f5f9"}}>{sh.name}</div>
+          <div style={{fontSize:"0.78rem",color:G.dim}}>{sh.classLevel} · {sh.species} · {sh.background}</div>
+        </div>
+        <div style={{marginLeft:"auto",display:"flex",gap:"0.5rem"}}>
+          {[["AC",sh.ac],["Speed",sh.speed+" ft"],["PP",sh.passivePerc]].map(([l,v])=>(<div key={l} style={{background:G.card,border:"1px solid "+G.border,borderRadius:"0.6rem",padding:"0.4rem 0.7rem",textAlign:"center",minWidth:"64px"}}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase"}}>{l}</div><div style={{fontSize:"1.1rem",fontWeight:800,color:"#f1f5f9"}}>{v}</div></div>))}
+        </div>
+      </div>
+
+      <div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
+        <div style={{fontSize:"0.78rem",fontWeight:800,color:hpColor,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Hit Points")}</div>
+        <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flexWrap:"wrap",marginBottom:"0.75rem"}}>
+          <div style={{flex:1,minWidth:"180px",height:"14px",background:"#1e293b",borderRadius:"999px",overflow:"hidden",border:"1px solid "+G.border}}><div style={{width:hpPct+"%",height:"100%",background:hpColor,transition:"width .2s"}}/></div>
+          <div style={{fontSize:"1rem",fontWeight:800,color:hpColor,minWidth:"90px",textAlign:"right"}}>{currentHp??hpMax} / {hpMax}{tempHp>0?" (+"+tempHp+")":""}</div>
+        </div>
+        <div style={{display:"flex",gap:"1.5rem",flexWrap:"wrap",alignItems:"flex-end"}}>
+          <div>
+            <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.3rem"}}>{t("Current HP")}</div>
+            <div style={{display:"flex",gap:"0.3rem",alignItems:"center"}}>
+              <button onClick={()=>setCurrentHp(v=>Math.max(0,(v??hpMax)-1))} style={{width:28,height:28,borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#1e293b",color:"#f1f5f9",cursor:"pointer",fontWeight:800}}>−</button>
+              <input type="number" value={currentHp??hpMax} onChange={e=>setCurrentHp(Math.max(0,Math.min(hpMax,Number(e.target.value)||0)))} style={{width:"64px",padding:"0.3rem",borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#0f172a",color:"#f1f5f9",textAlign:"center",fontSize:"0.9rem"}}/>
+              <button onClick={()=>setCurrentHp(v=>Math.min(hpMax,(v??hpMax)+1))} style={{width:28,height:28,borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#1e293b",color:"#f1f5f9",cursor:"pointer",fontWeight:800}}>+</button>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.3rem"}}>{t("Temporary HP")}</div>
+            <input type="number" value={tempHp} onChange={e=>setTempHp(Math.max(0,Number(e.target.value)||0))} style={{width:"64px",padding:"0.3rem",borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#0f172a",color:"#f1f5f9",textAlign:"center",fontSize:"0.9rem"}}/>
+          </div>
+          <button onClick={()=>{setCurrentHp(hpMax);setTempHp(0);}} style={{fontSize:"0.68rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.3rem 0.6rem",cursor:"pointer"}}>{t("Full heal")}</button>
+          {currentHp===0&&<div style={{display:"flex",gap:"1rem",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:"0.62rem",color:"#4ade80",marginBottom:"0.2rem"}}>{t("Successes")}</div>
+              <div style={{display:"flex",gap:"0.25rem"}}>{[0,1,2].map(i=><button key={i} onClick={()=>setDeathSaves(d=>({...d,success:d.success>i?i:i+1}))} style={{width:16,height:16,borderRadius:"50%",border:"1.5px solid #4ade80",background:deathSaves.success>i?"#4ade80":"transparent",cursor:"pointer",padding:0}}/>)}</div>
+            </div>
+            <div>
+              <div style={{fontSize:"0.62rem",color:"#f87171",marginBottom:"0.2rem"}}>{t("Failures")}</div>
+              <div style={{display:"flex",gap:"0.25rem"}}>{[0,1,2].map(i=><button key={i} onClick={()=>setDeathSaves(d=>({...d,fail:d.fail>i?i:i+1}))} style={{width:16,height:16,borderRadius:"50%",border:"1.5px solid #f87171",background:deathSaves.fail>i?"#f87171":"transparent",cursor:"pointer",padding:0}}/>)}</div>
+            </div>
+            <button onClick={()=>setDeathSaves({success:0,fail:0})} style={{fontSize:"0.62rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.2rem 0.5rem",cursor:"pointer"}}>Reset</button>
+          </div>}
+        </div>
+      </div>
+
+      {sh.isCaster&&<div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.6rem"}}>
+          <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Spell Slots")}</div>
+          <button onClick={()=>setUsedSlots({})} style={{fontSize:"0.62rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.1rem 0.4rem",cursor:"pointer"}}>Reset</button>
+        </div>
+        <div style={{display:"flex",gap:"1rem",flexWrap:"wrap"}}>
+          {(sh.spellSlots||[]).map((total,idx)=>({total,i:idx+1})).filter(({total})=>total>0).map(({total,i})=>{
+            const used=usedSlots[i]||0;
+            return(<div key={i} style={{textAlign:"center"}}>
+              <div style={{fontSize:"0.62rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase"}}>{["1st","2nd","3rd","4th","5th","6th","7th","8th","9th"][i-1]}</div>
+              <div style={{display:"flex",gap:"0.25rem",justifyContent:"center"}}>{Array.from({length:total}).map((_,j)=>{const isAvailable=j<(total-used);return <button key={j} onClick={()=>setUsedSlots(prev=>{const cur=prev[i]||0;return{...prev,[i]:isAvailable?Math.min(total,cur+1):Math.max(0,cur-1)};})} style={{width:18,height:18,borderRadius:"50%",border:"1.5px solid "+(isAvailable?G.gold:"#475569"),background:isAvailable?G.gold+"66":"transparent",cursor:"pointer",padding:0}}/>;})}</div>
+              <div style={{fontSize:"0.7rem",fontWeight:700,color:used>0?"#f87171":G.gold,marginTop:"0.25rem"}}>{total-used}/{total}</div>
+            </div>);
+          })}
+        </div>
+      </div>}
+
+      {resources.length>0&&<div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
+        <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Resources")}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+          {resources.map(r=>{
+            const used=resourceUses[r.name]||0;
+            return(<div key={r.name}>
+              <div style={{display:"flex",alignItems:"baseline",gap:"0.5rem",marginBottom:"0.3rem",flexWrap:"wrap"}}>
+                <b style={{fontSize:"0.85rem",color:"#f1f5f9"}}>{r.name}</b>
+                {r.note&&<span style={{fontSize:"0.68rem",color:G.dim}}>{r.note}</span>}
+                <span style={{fontSize:"0.65rem",color:G.dim,marginLeft:"auto"}}>{r.recharge}</span>
+                <button onClick={()=>setResourceUses(prev=>({...prev,[r.name]:0}))} style={{fontSize:"0.6rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.1rem 0.4rem",cursor:"pointer"}}>Reset</button>
+              </div>
+              <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const isAvailable=j<(r.uses-used);return <button key={j} onClick={()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:isAvailable?Math.min(r.uses,cur+1):Math.max(0,cur-1)};})} style={{width:18,height:18,borderRadius:"50%",border:"1.5px solid "+(isAvailable?"#a78bfa":"#475569"),background:isAvailable?"#a78bfa66":"transparent",cursor:"pointer",padding:0}}/>;})}</div>
+            </div>);
+          })}
+        </div>
+      </div>}
+
+      <div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
+        <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Attacks & Spellcasting")}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>{(sh.weapons||[]).map((w,i)=><div key={i} style={{display:"flex",gap:"0.6rem",fontSize:"0.8rem",color:"#e2e8f0"}}><b style={{minWidth:"110px"}}>{w.name}</b><span style={{color:G.dim}}>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
+      </div>
+    </div>);
   }
 
   if(view==="sheet"&&sheet){
@@ -1745,7 +1844,8 @@ export default function App(){
               {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
             </div>
             <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
-            <GBtn onClick={genSheet} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
+            <GBtn onClick={()=>genSheet("sheet")} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
+            <GBtn onClick={()=>genSheet("play")}><Shield size={15}/> {t("Interactive Sheet")}</GBtn>
             <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
           </div>
           <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>

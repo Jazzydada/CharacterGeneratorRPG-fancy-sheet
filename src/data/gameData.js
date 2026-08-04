@@ -13,7 +13,7 @@ const DA={
   "Generate and customize your RPG character with stats, spells and gear — in seconds.":"Byg og tilpas din RPG-karakter med stats, spells og udstyr — på få sekunder.",
   "Made by":"Lavet af",
   Randomize:"Tilfældig",
-  "Generate Sheet":"Lav karakterark",
+  "Generate Sheet":"Lav karakterark","Interactive Sheet":"Interaktivt ark","Current HP":"Nuværende HP","Temporary HP":"Midlertidige HP","Full heal":"Fuld heling","Successes":"Succeser","Failures":"Fejl","Spell Slots":"Spell Slots",
   Save:"Gem",
   Load:"Indlæs",
   "Level Up":"Level op",
