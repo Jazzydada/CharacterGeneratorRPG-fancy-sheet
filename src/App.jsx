@@ -269,9 +269,11 @@ function Page2({sh,totalPages}){
         const ci=line.indexOf(":");
         const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
         const rest=ci>0?line.slice(ci+1).trim():"";
+        const trackedUses=ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line)?(sh.profBonus||0):0;
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
           <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:rest?2:0}}>{label||line}</div>
           {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
+          {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=><span key={j} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block"}}/>)}</div>}
         </div>;
       })}</div>}
       <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:7.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
