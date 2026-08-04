@@ -204,7 +204,7 @@ export const FEATURE_DESC={
   "Favored Enemy Lvl1":["Always have Hunter's Mark ready to track prey.","Har altid Hunter's Mark klar til at spore bytte."],
   "Fighting Style Lvl1":["A combat specialty like Archery or Defense.","En kamp-specialitet som Archery eller Defense."],
   "Font of Magic Lvl2":["Sorcery Points to make or convert spell slots.","Sorcery Points til at lave eller omdanne spell slots."],
-  "Innate Sorcery Lvl1":["Boost your spells' power for a short burst.","Boost dine spells' styrke i et kort stød."],
+  "Innate Sorcery Lvl1":["Bonus Action, 1 minute: +1 to your spell save DC and Advantage on attack rolls of Sorcerer spells you cast. Twice per Long Rest.","Bonus-handling, 1 minut: +1 til din spell save DC og Advantage på angrebstjek for Sorcerer-spells du caster. To gange pr. Long Rest."],
   "Jack of All Trades Lvl2":["Add half your proficiency to non-proficient checks.","Læg halv proficiency til tjek du ikke er proficient i."],
   "Lay on Hands 5x level HP":["A pool of healing you touch into yourself or allies.","En pulje af healing du giver dig selv eller allierede ved berøring."],
   "Magical Cunning Lvl2":["Regain some Pact Magic spell slots once per long rest.","Få nogle Pact Magic-spell slots tilbage én gang pr. Long Rest."],

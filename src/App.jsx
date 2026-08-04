@@ -245,6 +245,7 @@ function Page2({sh,totalPages}){
   const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
   const DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
   const ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
+  const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/;
   const cardEntries=[],textEntries=[];
   let forceCard=false;
   featEntries.forEach(line=>{
@@ -252,7 +253,7 @@ function Page2({sh,totalPages}){
     const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
     if(isHead){textEntries.push(line);forceCard=ALWAYS_CARD_SECTIONS.test(line);return;}
     const rest=ci>0?line.slice(ci+1):"";
-    (forceCard||DAMAGE_RE.test(rest)?cardEntries:textEntries).push(line);
+    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)?cardEntries:textEntries).push(line);
   });
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
