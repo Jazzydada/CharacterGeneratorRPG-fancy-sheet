@@ -712,6 +712,19 @@ export default function App(){
   const [syncPushedCode,setSyncPushedCode]=useState("");
   const [syncPullCode,setSyncPullCode]=useState("");
   const [syncMsg,setSyncMsg]=useState("");
+  const [syncCopied,setSyncCopied]=useState(false);
+  function copySyncCode(){
+    if(!syncPushedCode)return;
+    const flash=()=>{setSyncCopied(true);setTimeout(()=>setSyncCopied(false),1500);};
+    navigator.clipboard?.writeText(syncPushedCode).then(flash).catch(()=>{
+      try{
+        const ta=document.createElement("textarea");
+        ta.value=syncPushedCode;ta.style.position="fixed";ta.style.opacity="0";
+        document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+        flash();
+      }catch(e){}
+    });
+  }
   const [showCharPanel,setShowCharPanel]=useState(false);
   useEffect(()=>{try{localStorage.setItem("cg_saved_characters",JSON.stringify(savedChars));}catch(e){}},[savedChars]);
   const [featMap,setFeatMap]=useState({});
@@ -1840,7 +1853,7 @@ export default function App(){
           <span style={{fontWeight:800,color:G.gold,fontSize:"0.8rem"}}>{t("Sync across devices")}</span>
           <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
             <GBtn small onClick={pushSync} disabled={syncBusy}>{t("Get sync code")}</GBtn>
-            {syncPushedCode&&<span style={{fontFamily:"monospace",fontSize:"1rem",fontWeight:900,color:"#f1f5f9",background:G.card,border:"1px solid "+G.border,borderRadius:"0.5rem",padding:"0.2rem 0.6rem",letterSpacing:"0.1em"}}>{syncPushedCode}</span>}
+            {syncPushedCode&&<span onClick={copySyncCode} title={t("Click to copy")} style={{fontFamily:"monospace",fontSize:"1rem",fontWeight:900,color:syncCopied?G.gold:"#f1f5f9",background:G.card,border:"1px solid "+(syncCopied?G.gold:G.border),borderRadius:"0.5rem",padding:"0.2rem 0.6rem",letterSpacing:"0.1em",cursor:"pointer",userSelect:"none"}}>{syncCopied?t("Copied!"):syncPushedCode}</span>}
           </div>
           <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
             <input value={syncPullCode} onChange={e=>setSyncPullCode(e.target.value.toUpperCase())} placeholder={t("Enter code")} maxLength={6} style={{...inp,width:"110px",fontFamily:"monospace",letterSpacing:"0.1em",textTransform:"uppercase"}}/>
