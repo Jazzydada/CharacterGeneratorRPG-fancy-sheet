@@ -1265,7 +1265,7 @@ export default function App(){
     const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
-    if(currentHp===null)setCurrentHp(nextSheet.hpMax);
+    if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
     setView(targetView||"sheet");
   }
 
