@@ -42,7 +42,7 @@ function xpForClassLevel(classLevel){
   return (LEVEL_XP_5E[lvl]??0).toLocaleString('en-US');
 }
 
-function FancySheet({sh,totalPages}){
+function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,deathSaves,setDeathSaves,resourceUses,setResourceUses}){
   const [portraitFailed,setPortraitFailed]=useState(false);
   const [portraitLoading,setPortraitLoading]=useState(true);
   const stats=sh.finalStats||{};
@@ -152,14 +152,14 @@ function FancySheet({sh,totalPages}){
       </div>;})}
     </div>
 
-    <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div><div className="hp-current">{t("CURRENT HP")}</div><div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div><span/><span/><span/></div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div><span/><span/><span/></div></div></div></div>
+    <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div><div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div>{interactive?<div className="hp-current" style={{color:"#462b10"}}><input type="number" value={currentHp??sh.hpMax} onChange={e=>setCurrentHp(Math.max(0,Math.min(sh.hpMax,Number(e.target.value)||0)))} style={{width:"70%",fontSize:"5.5mm",fontWeight:900,textAlign:"center",border:"none",background:"transparent",color:"#462b10"}}/></div>:<div className="hp-current">{t("CURRENT HP")}</div>}<div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div>{[0,1,2].map(i=>interactive?<span key={i} onClick={()=>setDeathSaves(d=>({...d,success:d.success>i?i:i+1}))} style={{cursor:"pointer",background:(deathSaves?.success||0)>i?"#4ade80":undefined}}/>:<span key={i}/>)}</div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div>{[0,1,2].map(i=>interactive?<span key={i} onClick={()=>setDeathSaves(d=>({...d,fail:d.fail>i?i:i+1}))} style={{cursor:"pointer",background:(deathSaves?.fail||0)>i?"#f87171":undefined}}/>:<span key={i}/>)}</div></div></div></div>
 
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
       {(()=>{const resList=[sh.resource,sh.resource2].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
           {r.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
-          <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=><span key={j} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:"#fff4d3",display:"inline-block"}}/>)}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const used=(resourceUses?.[r.name]||0)>j;return <span key={j} onClick={interactive?()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:used?j:j+1};}):undefined} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:used?"#7b5118":"#fff4d3",display:"inline-block",cursor:interactive?"pointer":undefined}}/>;})}</div>
           <div style={{fontSize:"1.9mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
         </div>);})()}
       <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
@@ -238,7 +238,7 @@ function Page1({sh}){
   </div>);
 }
 
-function Page2({sh,totalPages}){
+function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses}){
   const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
   const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
   // Parse the features text into readable entries (bold the label before the colon).
@@ -273,7 +273,7 @@ function Page2({sh,totalPages}){
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
           <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:rest?2:0}}>{label||line}</div>
           {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
-          {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=><span key={j} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block"}}/>)}</div>}
+          {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
         </div>;
       })}</div>}
       <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:7.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
@@ -282,7 +282,7 @@ function Page2({sh,totalPages}){
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
       <div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>Spell Slots</div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${spellSlots.filter(s=>s>0).length||1},1fr)`,gap:4,textAlign:"center"}}>
-        {spellSlots.map((cnt,i)=>cnt>0?(<div key={i}><div style={{...capL,textAlign:"center",fontSize:5.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=><div key={j} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:GOLD_L}}/>)}</div></div>):null)}
+        {spellSlots.map((cnt,i)=>{if(!(cnt>0))return null;const lvl=i+1;const used=usedSlots?.[lvl]||0;return(<div key={i}><div style={{...capL,textAlign:"center",fontSize:5.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=>{const isAvailable=j<(cnt-used);return <div key={j} onClick={interactive?()=>setUsedSlots(prev=>{const cur=prev[lvl]||0;return{...prev,[lvl]:isAvailable?Math.min(cnt,cur+1):Math.max(0,cur-1)};}):undefined} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:isAvailable?GOLD_L:"#fff",cursor:interactive?"pointer":undefined}}/>;})}</div></div>);})}
       </div>
     </div>
     {LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=><div key={i} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>)}</div></div>;})}
@@ -745,6 +745,8 @@ export default function App(){
   const [tempHp,setTempHp]=useState(0);
   const [deathSaves,setDeathSaves]=useState({success:0,fail:0});
   const [resourceUses,setResourceUses]=useState({});
+  const [racialUses,setRacialUses]=useState({});
+  const [interactiveMode,setInteractiveMode]=useState(false);
   const [sheet,setSheet]=useState(null);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState(initChar.gender);
@@ -1267,100 +1269,6 @@ export default function App(){
     setView(targetView||"sheet");
   }
 
-  if(view==="play"&&sheet){
-    const sh=sheet;
-    const hpMax=sh.hpMax||0;
-    const hpPct=hpMax?Math.max(0,Math.min(100,Math.round((currentHp??hpMax)/hpMax*100))):100;
-    const hpColor=hpPct<=25?"#f87171":hpPct<=50?"#fbbf24":"#4ade80";
-    const resources=[sh.resource,sh.resource2,sh.resource3].filter(Boolean);
-    return(<div style={{maxWidth:"900px",margin:"0 auto",padding:"1rem"}}>
-      <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"1rem",flexWrap:"wrap"}}>
-        <GBtn onClick={()=>setView("gen")}><RotateCcw size={15}/> {t("Back")}</GBtn>
-        <div style={{marginLeft:"0.5rem"}}>
-          <div style={{fontSize:"1.3rem",fontWeight:800,color:"#f1f5f9"}}>{sh.name}</div>
-          <div style={{fontSize:"0.78rem",color:G.dim}}>{sh.classLevel} · {sh.species} · {sh.background}</div>
-        </div>
-        <div style={{marginLeft:"auto",display:"flex",gap:"0.5rem"}}>
-          {[["AC",sh.ac],["Speed",sh.speed+" ft"],["PP",sh.passivePerc]].map(([l,v])=>(<div key={l} style={{background:G.card,border:"1px solid "+G.border,borderRadius:"0.6rem",padding:"0.4rem 0.7rem",textAlign:"center",minWidth:"64px"}}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase"}}>{l}</div><div style={{fontSize:"1.1rem",fontWeight:800,color:"#f1f5f9"}}>{v}</div></div>))}
-        </div>
-      </div>
-
-      <div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
-        <div style={{fontSize:"0.78rem",fontWeight:800,color:hpColor,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Hit Points")}</div>
-        <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flexWrap:"wrap",marginBottom:"0.75rem"}}>
-          <div style={{flex:1,minWidth:"180px",height:"14px",background:"#1e293b",borderRadius:"999px",overflow:"hidden",border:"1px solid "+G.border}}><div style={{width:hpPct+"%",height:"100%",background:hpColor,transition:"width .2s"}}/></div>
-          <div style={{fontSize:"1rem",fontWeight:800,color:hpColor,minWidth:"90px",textAlign:"right"}}>{currentHp??hpMax} / {hpMax}{tempHp>0?" (+"+tempHp+")":""}</div>
-        </div>
-        <div style={{display:"flex",gap:"1.5rem",flexWrap:"wrap",alignItems:"flex-end"}}>
-          <div>
-            <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.3rem"}}>{t("Current HP")}</div>
-            <div style={{display:"flex",gap:"0.3rem",alignItems:"center"}}>
-              <button onClick={()=>setCurrentHp(v=>Math.max(0,(v??hpMax)-1))} style={{width:28,height:28,borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#1e293b",color:"#f1f5f9",cursor:"pointer",fontWeight:800}}>−</button>
-              <input type="number" value={currentHp??hpMax} onChange={e=>setCurrentHp(Math.max(0,Math.min(hpMax,Number(e.target.value)||0)))} style={{width:"64px",padding:"0.3rem",borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#0f172a",color:"#f1f5f9",textAlign:"center",fontSize:"0.9rem"}}/>
-              <button onClick={()=>setCurrentHp(v=>Math.min(hpMax,(v??hpMax)+1))} style={{width:28,height:28,borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#1e293b",color:"#f1f5f9",cursor:"pointer",fontWeight:800}}>+</button>
-            </div>
-          </div>
-          <div>
-            <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.3rem"}}>{t("Temporary HP")}</div>
-            <input type="number" value={tempHp} onChange={e=>setTempHp(Math.max(0,Number(e.target.value)||0))} style={{width:"64px",padding:"0.3rem",borderRadius:"0.4rem",border:"1px solid "+G.border,background:"#0f172a",color:"#f1f5f9",textAlign:"center",fontSize:"0.9rem"}}/>
-          </div>
-          <button onClick={()=>{setCurrentHp(hpMax);setTempHp(0);}} style={{fontSize:"0.68rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.3rem 0.6rem",cursor:"pointer"}}>{t("Full heal")}</button>
-          {currentHp===0&&<div style={{display:"flex",gap:"1rem",alignItems:"center"}}>
-            <div>
-              <div style={{fontSize:"0.62rem",color:"#4ade80",marginBottom:"0.2rem"}}>{t("Successes")}</div>
-              <div style={{display:"flex",gap:"0.25rem"}}>{[0,1,2].map(i=><button key={i} onClick={()=>setDeathSaves(d=>({...d,success:d.success>i?i:i+1}))} style={{width:16,height:16,borderRadius:"50%",border:"1.5px solid #4ade80",background:deathSaves.success>i?"#4ade80":"transparent",cursor:"pointer",padding:0}}/>)}</div>
-            </div>
-            <div>
-              <div style={{fontSize:"0.62rem",color:"#f87171",marginBottom:"0.2rem"}}>{t("Failures")}</div>
-              <div style={{display:"flex",gap:"0.25rem"}}>{[0,1,2].map(i=><button key={i} onClick={()=>setDeathSaves(d=>({...d,fail:d.fail>i?i:i+1}))} style={{width:16,height:16,borderRadius:"50%",border:"1.5px solid #f87171",background:deathSaves.fail>i?"#f87171":"transparent",cursor:"pointer",padding:0}}/>)}</div>
-            </div>
-            <button onClick={()=>setDeathSaves({success:0,fail:0})} style={{fontSize:"0.62rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.2rem 0.5rem",cursor:"pointer"}}>Reset</button>
-          </div>}
-        </div>
-      </div>
-
-      {sh.isCaster&&<div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.6rem"}}>
-          <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Spell Slots")}</div>
-          <button onClick={()=>setUsedSlots({})} style={{fontSize:"0.62rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.1rem 0.4rem",cursor:"pointer"}}>Reset</button>
-        </div>
-        <div style={{display:"flex",gap:"1rem",flexWrap:"wrap"}}>
-          {(sh.spellSlots||[]).map((total,idx)=>({total,i:idx+1})).filter(({total})=>total>0).map(({total,i})=>{
-            const used=usedSlots[i]||0;
-            return(<div key={i} style={{textAlign:"center"}}>
-              <div style={{fontSize:"0.62rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase"}}>{["1st","2nd","3rd","4th","5th","6th","7th","8th","9th"][i-1]}</div>
-              <div style={{display:"flex",gap:"0.25rem",justifyContent:"center"}}>{Array.from({length:total}).map((_,j)=>{const isAvailable=j<(total-used);return <button key={j} onClick={()=>setUsedSlots(prev=>{const cur=prev[i]||0;return{...prev,[i]:isAvailable?Math.min(total,cur+1):Math.max(0,cur-1)};})} style={{width:18,height:18,borderRadius:"50%",border:"1.5px solid "+(isAvailable?G.gold:"#475569"),background:isAvailable?G.gold+"66":"transparent",cursor:"pointer",padding:0}}/>;})}</div>
-              <div style={{fontSize:"0.7rem",fontWeight:700,color:used>0?"#f87171":G.gold,marginTop:"0.25rem"}}>{total-used}/{total}</div>
-            </div>);
-          })}
-        </div>
-      </div>}
-
-      {resources.length>0&&<div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem",marginBottom:"1rem"}}>
-        <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Resources")}</div>
-        <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-          {resources.map(r=>{
-            const used=resourceUses[r.name]||0;
-            return(<div key={r.name}>
-              <div style={{display:"flex",alignItems:"baseline",gap:"0.5rem",marginBottom:"0.3rem",flexWrap:"wrap"}}>
-                <b style={{fontSize:"0.85rem",color:"#f1f5f9"}}>{r.name}</b>
-                {r.note&&<span style={{fontSize:"0.68rem",color:G.dim}}>{r.note}</span>}
-                <span style={{fontSize:"0.65rem",color:G.dim,marginLeft:"auto"}}>{r.recharge}</span>
-                <button onClick={()=>setResourceUses(prev=>({...prev,[r.name]:0}))} style={{fontSize:"0.6rem",color:G.dim,background:"none",border:"1px solid "+G.border,borderRadius:"0.4rem",padding:"0.1rem 0.4rem",cursor:"pointer"}}>Reset</button>
-              </div>
-              <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const isAvailable=j<(r.uses-used);return <button key={j} onClick={()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:isAvailable?Math.min(r.uses,cur+1):Math.max(0,cur-1)};})} style={{width:18,height:18,borderRadius:"50%",border:"1.5px solid "+(isAvailable?"#a78bfa":"#475569"),background:isAvailable?"#a78bfa66":"transparent",cursor:"pointer",padding:0}}/>;})}</div>
-            </div>);
-          })}
-        </div>
-      </div>}
-
-      <div style={{background:G.card,border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
-        <div style={{fontSize:"0.78rem",fontWeight:800,color:G.gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.6rem"}}>{t("Attacks & Spellcasting")}</div>
-        <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>{(sh.weapons||[]).map((w,i)=><div key={i} style={{display:"flex",gap:"0.6rem",fontSize:"0.8rem",color:"#e2e8f0"}}><b style={{minWidth:"110px"}}>{w.name}</b><span style={{color:G.dim}}>{w.atk}</span><span>{w.dmg}</span></div>)}</div>
-      </div>
-    </div>);
-  }
-
   if(view==="sheet"&&sheet){
     const allForms=sheet.wildShapeForms||[];
     const page3Forms=[];
@@ -1368,7 +1276,7 @@ export default function App(){
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
     const totalPages=3+extraFormPages.length+(wildMagic?1:0);
     const fitScale=Math.min(1,(vw-24)/PAGE_W_PX);
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages}/><Page2 sh={sheet} totalPages={totalPages}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((chunk,i)=><FormsPage key={i} sh={sheet} forms={chunk} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((chunk,i)=><FormsPage key={i} sh={sheet} forms={chunk} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
@@ -1846,8 +1754,8 @@ export default function App(){
               {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
             </div>
             <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
-            <GBtn onClick={()=>genSheet("sheet")} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
-            <GBtn onClick={()=>genSheet("play")}><Shield size={15}/> {t("Interactive Sheet")}</GBtn>
+            <GBtn onClick={()=>{setInteractiveMode(false);genSheet("sheet");}} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
+            <GBtn onClick={()=>{setInteractiveMode(true);genSheet("sheet");}}><Shield size={15}/> {t("Interactive Sheet")}</GBtn>
             <GBtn onClick={levelUpCharacter} gold><ChevronUp size={15}/> {t("Level Up")}</GBtn>
           </div>
           <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
