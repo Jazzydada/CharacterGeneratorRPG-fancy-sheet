@@ -1039,6 +1039,12 @@ export default function App(){
     setSavedChars(prev=>prev.filter(s=>s.id!==id));
     if(activeSlotId===id)setActiveSlotId(null);
   }
+  function deleteAllSlots(){
+    if(!savedChars.length)return;
+    if(!confirm(t("Delete ALL saved characters? This cannot be undone.")))return;
+    setSavedChars([]);
+    setActiveSlotId(null);
+  }
   function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+higherLevelGold(next))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
 
   // START PATCH RAND-SPELLS — helper: pick random spells for a caster on randomize
@@ -1834,7 +1840,10 @@ export default function App(){
       {showCharPanel&&<div style={{background:"rgba(15,23,42,0.95)",border:"1px solid "+G.gold,borderRadius:"1rem",padding:"1rem 1.25rem",marginBottom:"1rem"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.65rem"}}>
           <span style={{fontWeight:800,color:G.gold,fontSize:"0.9rem"}}>{t("My Characters")}</span>
-          <GBtn small onClick={saveAsNewSlot}>+ {t("Save as New")}</GBtn>
+          <div style={{display:"flex",gap:"0.5rem"}}>
+            <GBtn small onClick={saveAsNewSlot}>+ {t("Save as New")}</GBtn>
+            {savedChars.length>0&&<button onClick={deleteAllSlots} style={{fontSize:"0.75rem",color:"#f87171",background:"transparent",border:"1px solid #7f1d1d",borderRadius:"0.75rem",padding:"0.3rem 0.65rem",cursor:"pointer",fontWeight:600}}>🗑 {t("Delete All")}</button>}
+          </div>
         </div>
         {savedChars.length===0?<div style={{fontSize:"0.8rem",color:G.dim,fontStyle:"italic"}}>{t("No saved characters yet. Click \"Save Character\" to store this one in your browser.")}</div>:
         <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>

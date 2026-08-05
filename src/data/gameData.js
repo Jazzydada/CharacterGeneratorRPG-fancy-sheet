@@ -114,7 +114,7 @@ const DA={
   "Features & Traits":"Evner & træk",
   "Resources":"Ressourcer",
   "Choose an Origin feat":"Vælg en Origin feat",
-  "Save Character":"Gem karakter","My Characters":"Mine karakterer","Export JSON":"Eksportér JSON","Import JSON":"Importér JSON","Save as New":"Gem som ny","No saved characters yet. Click \"Save Character\" to store this one in your browser.":"Ingen gemte karakterer endnu. Klik på \"Gem karakter\" for at gemme denne i din browser.","active":"aktiv","Delete":"Slet","Delete this saved character?":"Slet denne gemte karakter?",
+  "Save Character":"Gem karakter","My Characters":"Mine karakterer","Export JSON":"Eksportér JSON","Import JSON":"Importér JSON","Save as New":"Gem som ny","No saved characters yet. Click \"Save Character\" to store this one in your browser.":"Ingen gemte karakterer endnu. Klik på \"Gem karakter\" for at gemme denne i din browser.","active":"aktiv","Delete":"Slet","Delete this saved character?":"Slet denne gemte karakter?","Delete All":"Slet alle","Delete ALL saved characters? This cannot be undone.":"Slet ALLE gemte karakterer? Dette kan ikke fortrydes.",
   "Giant Ancestry":"Kæmpe-afstamning","Cloud Giant":"Cloud Giant","Fire Giant":"Fire Giant","Frost Giant":"Frost Giant","Hill Giant":"Hill Giant","Stone Giant":"Stone Giant","Storm Giant":"Storm Giant","regain all on Long Rest":"genopret alle ved Long Rest",
   "In attacks":"Vis i angreb","Show this weapon under Attacks & Spellcasting":"Vis dette våben under Angreb & magi",
   "Equipped":"Udstyret",
