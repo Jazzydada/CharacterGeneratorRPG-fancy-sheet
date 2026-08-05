@@ -394,7 +394,7 @@ const inp={width:"100%",background:"transparent",border:"1px solid #334155",colo
   const CAT_LABEL_COLOR={Origin:"#fbbf24",General:G.muted,"Fighting Style":"#f97316","Epic Boon":"#ef4444",Species:"#a78bfa",Class:"#60a5fa"};
 const tabSt=(active,ac="#fcd34d",at="#020817")=>({padding:"0.25rem 0.65rem",borderRadius:"0.6rem",fontSize:"0.75rem",border:"1px solid "+(active?ac:"#334155"),cursor:"pointer",fontWeight:active?700:400,background:active?ac:"transparent",color:active?at:"#f1f5f9"});
 function GFld({label,children}){return <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.3rem"}}>{label}</div>{children}</div>;}
-function GBtn({onClick,children,gold,amber,small}){return <button onClick={onClick} style={{display:"flex",alignItems:"center",gap:"0.4rem",padding:small?"0.3rem 0.65rem":"0.5rem 1rem",borderRadius:"0.75rem",border:"1px solid #334155",cursor:"pointer",fontWeight:600,fontSize:small?"0.75rem":"0.85rem",background:gold?G.gold:amber?"#7a5c1e":"transparent",color:gold?G.bg:amber?"#f7f0e0":"#f1f5f9"}}>{children}</button>;}
+function GBtn({onClick,children,gold,amber,small,disabled}){return <button onClick={onClick} disabled={disabled} style={{display:"flex",alignItems:"center",gap:"0.4rem",padding:small?"0.3rem 0.65rem":"0.5rem 1rem",borderRadius:"0.75rem",border:"1px solid #334155",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.5:1,fontWeight:600,fontSize:small?"0.75rem":"0.85rem",background:gold?G.gold:amber?"#7a5c1e":"transparent",color:gold?G.bg:amber?"#f7f0e0":"#f1f5f9"}}>{children}</button>;}
 
 function CPanel({title,icon,children,collapsed,onToggle,dragging,onDragStart,onDrop}){
   return(<div onDragOver={e=>e.preventDefault()} onDrop={onDrop} style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+(dragging?"#fcd34d":G.border),borderRadius:"1.25rem",overflow:"hidden"}}>
@@ -708,6 +708,10 @@ export default function App(){
   const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
   const [savedChars,setSavedChars]=useState(()=>{try{return JSON.parse(localStorage.getItem("cg_saved_characters")||"[]");}catch(e){return[];}});
   const [activeSlotId,setActiveSlotId]=useState(null);
+  const [syncBusy,setSyncBusy]=useState(false);
+  const [syncPushedCode,setSyncPushedCode]=useState("");
+  const [syncPullCode,setSyncPullCode]=useState("");
+  const [syncMsg,setSyncMsg]=useState("");
   const [showCharPanel,setShowCharPanel]=useState(false);
   useEffect(()=>{try{localStorage.setItem("cg_saved_characters",JSON.stringify(savedChars));}catch(e){}},[savedChars]);
   const [featMap,setFeatMap]=useState({});
@@ -974,6 +978,36 @@ export default function App(){
     const slot=savedChars.find(s=>s.id===id);if(!slot)return;
     applyCharacterData(slot.data);
     setActiveSlotId(id);
+  }
+  async function pushSync(){
+    if(!savedChars.length){setSyncMsg(t("No saved characters yet."));return;}
+    setSyncBusy(true);setSyncMsg("");
+    try{
+      const res=await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({characters:savedChars})});
+      if(!res.ok)throw new Error();
+      const{code}=await res.json();
+      setSyncPushedCode(code);
+      setSyncMsg(t("Saved. Enter this code on your other device."));
+    }catch(e){setSyncMsg(t("Could not reach sync service."));}
+    setSyncBusy(false);
+  }
+  async function pullSync(){
+    const code=syncPullCode.trim();
+    if(!code){return;}
+    setSyncBusy(true);setSyncMsg("");
+    try{
+      const res=await fetch("/api/sync?code="+encodeURIComponent(code));
+      if(res.status===404){setSyncMsg(t("Code not found or expired."));setSyncBusy(false);return;}
+      if(!res.ok)throw new Error();
+      const{characters}=await res.json();
+      setSavedChars(prev=>{
+        const byId=new Map(prev.map(s=>[s.id,s]));
+        (characters||[]).forEach(s=>byId.set(s.id,s));
+        return[...byId.values()];
+      });
+      setSyncMsg(t("Characters synced from code")+" "+code+".");
+    }catch(e){setSyncMsg(t("Could not reach sync service."));}
+    setSyncBusy(false);
   }
   function deleteSlot(id){
     if(!confirm(t("Delete this saved character?")))return;
@@ -1790,6 +1824,19 @@ export default function App(){
             </div>
           ))}
         </div>}
+        <div style={{marginTop:"0.9rem",paddingTop:"0.75rem",borderTop:"1px solid "+G.border,display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+          <span style={{fontWeight:800,color:G.gold,fontSize:"0.8rem"}}>{t("Sync across devices")}</span>
+          <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
+            <GBtn small onClick={pushSync} disabled={syncBusy}>{t("Get sync code")}</GBtn>
+            {syncPushedCode&&<span style={{fontFamily:"monospace",fontSize:"1rem",fontWeight:900,color:"#f1f5f9",background:G.card,border:"1px solid "+G.border,borderRadius:"0.5rem",padding:"0.2rem 0.6rem",letterSpacing:"0.1em"}}>{syncPushedCode}</span>}
+          </div>
+          <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",alignItems:"center"}}>
+            <input value={syncPullCode} onChange={e=>setSyncPullCode(e.target.value.toUpperCase())} placeholder={t("Enter code")} maxLength={6} style={{...inp,width:"110px",fontFamily:"monospace",letterSpacing:"0.1em",textTransform:"uppercase"}}/>
+            <GBtn small onClick={pullSync} disabled={syncBusy||!syncPullCode.trim()}>{t("Load from code")}</GBtn>
+          </div>
+          {syncMsg&&<div style={{fontSize:"0.72rem",color:G.dim}}>{syncMsg}</div>}
+          <div style={{fontSize:"0.65rem",color:G.dim,fontStyle:"italic"}}>{t("Sync codes expire after 90 days.")}</div>
+        </div>
       </div>}
 
       <div style={{background:"rgba(15,23,42,0.9)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"0.75rem 1.25rem",marginBottom:"1rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>

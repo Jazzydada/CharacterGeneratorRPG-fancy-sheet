@@ -14,6 +14,7 @@ const DA={
   "Made by":"Lavet af",
   Randomize:"Tilfældig",
   "Generate Sheet":"Lav karakterark","Interactive Sheet":"Interaktivt ark","Current HP":"Nuværende HP","Temporary HP":"Midlertidige HP","Full heal":"Fuld heling","Successes":"Succeser","Failures":"Fejl","Spell Slots":"Spell Slots",
+  "Sync across devices":"Synkronisér på tværs af enheder","Get sync code":"Få synk-kode","Enter code":"Indtast kode","Load from code":"Hent med kode","Sync codes expire after 90 days.":"Synk-koder udløber efter 90 dage.","Saved. Enter this code on your other device.":"Gemt. Indtast denne kode på din anden enhed.","Could not reach sync service.":"Kunne ikke få kontakt til synk-tjenesten.","Code not found or expired.":"Koden findes ikke eller er udløbet.","Characters synced from code":"Karakterer synkroniseret fra kode",
   Save:"Gem",
   Load:"Indlæs",
   "Level Up":"Level op",
