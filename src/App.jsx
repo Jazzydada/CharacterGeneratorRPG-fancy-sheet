@@ -980,10 +980,22 @@ export default function App(){
     setActiveSlotId(id);
   }
   async function pushSync(){
-    if(!savedChars.length){setSyncMsg(t("No saved characters yet."));return;}
+    const now=Date.now();
+    const currentData=buildCharacterData();
+    let id=activeSlotId;
+    let list;
+    if(id){
+      list=savedChars.map(s=>s.id===id?{...s,name:cname||"Unnamed",classLevel:cn+" "+level,updatedAt:now,data:currentData}:s);
+    }else{
+      id=now+"_"+Math.random().toString(36).slice(2,7);
+      list=[...savedChars,{id,name:cname||"Unnamed",classLevel:cn+" "+level,updatedAt:now,data:currentData}];
+    }
+    setSavedChars(list);
+    setActiveSlotId(id);
+    if(!list.length){setSyncMsg(t("No saved characters yet."));return;}
     setSyncBusy(true);setSyncMsg("");
     try{
-      const res=await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({characters:savedChars})});
+      const res=await fetch("/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({characters:list})});
       if(!res.ok)throw new Error();
       const{code}=await res.json();
       setSyncPushedCode(code);
