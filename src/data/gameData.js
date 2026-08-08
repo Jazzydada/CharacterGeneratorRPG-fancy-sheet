@@ -109,7 +109,7 @@ const DA={
   "Hit Points":"Livspoint",
   "Hit Dice":"Livsterninger",
   "HP Max":"Maks HP",
-  "CURRENT HP":"NUVÆRENDE HP",
+  "CURRENT HP":"NUVÆRENDE HP","TEMPORARY HP":"MIDLERTIDIG HP",
   Successes:"Successer",
   Failures:"Fejl",
   "Features & Traits":"Evner & træk",
