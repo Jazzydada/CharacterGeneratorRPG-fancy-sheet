@@ -26,7 +26,7 @@ function buildPortraitPromptFromSheet(sh){
   const race=(sh.species||"human").split(" ")[0];
   const cls=(sh.classLevel||"Fighter").split(" ")[0];
   const gender=sh.gender||"male";
-  return `${gender} ${race} ${cls}, fantasy rpg character, full body portrait, detailed character art`;
+  return `${gender} ${race} ${cls}, fantasy rpg character, head and shoulders portrait, bust shot, close-up face, detailed character art`;
 }
 function pollinationsImageUrl(prompt,seed){
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=1024&seed=${seed}&nologo=true&enhance=false&model=flux`;
