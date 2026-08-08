@@ -5,7 +5,7 @@ import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEAT
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
-import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -360,13 +360,27 @@ function Page3({sh,forms,totalPages}){
   </div>);
 }
 
-function FormsPage({sh,forms,pageNum,totalPages}){
+function FormsPage({sh,pageNum,totalPages}){
+  const wildForms=sh.wildShapeForms||[];
+  const familiarForms=sh.familiarForms||[];
+  const compact=(wildForms.length+familiarForms.length)>6;
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Creature Forms")}</div></div>
     </div>
-    <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>6?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5,alignContent:"start"}}>
-      {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]} compact={forms.length>6}/>)}
+    <div style={{flex:"1 1 0",minHeight:0,overflow:"auto"}}>
+      {wildForms.length>0&&<div style={{marginBottom:8}}>
+        <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Wild Shape Forms")}</div>
+        <div style={{display:"grid",gridTemplateColumns:compact?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5}}>
+          {wildForms.map(name=><CreatureCard key={"w"+name} name={name} b={WILDSHAPE_BEASTS[name]} compact={compact}/>)}
+        </div>
+      </div>}
+      {familiarForms.length>0&&<div>
+        <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Find Familiar Forms")}</div>
+        <div style={{display:"grid",gridTemplateColumns:compact?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5}}>
+          {familiarForms.map(name=><CreatureCard key={"f"+name} name={name} b={WILDSHAPE_BEASTS[name]} compact={compact}/>)}
+        </div>
+      </div>}
     </div>
     <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
   </div>);
@@ -696,6 +710,9 @@ export default function App(){
   const [shadowSpell,setShadowSpell]=useState("");
   const [dragonColor,setDragonColor]=useState("Red");
   const [giantAncestry,setGiantAncestry]=useState("Stone Giant");
+  const [tieflingLegacy,setTieflingLegacy]=useState("Infernal");
+  const [tieflingLegacyAbility,setTieflingLegacyAbility]=useState("CHA");
+  const [featAsiChoice,setFeatAsiChoice]=useState({});
   const [selWildShapes,setSelWildShapes]=useState([]);
   const [landType,setLandType]=useState("Temperate");
   const [cname,setCname]=useState("");
@@ -825,10 +842,29 @@ export default function App(){
   const base=useMemo(()=>{if(smode==="Standard Array")return assignArr(cn);if(smode==="Rolled")return rstats;return mstats;},[smode,cn,mstats,rstats]);
   const effB2=bgo.ab.includes(boost2)?boost2:bgo.ab[0];
   const effB1=(bgo.ab.includes(boost1)&&boost1!==effB2)?boost1:bgo.ab.find(a=>a!==effB2);
-  const fin=useMemo(()=>applyBoosts(base,bg,boost,effB2,effB1),[base,bg,boost,effB2,effB1]);
+  const finBase=useMemo(()=>applyBoosts(base,bg,boost,effB2,effB1),[base,bg,boost,effB2,effB1]);
+  // Ability the player chose for Resilient's saving-throw proficiency (any ability the class doesn't already save-proficiency in).
+  const resilientOptions=useMemo(()=>{const baseSaves=mc&&cls2?Array.from(new Set([...cls.saves,...cls2.saves])):cls.saves;return AB.filter(a=>!baseSaves.includes(a));},[mc,cls2,cls]);
+  // Every General feat with an Ability Score Increase (PHB 2024) adds +1 to the player's chosen ability (max 20),
+  // defaulting to the first valid option if none was explicitly picked yet (e.g. an imported older save file).
+  const featAsiBonuses=useMemo(()=>{
+    const bonus={};
+    activeFeats.forEach(f=>{
+      if(f==="Resilient"){
+        const ab=(featAsiChoice[f]&&resilientOptions.includes(featAsiChoice[f]))?featAsiChoice[f]:resilientOptions[0];
+        if(ab)bonus[ab]=(bonus[ab]||0)+1;
+        return;
+      }
+      const opts=FEAT_ASI[f];if(!opts)return;
+      const ab=(featAsiChoice[f]&&opts.includes(featAsiChoice[f]))?featAsiChoice[f]:opts[0];
+      bonus[ab]=(bonus[ab]||0)+1;
+    });
+    return bonus;
+  },[activeFeats,featAsiChoice,resilientOptions]);
+  const fin=useMemo(()=>{const f={...finBase};Object.entries(featAsiBonuses).forEach(([ab,v])=>{f[ab]=Math.min(20,(f[ab]||10)+v);});return f;},[finBase,featAsiBonuses]);
   const dm=mf(fin.DEX),sm=mf(fin.STR),cm=mf(fin.CON),wm=mf(fin.WIS);
   const hasTough=mechFeats.has("Tough");
-  const hasMobile=mechFeats.has("Mobile");
+  const hasSpeedy=mechFeats.has("Speedy");
   const hasDefense=mechFeats.has("Defense");
   const hasAlert=mechFeats.has("Alert");
   const hasTavernBrawler=mechFeats.has("Tavern Brawler");
@@ -851,7 +887,12 @@ export default function App(){
     return parts.join(" · ");
   },[equipped,dm,cm,wm,cn,hasDefense]);
   const acBreakdown=getACBreakdown();
-  const saves=mc&&cls2?Array.from(new Set([...cls.saves,...cls2.saves])):cls.saves;
+  const saves=useMemo(()=>{
+    const base=mc&&cls2?Array.from(new Set([...cls.saves,...cls2.saves])):cls.saves;
+    if(!mechFeats.has("Resilient"))return base;
+    const ab=(featAsiChoice["Resilient"]&&resilientOptions.includes(featAsiChoice["Resilient"]))?featAsiChoice["Resilient"]:resilientOptions[0];
+    return ab&&!base.includes(ab)?[...base,ab]:base;
+  },[mc,cls2,cls,mechFeats,featAsiChoice,resilientOptions]);
   const allSc=mc&&cls2?Array.from(new Set([...cls.sc,...cls2.sc])):cls.sc;
   const maxSk=mc?cls.ns+1:cls.ns;
   const skProfs=useMemo(()=>Array.from(new Set([...bgo.sk,...selSk,...skilledSkills])),[bgo.sk,selSk,skilledSkills]);
@@ -866,7 +907,7 @@ export default function App(){
   const armorStrReq=equipped.armor&&ARMOR_ITEMS[equipped.armor]?.str;
   const armorSpeedPenalty=(armorStrReq&&fin.STR<armorStrReq)?10:0;
   const unarmoredMoveBonus=(cn==="Monk"&&!equipped.armor&&!equipped.shield)?monkUnarmoredMovement(level):0;
-  const speed=Math.max(0,(speciesData?.speed||30)+(hasMobile?10:0)+unarmoredMoveBonus-armorSpeedPenalty);
+  const speed=Math.max(0,(speciesData?.speed||30)+(hasSpeedy?10:0)+unarmoredMoveBonus-armorSpeedPenalty);
   const isThird=thirdCasterOf(cn,sub);
   const thirdLvl=isThird?lv1e:0;
   const isCaster=!!CTYPE[cn]||(mc&&!!CTYPE[cn2])||thirdLvl>=3;
@@ -947,10 +988,10 @@ export default function App(){
   }
 
   function buildCharacterData(){
-    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,feySpell,shadowSpell,dragonColor,giantAncestry,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat,currentHp,tempHp,deathSaves,resourceUses,racialUses,heroicInspiration};
+    return{version:1,cname,playerName,level,sp,cn,bg,align,sub,anotes,boost,boost2,boost1,gender,portraitMode,uploadedPortrait,smode,mstats,rstats,selSk,selLangs,selExpertise,miClass,miCantrips,miSpell,feySpell,shadowSpell,dragonColor,giantAncestry,tieflingLegacy,tieflingLegacyAbility,featAsiChoice,selWildShapes,landType,skilledSkills,skilledTools,equipped,masteredWeapons,selWeapons,featMap,mc,cn2,lv2,traits,ideals,bonds,flaws,backstory,coins,purchases,ownedExtra,selSp,selInv,selMetamagic,selManeuvers,selHunterPrey,selDefensiveTactics,selBeastType,selSavant,selLore,selRituals,selTomeCantrips,classOrder,inventory,spPrep,usedSlots,lessonsFeat,currentHp,tempHp,deathSaves,resourceUses,racialUses,heroicInspiration};
   }
   function applyCharacterData(d){
-    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.feySpell!==undefined)setFeySpell(d.feySpell);if(d.shadowSpell!==undefined)setShadowSpell(d.shadowSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);if(d.currentHp!==undefined)setCurrentHp(d.currentHp);if(d.tempHp!==undefined)setTempHp(d.tempHp);if(d.deathSaves!==undefined)setDeathSaves(d.deathSaves);if(d.resourceUses!==undefined)setResourceUses(d.resourceUses);if(d.racialUses!==undefined)setRacialUses(d.racialUses);if(d.heroicInspiration!==undefined)setHeroicInspiration(d.heroicInspiration);
+    if(d.cname!==undefined)setCname(d.cname);if(d.playerName!==undefined)setPlayerName(d.playerName);if(d.level!==undefined)setLevel(d.level);if(d.sp!==undefined)setSp(d.sp);if(d.cn!==undefined)changeClass(d.cn);if(d.bg!==undefined)setBg(d.bg);if(d.align!==undefined)setAlign(d.align);if(d.sub!==undefined)setSub(d.sub);if(d.anotes!==undefined)setAnotes(d.anotes);if(d.boost!==undefined)setBoost(d.boost);if(d.boost2!==undefined)setBoost2(d.boost2);if(d.boost1!==undefined)setBoost1(d.boost1);if(d.gender!==undefined)setGender(d.gender);if(d.portraitMode!==undefined)setPortraitMode(d.portraitMode);if(d.uploadedPortrait!==undefined)setUploadedPortrait(d.uploadedPortrait);if(d.smode!==undefined)setSmode(d.smode);if(d.mstats!==undefined)setMstats(d.mstats);if(d.rstats!==undefined)setRstats(d.rstats);if(d.selSk!==undefined)setSelSk(d.selSk);if(d.selLangs!==undefined)setSelLangs(d.selLangs);if(d.selExpertise!==undefined)setSelExpertise(d.selExpertise);if(d.miClass!==undefined)setMiClass(d.miClass);if(d.miCantrips!==undefined)setMiCantrips(d.miCantrips);if(d.miSpell!==undefined)setMiSpell(d.miSpell);if(d.feySpell!==undefined)setFeySpell(d.feySpell);if(d.shadowSpell!==undefined)setShadowSpell(d.shadowSpell);if(d.dragonColor!==undefined)setDragonColor(d.dragonColor);if(d.giantAncestry!==undefined)setGiantAncestry(d.giantAncestry);if(d.tieflingLegacy!==undefined)setTieflingLegacy(d.tieflingLegacy);if(d.tieflingLegacyAbility!==undefined)setTieflingLegacyAbility(d.tieflingLegacyAbility);if(d.featAsiChoice!==undefined)setFeatAsiChoice(d.featAsiChoice);if(d.selWildShapes!==undefined)setSelWildShapes(d.selWildShapes);if(d.landType!==undefined)setLandType(d.landType);if(d.skilledSkills!==undefined)setSkilledSkills(d.skilledSkills);if(d.skilledTools!==undefined)setSkilledTools(d.skilledTools);if(d.equipped!==undefined)setEquipped(d.equipped);if(d.masteredWeapons!==undefined)setMasteredWeapons(d.masteredWeapons);if(d.selWeapons!==undefined)setSelWeapons(d.selWeapons);if(d.featMap!==undefined)setFeatMap(d.featMap);if(d.mc!==undefined)setMc(d.mc);if(d.cn2!==undefined)setCn2(d.cn2);if(d.lv2!==undefined)setLv2(d.lv2);if(d.traits!==undefined)setTraits(d.traits);if(d.ideals!==undefined)setIdeals(d.ideals);if(d.bonds!==undefined)setBonds(d.bonds);if(d.flaws!==undefined)setFlaws(d.flaws);if(d.backstory!==undefined)setBackstory(d.backstory);if(d.coins!==undefined)setCoins(d.coins);else if(d.gp!==undefined)setCoins(c=>({...c,gp:d.gp}));if(d.purchases!==undefined)setPurchases(d.purchases);if(d.ownedExtra!==undefined)setOwnedExtra(d.ownedExtra);if(d.selSp!==undefined)setSelSp(d.selSp);if(d.selInv!==undefined)setSelInv(d.selInv);if(d.selMetamagic!==undefined)setSelMetamagic(d.selMetamagic);if(d.selManeuvers!==undefined)setSelManeuvers(d.selManeuvers);if(d.selHunterPrey!==undefined)setSelHunterPrey(d.selHunterPrey);if(d.selDefensiveTactics!==undefined)setSelDefensiveTactics(d.selDefensiveTactics);if(d.selBeastType!==undefined)setSelBeastType(d.selBeastType);if(d.selSavant!==undefined)setSelSavant(d.selSavant);if(d.selLore!==undefined)setSelLore(d.selLore);if(d.classOrder!==undefined)setClassOrder(d.classOrder);if(d.inventory!==undefined)setInventory(repairPackLines(d.inventory));if(d.selRituals!==undefined)setSelRituals(d.selRituals);if(d.selTomeCantrips!==undefined)setSelTomeCantrips(d.selTomeCantrips);if(d.spPrep!==undefined)setSpPrep(d.spPrep);if(d.usedSlots!==undefined)setUsedSlots(d.usedSlots);if(d.lessonsFeat!==undefined)setLessonsFeat(d.lessonsFeat);if(d.currentHp!==undefined)setCurrentHp(d.currentHp);if(d.tempHp!==undefined)setTempHp(d.tempHp);if(d.deathSaves!==undefined)setDeathSaves(d.deathSaves);if(d.resourceUses!==undefined)setResourceUses(d.resourceUses);if(d.racialUses!==undefined)setRacialUses(d.racialUses);if(d.heroicInspiration!==undefined)setHeroicInspiration(d.heroicInspiration);
   }
   function exportCharacter(){
     const data=buildCharacterData();
@@ -1268,6 +1309,12 @@ export default function App(){
     if(isLore){
       selLore.forEach(name=>addBonus(name,sub));
     }
+    if(sp==="Tiefling"){
+      const lg=TIEFLING_LEGACY[tieflingLegacy];
+      addBonus(lg.cantrip,"Fiendish Legacy");
+      if(level>=3)addBonus(lg.lvl3,"Fiendish Legacy");
+      if(level>=5)addBonus(lg.lvl5,"Fiendish Legacy");
+    }
     return res;
   }
 
@@ -1305,7 +1352,11 @@ export default function App(){
     const goliathTraitDetail={
       "Giant Ancestry":giantAncestry+": "+GIANT_ANCESTRY[giantAncestry][da?1:0]+" ("+pb+"x, "+(da?"genopret alle ved Long Rest":"regain all on Long Rest")+")",
     };
-    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=(sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:null)||TRAIT_DESC[tr]?.[da?1:0];return d?label+": "+d:label;}).join("\n");
+    const tieflingLegacyData=TIEFLING_LEGACY[tieflingLegacy];
+    const tieflingTraitDetail={
+      "Fiendish Legacy":tieflingLegacy+" — "+(da?("Resistance mod "+trDamageType(tieflingLegacyData.resist)+"-skade, kender "+tieflingLegacyData.cantrip+"-cantrippen. Niv 3: "+tieflingLegacyData.lvl3+". Niv 5: "+tieflingLegacyData.lvl5+". ("+tieflingLegacyAbility+")"):("Resistance to "+tieflingLegacyData.resist+" damage, knows the "+tieflingLegacyData.cantrip+" cantrip. Lvl 3: "+tieflingLegacyData.lvl3+". Lvl 5: "+tieflingLegacyData.lvl5+". ("+tieflingLegacyAbility+")")),
+    };
+    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=(sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:sp==="Tiefling"?tieflingTraitDetail[tr]:null)||TRAIT_DESC[tr]?.[da?1:0];return d?label+": "+d:label;}).join("\n");
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
     const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
     const metamagicLine=(isSorcerer&&selMetamagic.length)?selMetamagic.map(n=>{const d=METAMAGIC_OPTIONS[n];return "• "+n+" ("+d[2]+"): "+d[da?1:0];}).join("\n"):"";
@@ -1333,7 +1384,7 @@ export default function App(){
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:[...new Set([...(cn==="Druid"?selWildShapes:[]),...(hasFindFamiliar?FAMILIAR_FORMS:[])])],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
@@ -1341,13 +1392,13 @@ export default function App(){
   }
 
   if(view==="sheet"&&sheet){
-    const allForms=sheet.wildShapeForms||[];
+    const hasFormsPage=(sheet.wildShapeForms||[]).length>0||(sheet.familiarForms||[]).length>0;
     const page3Forms=[];
-    const extraFormPages=allForms.length?[allForms]:[];
+    const extraFormPages=hasFormsPage?[true]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
     const totalPages=3+extraFormPages.length+(wildMagic?1:0);
     const fitScale=Math.min(1,(vw-24)/PAGE_W_PX);
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((chunk,i)=><FormsPage key={i} sh={sheet} forms={chunk} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
@@ -1406,6 +1457,15 @@ export default function App(){
     <div style={{fontSize:"0.65rem",color:G.dim,marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Tools")}</div>
     <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{TOOL_LIST.map(tool=>{const picked=skilledTools.includes(tool);const atMax=(skilledSkills.length+skilledTools.length)>=3;return <button key={tool} onClick={()=>setSkilledTools(prev=>prev.includes(tool)?prev.filter(s=>s!==tool):atMax?prev:[...prev,tool])} style={{padding:"0.2rem 0.45rem",borderRadius:"0.45rem",fontSize:"0.7rem",border:"1px solid",cursor:(atMax&&!picked)?"not-allowed":"pointer",opacity:(atMax&&!picked)?0.35:1,background:picked?"#fcd34d":"transparent",color:picked?G.bg:"#f1f5f9",borderColor:picked?"#fcd34d":"#334155",fontWeight:picked?700:400}}>{tool}</button>;})}</div>
   </div>);
+  const asiPicker=(name)=>{
+    const opts=name==="Resilient"?resilientOptions:FEAT_ASI[name];
+    if(!opts||!opts.length)return null;
+    const chosen=(featAsiChoice[name]&&opts.includes(featAsiChoice[name]))?featAsiChoice[name]:opts[0];
+    return(<div style={{marginTop:"0.5rem",paddingTop:"0.5rem",borderTop:"1px solid "+G.border}}>
+      <div style={{fontSize:"0.72rem",color:G.gold,marginBottom:"0.35rem"}}>{t("Ability Score Increase")} (+1{name==="Resilient"?", "+t("Saving Throw Proficiency"):""}):</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{opts.map(a=>{const sel=chosen===a;return <button key={a} onClick={()=>setFeatAsiChoice(prev=>({...prev,[name]:a}))} style={{padding:"0.2rem 0.55rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{a}</button>;})}</div>
+    </div>);
+  };
   const buildFeatsPanel=()=>{
     const tabs=["Origin","General","Fighting Style","Epic Boon","Species","Class"];
     // 2024 RAW eligibility: General/Species/Class feats come from ASI levels (4/8/12/16/19; Fighter +6/+14; Rogue +10)
@@ -1451,6 +1511,7 @@ export default function App(){
               {name==="Magic Initiate"&&sel&&miPicker()}
               {name==="Fey-Touched"&&sel&&feySpellPicker()}
               {name==="Shadow-Touched"&&sel&&shadowSpellPicker()}
+              {sel&&(name==="Resilient"||FEAT_ASI[name])&&asiPicker(name)}
             </FeatCard>
           </div>);
         })}
@@ -1551,6 +1612,13 @@ export default function App(){
             <div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Giant Ancestry")}</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{Object.keys(GIANT_ANCESTRY).map(g=>{const sel=giantAncestry===g;return <button key={g} onClick={()=>setGiantAncestry(g)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{t(g)}</button>;})}</div>
             <div style={{fontSize:"0.68rem",color:G.muted,marginTop:"0.35rem"}}>{GIANT_ANCESTRY[giantAncestry][CURRENT_LANG==="da"?1:0]} ({pb}x, {t("regain all on Long Rest")})</div>
+          </div>}
+          {sp==="Tiefling"&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}>
+            <div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Fiendish Legacy")}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{Object.keys(TIEFLING_LEGACY).map(lg=>{const sel=tieflingLegacy===lg;return <button key={lg} onClick={()=>setTieflingLegacy(lg)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{lg} ({trDamageType(TIEFLING_LEGACY[lg].resist)})</button>;})}</div>
+            <div style={{fontSize:"0.68rem",color:G.muted,marginTop:"0.35rem"}}>{t("Cantrip")}: {TIEFLING_LEGACY[tieflingLegacy].cantrip} · {t("Lvl")} 3: {TIEFLING_LEGACY[tieflingLegacy].lvl3} · {t("Lvl")} 5: {TIEFLING_LEGACY[tieflingLegacy].lvl5}</div>
+            <div style={{fontSize:"0.65rem",color:G.dim,marginTop:"0.35rem",marginBottom:"0.25rem",textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Spellcasting ability")}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"0.3rem"}}>{["INT","WIS","CHA"].map(a=>{const sel=tieflingLegacyAbility===a;return <button key={a} onClick={()=>setTieflingLegacyAbility(a)} style={{padding:"0.2rem 0.5rem",borderRadius:"0.45rem",fontSize:"0.72rem",border:"1px solid "+(sel?G.gold:"#334155"),cursor:"pointer",background:sel?G.gold:"transparent",color:sel?"#020817":"#f1f5f9",fontWeight:sel?700:400}}>{a}</button>;})}</div>
           </div>}
         </GFld>
         <div style={{marginTop:"0.6rem"}}>
