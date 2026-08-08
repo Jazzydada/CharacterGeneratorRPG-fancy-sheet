@@ -5,7 +5,7 @@ import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEAT
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
-import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -238,7 +238,7 @@ function Page1({sh}){
   </div>);
 }
 
-function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses}){
+function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep}){
   const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
   const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
   // Parse the features text into readable entries (bold the label before the colon).
@@ -285,7 +285,11 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         {spellSlots.map((cnt,i)=>{if(!(cnt>0))return null;const lvl=i+1;const used=usedSlots?.[lvl]||0;return(<div key={i}><div style={{...capL,textAlign:"center",fontSize:5.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=>{const isAvailable=j<(cnt-used);return <div key={j} onClick={interactive?()=>setUsedSlots(prev=>{const cur=prev[lvl]||0;return{...prev,[lvl]:isAvailable?Math.min(cnt,cur+1):Math.max(0,cur-1)};}):undefined} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:isAvailable?GOLD_L:"#fff",cursor:interactive?"pointer":undefined}}/>;})}</div></div>);})}
       </div>
     </div>
-    {LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=><div key={i} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>)}</div></div>;})}
+    {LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=>{
+      const canTogglePrep=interactive&&sh.cn==="Wizard"&&li>0&&!sp.source;
+      const unprepared=canTogglePrep?(spPrep?.[sp.name]===false):sp.prepared===false;
+      return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
+    })}</div></div>;})}
     </div>}
     <div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
       <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
@@ -469,7 +473,7 @@ function SBtn({name,sel,prep,onToggle,onPrep}){
     <div style={{display:"flex",alignItems:"stretch",borderRadius:"0.65rem",overflow:"hidden",border:"1px solid "+(sel?G.gold:"#334155"),minHeight:"3rem",flexShrink:0}}>
       <button onClick={e=>{e.stopPropagation();onToggle();}} style={{flex:1,padding:"0.6rem 1rem",fontSize:"0.9rem",border:"none",cursor:"pointer",background:sel?G.gold:"transparent",color:sel?G.bg:"#f1f5f9",fontWeight:sel?700:400,textAlign:"left",whiteSpace:"normal",wordBreak:"break-word",lineHeight:1.4}}>{name}</button>
       {d&&<button onClick={e=>{e.stopPropagation();setOpen(true);}} style={{padding:"0 0.9rem",fontSize:"0.9rem",border:"none",borderLeft:"1px solid #334155",cursor:"pointer",background:"transparent",color:"#fcd34d",fontWeight:700,flexShrink:0,alignSelf:"stretch",display:"flex",alignItems:"center"}}>?</button>}
-      {sel&&<button onClick={e=>{e.stopPropagation();onPrep();}} style={{padding:"0 0.9rem",fontSize:"0.9rem",border:"none",borderLeft:"1px solid #334155",cursor:"pointer",background:"transparent",color:prep?"#4ade80":"#94a3b8",flexShrink:0,alignSelf:"stretch",display:"flex",alignItems:"center"}}>{prep?"P":"o"}</button>}
+      {sel&&prep!==undefined&&<button title={prep?"Prepared":"Known, not prepared"} onClick={e=>{e.stopPropagation();onPrep();}} style={{padding:"0 0.9rem",fontSize:"0.9rem",border:"none",borderLeft:"1px solid #334155",cursor:"pointer",background:"transparent",color:prep?"#4ade80":"#94a3b8",flexShrink:0,alignSelf:"stretch",display:"flex",alignItems:"center"}}>{prep?"P":"o"}</button>}
     </div>
     {open&&d&&<SPopup name={name} d={d} onClose={()=>setOpen(false)}/>}
   </>);
@@ -1022,7 +1026,7 @@ export default function App(){
   useEffect(()=>{
     if(skipAutoSave.current){skipAutoSave.current=false;return;}
     if(activeSlotId)saveToSlot();
-  },[currentHp,tempHp,deathSaves,resourceUses,usedSlots,racialUses,heroicInspiration]);
+  },[currentHp,tempHp,deathSaves,resourceUses,usedSlots,racialUses,heroicInspiration,spPrep]);
   function saveAsNewSlot(){
     const data=buildCharacterData();
     const id=Date.now()+"_"+Math.random().toString(36).slice(2,7);
@@ -1096,7 +1100,9 @@ export default function App(){
     const maxSL=maxSpellLevel(ct,lv1e);
     const classSpells=CS[className];if(!classSpells)return{selSp:{},spPrep:{}};
     const knownStr=spellsKnown(className,lv1e,spellAbilityMod)||"";
-    const spellLimit=Number.parseInt(knownStr,10)||0;
+    const preparedMax=Number.parseInt(knownStr,10)||0;
+    const isWiz=className==="Wizard";
+    const spellLimit=isWiz?wizardSpellbookMax(lv1e):preparedMax;
 
     // Weighted favorites per class (cantrips + leveled mixed — we split by checking CS[0])
     const FAVS={
@@ -1156,9 +1162,15 @@ export default function App(){
       if(atThisLevel.length)selSpOut[l]=atThisLevel;
     }
 
-    // spPrep: all picked leveled spells marked prepared/active
+    // spPrep: for Wizard, only a subset up to the fixed Prepared Spells cap is marked prepared —
+    // the rest stay in the spellbook as known-but-not-prepared. Other prepared casters have no
+    // separate spellbook, so everything picked is simply prepared.
     const spPrepOut={};
-    pickedLeveled.forEach(n=>{spPrepOut[n]=true;});
+    if(isWiz){
+      shuffle(pickedLeveled).forEach((n,i)=>{spPrepOut[n]=i<preparedMax;});
+    }else{
+      pickedLeveled.forEach(n=>{spPrepOut[n]=true;});
+    }
 
     return{selSp:selSpOut,spPrep:spPrepOut};
   }
@@ -1267,7 +1279,10 @@ export default function App(){
   function onDrop(targetId){if(!draggingPanel||draggingPanel===targetId)return;setPanelOrder(prev=>{const o=[...prev];const fi=o.indexOf(draggingPanel),ti=o.indexOf(targetId);o.splice(fi,1);o.splice(ti,0,draggingPanel);return o;});setDraggingPanel(null);}
   function buildSBL(){
     const res={};
-    const mk=(name,source)=>{const d=spellD(name)||{};return{name,sc:d.sc||"",desc:d.desc||"",cast:d.cast||"",range:d.range||"",dur:d.dur||"",comp:d.comp||"",pg:d.pg||"",conc:/^Conc\.?\b/i.test(d.dur||""),source};};
+    // Only Wizard has a spellbook of known-but-not-necessarily-prepared spells; every other prepared
+    // caster's selection directly represents what's prepared. Bonus spells (subclass/feat/legacy —
+    // anything with a "source" tag) are always-prepared features and never subject to this toggle.
+    const mk=(name,source)=>{const d=spellD(name)||{};const lvl=spellLevelOf(name);const isWizLeveled=cn==="Wizard"&&(lvl||0)>0;const prepared=source?true:(isWizLeveled?spPrep[name]!==false:true);return{name,sc:d.sc||"",desc:d.desc||"",cast:d.cast||"",range:d.range||"",dur:d.dur||"",comp:d.comp||"",pg:d.pg||"",conc:/^Conc\.?\b/i.test(d.dur||""),source,prepared};};
     Object.entries(selSp).forEach(([lv,names])=>{const li=Number(lv);res[li]=(names||[]).map(name=>mk(name,null));});
     // Merge subclass bonus spells (Domain/Oath/Patron/Circle) into the same level buckets, tagged with their source.
     if(sub&&level>=3){
@@ -1384,7 +1399,7 @@ export default function App(){
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
@@ -1398,7 +1413,7 @@ export default function App(){
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
     const totalPages=3+extraFormPages.length+(wildMagic?1:0);
     const fitScale=Math.min(1,(vw-24)/PAGE_W_PX);
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
@@ -1808,7 +1823,26 @@ export default function App(){
     </div>
     <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.5rem",flexWrap:"wrap"}}>
       {/* START PATCH B — spell budget counter */}
-      {knownStr&&(()=>{
+      {knownStr&&cn==="Wizard"&&(()=>{
+        const spellbookMax=wizardSpellbookMax(lv1e);
+        const preparedMax=Number.parseInt(knownStr,10)||0;
+        const leveledNames=Object.entries(selSp).filter(([lv])=>Number(lv)>0).flatMap(([,names])=>names||[]);
+        const spellbookCount=leveledNames.length;
+        const preparedCount=leveledNames.filter(n=>spPrep[n]!==false).length;
+        const bookAtLimit=spellbookCount>=spellbookMax;
+        const prepAtLimit=preparedCount>=preparedMax;
+        return(<>
+          <div title={t("Total spells in your spellbook — grows as you level up")} style={{fontSize:"0.75rem",color:"#f1f5f9",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid "+(bookAtLimit?"#f87171":"#334155")}}>
+            <span style={{color:G.dim}}>{t("Spellbook")}: </span>
+            <strong style={{color:bookAtLimit?"#f87171":G.gold}}>{spellbookCount} / {spellbookMax}</strong>
+          </div>
+          <div title={t("How many of your spellbook spells are prepared today")} style={{fontSize:"0.75rem",color:"#f1f5f9",background:"#1e293b",borderRadius:"0.6rem",padding:"0.25rem 0.65rem",border:"1px solid "+(prepAtLimit?"#4ade80":"#334155")}}>
+            <span style={{color:G.dim}}>{t("Prepared")}: </span>
+            <strong style={{color:prepAtLimit?"#4ade80":G.gold}}>{preparedCount} / {preparedMax}</strong>
+          </div>
+        </>);
+      })()}
+      {knownStr&&cn!=="Wizard"&&(()=>{
         const spellLimit=Number.parseInt(knownStr,10)||0;
         const spellMode=knownStr.includes("prepared")?"Prepared":"Known";
         const selectedLeveledSpellCount=Object.entries(selSp).filter(([lv])=>Number(lv)>0).flatMap(([,names])=>names||[]).length;
@@ -1833,13 +1867,27 @@ export default function App(){
     </div>
     <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>{[0,1,2,3,4,5,6,7,8,9].filter(lv=>lv===0||lv<=maxSL).map(lv=>{const has=avSp[lv]&&avSp[lv].size>0;const cnt=(selSp[lv]||[]).length;if(!has&&lv>0)return null;const active=spTab===lv;return <button key={lv} onClick={()=>setSpTab(lv)} style={tabSt(active)}>{lv===0?"Cantrips":"Lvl "+lv}{cnt>0?" ("+cnt+")":""}</button>;})}</div>
     {/* START PATCH C — dim unavailable leveled spells at budget limit */}
-    {(()=>{const spellLimit=Number.parseInt(knownStr,10)||0;const flatLeveled=[1,2,3,4,5,6,7,8,9].flatMap(l=>(selSp[l]||[]));const extraLeveled=new Set(spellLimit>0?flatLeveled.slice(spellLimit):[]);const extraCantrips=new Set(cantripLimit>0?(selSp[0]||[]).slice(cantripLimit):[]);
-    return <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"60vh",overflowY:"auto",paddingRight:"0.5rem",marginTop:"0.5rem"}}>{[...(avSp[spTab]||[])].map(name=>{
-      const sel=(selSp[spTab]||[]).includes(name);
-      const prep=spPrep[name]!==false;
-      const isExtra=sel&&(spTab===0?extraCantrips.has(name):extraLeveled.has(name));
-      return <div key={name} style={{borderRadius:"0.7rem",...(isExtra?{outline:"2px solid #f97316",outlineOffset:"-1px"}:{})}}><SBtn name={name} sel={sel} prep={prep} onToggle={()=>togSp(name,spTab)} onPrep={()=>togPrep(name)}/>{isExtra&&<div style={{fontSize:"0.6rem",color:"#f97316",fontWeight:700,padding:"0.05rem 0.4rem"}}>⚠ {t("over the rules")}</div>}</div>;
-    })}</div>;})()}
+    {(()=>{
+      const isWiz=cn==="Wizard";
+      const spellLimit=isWiz?wizardSpellbookMax(lv1e):(Number.parseInt(knownStr,10)||0);
+      const preparedMax=isWiz?(Number.parseInt(knownStr,10)||0):0;
+      const flatLeveled=[1,2,3,4,5,6,7,8,9].flatMap(l=>(selSp[l]||[]));
+      const extraLeveled=new Set(spellLimit>0?flatLeveled.slice(spellLimit):[]);
+      const extraCantrips=new Set(cantripLimit>0?(selSp[0]||[]).slice(cantripLimit):[]);
+      const preparedSoFar=isWiz?flatLeveled.filter(n=>spPrep[n]!==false):[];
+      const extraPrepared=new Set(preparedMax>0?preparedSoFar.filter(n=>!extraLeveled.has(n)).slice(preparedMax):[]);
+      return <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"60vh",overflowY:"auto",paddingRight:"0.5rem",marginTop:"0.5rem"}}>{[...(avSp[spTab]||[])].map(name=>{
+        const sel=(selSp[spTab]||[]).includes(name);
+        const prep=spPrep[name]!==false;
+        const isExtra=sel&&(spTab===0?extraCantrips.has(name):extraLeveled.has(name));
+        const isOverPrepared=isWiz&&spTab>0&&sel&&prep&&extraPrepared.has(name);
+        return <div key={name} style={{borderRadius:"0.7rem",...(isExtra?{outline:"2px solid #f97316",outlineOffset:"-1px"}:{})}}>
+          <SBtn name={name} sel={sel} prep={isWiz&&spTab>0?prep:undefined} onToggle={()=>togSp(name,spTab)} onPrep={()=>togPrep(name)}/>
+          {isExtra&&<div style={{fontSize:"0.6rem",color:"#f97316",fontWeight:700,padding:"0.05rem 0.4rem"}}>⚠ {t("over the rules")} ({t("spellbook")})</div>}
+          {!isExtra&&isOverPrepared&&<div style={{fontSize:"0.6rem",color:"#f97316",fontWeight:700,padding:"0.05rem 0.4rem"}}>⚠ {t("over the rules")} ({t("prepared")})</div>}
+        </div>;
+      })}</div>;
+    })()}
     {/* END PATCH C */}
     {Object.values(selSp).flat().length>0&&<div style={{marginTop:"0.5rem",fontSize:"0.72rem",color:G.muted}}>Selected: {Object.values(selSp).flat().join(", ")}</div>}
   </div>):<div style={{fontSize:"0.85rem",color:G.muted,fontStyle:"italic"}}>This class is not a spellcaster.</div>;
