@@ -277,8 +277,12 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
         const rest=ci>0?line.slice(ci+1).trim():"";
         const trackedUses=ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line)?(sh.profBonus||0):0;
+        const resistTypes=sh.resistanceByTrait?.[label]||[];
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
-          <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:rest?2:0}}>{label||line}</div>
+          <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap",marginBottom:rest?2:0}}>
+            <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{label||line}</div>
+            {resistTypes.map(rt=><span key={rt} style={{fontSize:5.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}
+          </div>
           {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
           {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
         </div>;
@@ -1391,6 +1395,14 @@ export default function App(){
     if(sp==="Tiefling")nextResistances.push(tieflingLegacyData.resist);
     if(mechFeats.has("Infernal Constitution"))nextResistances.push("Cold","Poison");
     const resistances=[...new Set(nextResistances)];
+    // Same resistances, but grouped by the exact (localized) trait label they appear under in
+    // Features & Traits, so Page2 can show the matching badge right on that trait's card.
+    const resistanceByTrait={};
+    if(sp==="Dragonborn")resistanceByTrait[da?"Skademodstand":"Damage Resistance"]=[DRACONIC_ANCESTRY[dragonColor]];
+    if((speciesData.traits||[]).includes("Dwarven Resilience"))resistanceByTrait[da?(TRAIT_DA["Dwarven Resilience"]):"Dwarven Resilience"]=["Poison"];
+    if((speciesData.traits||[]).includes("Celestial Resistance"))resistanceByTrait[da?(TRAIT_DA["Celestial Resistance"]):"Celestial Resistance"]=["Necrotic","Radiant"];
+    if(sp==="Tiefling")resistanceByTrait[da?(TRAIT_DA["Fiendish Legacy"]):"Fiendish Legacy"]=[tieflingLegacyData.resist];
+    if(mechFeats.has("Infernal Constitution"))resistanceByTrait["Infernal Constitution"]=["Cold","Poison"];
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
     const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
     const metamagicLine=(isSorcerer&&selMetamagic.length)?selMetamagic.map(n=>{const d=METAMAGIC_OPTIONS[n];return "• "+n+" ("+d[2]+"): "+d[da?1:0];}).join("\n"):"";
@@ -1418,7 +1430,7 @@ export default function App(){
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
