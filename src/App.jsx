@@ -316,10 +316,8 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         const trackedUses=ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line)?(sh.profBonus||0):0;
         const resistTypes=sh.resistanceByTrait?.[label]||[];
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap",marginBottom:rest?2:0}}>
-            <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{label||line}</div>
-            {resistTypes.map(rt=><span key={rt} style={{fontSize:5.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}
-          </div>
+          <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
+          {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:5.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
           {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
           {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
         </div>;
