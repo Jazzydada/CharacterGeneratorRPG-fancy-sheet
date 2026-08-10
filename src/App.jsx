@@ -19,6 +19,7 @@ function PRow({prof,name,ab,bonus}){return <div style={{display:"flex",alignItem
 function PSec({title,children,style={}}){return <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px",...style}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{title}</div>{children}</div>;}
 function PAbl({ab,score}){const mod=mf(score);return <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,textAlign:"center",padding:"4px 3px"}}><div style={{...capL,textAlign:"center",marginBottom:1}}>{AB_FULL[ab]}</div><div style={{fontSize:20,fontWeight:700,lineHeight:1,color:INK,fontFamily:"serif"}}>{score}</div><div style={{width:22,height:22,borderRadius:"50%",border:"1.5px solid "+RULE,background:"#fff",margin:"3px auto 0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,fontFamily:"sans-serif",color:INK}}>{sgn(mod)}</div></div>;}
 function PShield({label,value}){return <div style={{position:"relative",width:56,margin:"0 auto"}}><svg viewBox="0 0 56 64" width={56} height={64}><path d="M28 2 L54 12 L54 36 C54 52 28 62 28 62 C28 62 2 52 2 36 L2 12 Z" fill="#fff" stroke={RULE} strokeWidth={1.5}/></svg><div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",paddingTop:4}}><div style={{fontSize:5,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",lineHeight:1.2,textAlign:"center",whiteSpace:"nowrap"}}>{label}</div><div style={{fontSize:20,fontWeight:800,lineHeight:1.1,color:INK,fontFamily:"serif"}}>{value}</div></div></div>;}
+function classLevelSubOf(sh){return sh.classLevel+(sh.subclass?" ("+sh.subclass+")":"");}
 function ORul(){return <div style={{display:"flex",alignItems:"center",gap:6,margin:"4px 0"}}><div style={{flex:1,height:"0.5px",background:"linear-gradient(to right,transparent,"+RULE+")"}}></div><svg width={40} height={10} viewBox="0 0 40 10"><line x1={0} y1={5} x2={40} y2={5} stroke={RULE} strokeWidth={0.8}/><path d="M16 5 L20 2 L24 5 L20 8 Z" fill={RULE}/><circle cx={7} cy={5} r={1.5} fill={RULE}/><circle cx={33} cy={5} r={1.5} fill={RULE}/></svg><div style={{flex:1,height:"0.5px",background:"linear-gradient(to left,transparent,"+RULE+")"}}></div></div>;}
 
 
@@ -283,7 +284,8 @@ function Page1({sh}){
 }
 
 function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep}){
-  const{name,classLevel,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
+  const{name,classLevel,subclass,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
+  const classLevelSub=classLevel+(subclass?" ("+subclass+")":"");
   const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
   // Parse the features text into readable entries (bold the label before the colon).
   const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
@@ -304,7 +306,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
   });
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:6}}>{classLevel} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:6}}>{classLevelSub} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
       {isCaster&&<div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:5.5,textAlign:"center"}}>{l}</div></div>)}</div>}
     </div>
     <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
@@ -389,7 +391,7 @@ function Page3({sh,forms,totalPages}){
   invLines.forEach(l=>{const p=parsePackLine(l);if(p)packLines.push(p);else normalLines.push(l);});
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
     </div>
     <div style={{flex:"0 0 auto",marginBottom:8}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"serif"}}>{(()=>{const c=sh.coins||{};const parts=[["pp","PP"],["gp","GP"],["ep","EP"],["sp","SP"],["cp","CP"]].filter(([k])=>c[k]).map(([k,l])=>c[k]+" "+l);return parts.length?parts.join(" "):"0 GP";})()}</span></div>
@@ -419,7 +421,7 @@ function FormsPage({sh,pageNum,totalPages}){
   const compact=(wildForms.length+familiarForms.length)>6;
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Creature Forms")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Creature Forms")}</div></div>
     </div>
     <div style={{flex:"1 1 0",minHeight:0,overflow:"auto"}}>
       {wildForms.length>0&&<div style={{marginBottom:8}}>
@@ -442,7 +444,7 @@ function FormsPage({sh,pageNum,totalPages}){
 function Page4({sh,pageNum,totalPages}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{sh.classLevel} - {t("Wild Magic Surge")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Wild Magic Surge")}</div></div>
     </div>
     <div style={{fontSize:7.5,fontFamily:"sans-serif",color:"#555",marginBottom:8,fontStyle:"italic"}}>{t("Roll 1d100 immediately after casting a Sorcerer spell with a spell slot, once per turn, on a 20 rolled for Wild Magic Surge.")}</div>
     <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,alignContent:"start"}}>
