@@ -39,6 +39,23 @@ const RACE_PORTRAIT_DESC={
   Dragonborn:"draconic scaled skin, reptilian snout, no hair, colored scales",
   Aasimar:"glowing eyes, faint celestial halo of light, otherworldly beauty",
 };
+// Class-flavored mood/setting/gear so portraits read as an adventurer mid-story rather than a
+// neutral studio headshot — kept to background/lighting/expression cues so it doesn't fight the
+// head-and-shoulders framing or the race descriptors above.
+const CLASS_PORTRAIT_DESC={
+  Barbarian:"fierce battle-ready expression, war paint, scars, smoky battlefield backdrop",
+  Bard:"charismatic confident smile, ornate colorful clothing, warm tavern light",
+  Cleric:"serene devout expression, holy vestments, soft divine glow",
+  Druid:"earthy wild clothing, leaves and vines, dappled forest light",
+  Fighter:"battle-worn armor, steely determined gaze, torchlit stronghold backdrop",
+  Monk:"calm focused expression, simple robes, misty mountain backdrop",
+  Paladin:"noble resolute expression, gleaming polished armor, radiant backlight",
+  Ranger:"weathered cloak, alert watchful eyes, misty forest backdrop",
+  Rogue:"sly smirk, hooded cloak, shadowy alley lit by a single lantern",
+  Sorcerer:"crackling arcane energy around the hands, intense eyes, glowing magical aura",
+  Warlock:"eerie otherworldly glow in the eyes, dark tattered robes, ominous purple mist",
+  Wizard:"wise scholarly expression, richly detailed robes, glowing arcane runes in the background",
+};
 function buildPortraitPromptFromSheet(sh){
   const race=(sh.species||"Human").split(" ")[0];
   const cls=(sh.classLevel||"Fighter").split(" ")[0];
@@ -46,7 +63,8 @@ function buildPortraitPromptFromSheet(sh){
   const seed=sh.portraitSeed||1;
   const age=AGE_DESCRIPTORS[seed%AGE_DESCRIPTORS.length];
   const raceDesc=RACE_PORTRAIT_DESC[race]||"";
-  return `${gender} ${race} ${cls}, ${age}, ${raceDesc}, fantasy rpg character, head and shoulders portrait, bust shot, natural proportions, detailed character art`;
+  const classDesc=CLASS_PORTRAIT_DESC[cls]||"";
+  return `${gender} ${race} ${cls}, ${age}, ${raceDesc}, ${classDesc}, fantasy character portrait, head and shoulders, bust shot, natural proportions, cinematic dramatic lighting, rich atmospheric blurred background, photorealistic digital painting, highly detailed, sharp focus on face`;
 }
 function pollinationsImageUrl(prompt,seed){
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=false&model=flux`;
