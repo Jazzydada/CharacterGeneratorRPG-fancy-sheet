@@ -704,7 +704,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
 export default function App(){
   // Random starting character on first load (not always Human Fighter).
   const initRef=useRef(null);
-  if(!initRef.current){const rc=pick(Object.keys(CLASSES));initRef.current={cn:rc,sp:pick(Object.keys(SPECIES)),bg:pick(Object.keys(BGS)),level:1+Math.floor(Math.random()*6),gender:Math.random()<0.5?"male":"female"};}
+  if(!initRef.current){const rc=pick(Object.keys(CLASSES));const gr0=Math.random();initRef.current={cn:rc,sp:pick(Object.keys(SPECIES)),bg:pick(Object.keys(BGS)),level:1+Math.floor(Math.random()*6),gender:gr0<0.475?"male":gr0<0.95?"female":gr0<0.975?"hen":"neutral"};}
   const initChar=initRef.current;
   const [view,setView]=useState("gen");
   const [exportingImg,setExportingImg]=useState(false);
@@ -1232,8 +1232,9 @@ export default function App(){
     const clsLocked=classLockedRef.current,spLocked=speciesLockedRef.current,lvLocked=levelLockedRef.current;
     const rs=pick(Object.keys(SPECIES)),rc=pick(Object.keys(CLASSES)),rb=pick(Object.keys(BGS));
     const rl=Math.ceil(Math.random()*20);
-    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pickName(rs,gender));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
-    else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs,gender));}
+    const gr=Math.random();const rg=gr<0.475?"male":gr<0.95?"female":gr<0.975?"hen":"neutral";setGender(rg);
+    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pickName(rs,rg));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
+    else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs,rg));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
     setInventory(expandPacks(EQUIP[useCn]||[]).join("\n"));
@@ -1387,8 +1388,6 @@ export default function App(){
   function genSheet(targetView){
     const nextPortraitSeed=Math.floor(Math.random()*1000000);
     setPortraitSeed(nextPortraitSeed);
-    const nextGenderRoll=Math.random()<0.5?"male":"female";
-    setGender(nextGenderRoll);
     const da=CURRENT_LANG==="da";
     const featDesc=n=>da?(FEATDESC_DA[n]||ALL_FEATS[n]?.desc||""):(ALL_FEATS[n]?.desc||"");
     const featPgTxt=n=>ALL_FEATS[n]?.pg?" (PHB p."+ALL_FEATS[n].pg+")":"";
@@ -1457,7 +1456,7 @@ export default function App(){
     const prof=cls.armor+" - "+cls.weapons+"\nTools: "+allTools+"\nLanguages: "+allLangs.join(", ");
     const featuresTxt=[combinedFeatures,anotes?"\n"+anotes:""].join("").trim();
     const charTraits=traits||dispName+" is a "+bg.toLowerCase()+" turned "+cn.toLowerCase()+".";
-    const nextGender=nextGenderRoll||gender;
+    const nextGender=gender;
     const breathRow=sp==="Dragonborn"?[{name:"Breath Weapon ("+dragonColor+")",atk:"DC "+breathDC,dmg:breathWeaponDice(level)+" "+trDamageType(DRACONIC_ANCESTRY[dragonColor]),props:"15-ft Cone or 30x5-ft Line",mastery:"—"}]:[];
     const nextSpellsByLevel=buildSBL();
     const equippedGear=[equipped.armor,equipped.shield?"Shield":"",equipped.weapon].filter(Boolean).join(" · ")||(da?"Intet udstyret":"Nothing equipped");
