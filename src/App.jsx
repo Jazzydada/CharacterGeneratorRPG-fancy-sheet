@@ -60,12 +60,12 @@ const CLASS_PORTRAIT_DESC={
 function buildPortraitPromptFromSheet(sh){
   const race=(sh.species||"Human").split(" ")[0];
   const cls=(sh.classLevel||"Fighter").split(" ")[0];
-  const gender=sh.gender==="male"?"male":sh.gender==="female"?"female":"androgynous";
+  const gender=sh.gender==="male"?"adult man":sh.gender==="female"?"adult woman":"androgynous adult";
   const seed=sh.portraitSeed||1;
-  const age=AGE_DESCRIPTORS[seed%AGE_DESCRIPTORS.length];
+  const age=AGE_DESCRIPTORS[(seed+1)%AGE_DESCRIPTORS.length];
   const raceDesc=RACE_PORTRAIT_DESC[race]||"";
   const classDesc=CLASS_PORTRAIT_DESC[cls]||"";
-  return `${gender} ${race} ${cls}, clearly an adult, mature facial features, ${age}, ${raceDesc}, ${classDesc}, fantasy character portrait, head and shoulders, bust shot, natural proportions, realistic detailed skin texture with visible pores and imperfections, not airbrushed, cinematic dramatic lighting, rich atmospheric blurred background, photorealistic, highly detailed, sharp focus on face`;
+  return `${gender} ${race} ${cls}, fully grown adult, mature facial features, defined bone structure, not youthful, not a teenager, not a young girl or boy, ${age}, ${raceDesc}, ${classDesc}, fantasy character portrait, head and shoulders, bust shot, natural proportions, realistic detailed skin texture with visible pores and imperfections, not airbrushed, cinematic dramatic lighting, rich atmospheric blurred background, photorealistic, highly detailed, sharp focus on face`;
 }
 function pollinationsImageUrl(prompt,seed){
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=false&model=turbo`;
