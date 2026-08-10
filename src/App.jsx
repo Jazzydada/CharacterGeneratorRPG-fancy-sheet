@@ -60,7 +60,7 @@ const CLASS_PORTRAIT_DESC={
 function buildPortraitPromptFromSheet(sh){
   const race=(sh.species||"Human").split(" ")[0];
   const cls=(sh.classLevel||"Fighter").split(" ")[0];
-  const gender=sh.gender||"male";
+  const gender=sh.gender==="male"?"male":sh.gender==="female"?"female":"androgynous";
   const seed=sh.portraitSeed||1;
   const age=AGE_DESCRIPTORS[seed%AGE_DESCRIPTORS.length];
   const raceDesc=RACE_PORTRAIT_DESC[race]||"";
@@ -1003,7 +1003,7 @@ export default function App(){
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
   const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):ct==="third"?(SS.third[lv1e]||Array(9).fill(0)):Array(9).fill(0);
-  const autoName=useMemo(()=>pickName(sp),[sp]);
+  const autoName=useMemo(()=>pickName(sp,gender),[sp,gender]);
   const dispName=cname||autoName;
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
   const maxSL=Math.max(ct?maxSpellLevel(ct,lv1e):0,mc&&ct2?maxSpellLevel(ct2,lv2c):0);
@@ -1232,8 +1232,8 @@ export default function App(){
     const clsLocked=classLockedRef.current,spLocked=speciesLockedRef.current,lvLocked=levelLockedRef.current;
     const rs=pick(Object.keys(SPECIES)),rc=pick(Object.keys(CLASSES)),rb=pick(Object.keys(BGS));
     const rl=Math.ceil(Math.random()*20);
-    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pickName(rs));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
-    else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs));}
+    if(!clsLocked&&!spLocked){setSp(rs);setCn(rc);setBg(rb);setCname(pickName(rs,gender));setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}
+    else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs,gender));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
     setInventory(expandPacks(EQUIP[useCn]||[]).join("\n"));
@@ -1610,8 +1610,8 @@ export default function App(){
     <div>
       <GFld label={t("Character Name")}><input value={cname} onChange={e=>setCname(e.target.value)} placeholder={t("Auto-generated if empty")} style={inp}/></GFld>
       <GFld label={t("Player Name")}><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder={t("Who is playing this character?")} style={inp}/></GFld>
+      <GFld label={t("Gender")}><div style={{display:"flex",gap:"0.5rem"}}>{[["male",t("He")],["female",t("She")],["hen",t("Hen")],["neutral",t("Neutral")]].map(([g,lbl])=><button key={g} onClick={()=>setGender(g)} style={{...tabSt(gender===g),flex:1}}>{lbl}</button>)}</div></GFld>
       <GFld label={t("Portrait")}><div style={{display:"flex",gap:"0.5rem"}}>{[["ai",t("AI image")],["upload",t("Upload Image")],["blank",t("Draw your own")]].map(([m,lbl])=><button key={m} onClick={()=>setPortraitMode(m)} style={{...tabSt(portraitMode===m),flex:1}}>{lbl}</button>)}</div></GFld>
-      {portraitMode==="ai"&&<GFld label={t("Portrait Gender")}><div style={{display:"flex",gap:"0.5rem"}}>{["male","female"].map(g=><button key={g} onClick={()=>setGender(g)} style={{...tabSt(gender===g),flex:1,textTransform:"capitalize"}}>{t(g)}</button>)}</div></GFld>}
       {portraitMode==="upload"&&<GFld label={t("Choose an image")}>
         <input type="file" accept="image/*" onChange={handlePortraitUpload} style={{...inp,padding:"0.4rem 0.6rem"}}/>
         {uploadedPortrait&&<div style={{marginTop:"0.5rem",display:"flex",alignItems:"center",gap:"0.6rem"}}><img src={uploadedPortrait} style={{width:"48px",height:"48px",objectFit:"cover",borderRadius:"0.5rem",border:"1px solid "+G.border}}/><button onClick={()=>setUploadedPortrait("")} style={{fontSize:"0.72rem",color:"#f87171",background:"none",border:"1px solid #7f1d1d",borderRadius:"0.4rem",padding:"0.25rem 0.5rem",cursor:"pointer"}}>{t("Remove")}</button></div>}
