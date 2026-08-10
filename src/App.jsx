@@ -27,15 +27,15 @@ const DAMAGE_EMOJI={Fire:"🔥",Cold:"❄️",Poison:"☠️",Necrotic:"💀",Ra
 // Flavor descriptors for the AI portrait prompt — a seed-derived age bucket (so the same seed always
 // gets the same age, but regenerating picks a new one) and a physical-feature line per species so the
 // generator actually draws race-appropriate anatomy instead of a generic human face with a reskin.
-const AGE_DESCRIPTORS=["young adult in their twenties","adult in their thirties","middle-aged in their forties","weathered in their fifties","older with grey hair in their sixties","elderly and wise in their seventies"];
+const AGE_DESCRIPTORS=["adult in their late twenties","adult in their thirties","middle-aged in their forties","weathered in their fifties","older with grey hair in their sixties","elderly and wise in their seventies"];
 const RACE_PORTRAIT_DESC={
   Human:"human features",
   Elf:"slender build, elegant angular features, long pointed ears",
   Dwarf:"stocky muscular build, thick braided beard, weathered rugged face, broad nose",
-  Halfling:"small youthful round face, curly hair, big warm eyes",
+  Halfling:"short adult stature, round face, curly hair, big warm eyes",
   Orc:"green-grey skin, prominent lower tusks, heavy brow, muscular jaw",
   Goliath:"towering powerful build, stone-grey mottled skin, faint tribal markings",
-  Gnome:"small stature, large expressive eyes, pointed ears, mischievous smile",
+  Gnome:"short adult stature, large expressive eyes, pointed ears, mischievous smile",
   Tiefling:"small curved horns, faintly glowing eyes, reddish or unusual skin tone",
   Dragonborn:"draconic scaled skin, reptilian snout, no hair, colored scales",
   Aasimar:"glowing eyes, faint celestial halo of light, otherworldly beauty",
@@ -65,7 +65,7 @@ function buildPortraitPromptFromSheet(sh){
   const age=AGE_DESCRIPTORS[seed%AGE_DESCRIPTORS.length];
   const raceDesc=RACE_PORTRAIT_DESC[race]||"";
   const classDesc=CLASS_PORTRAIT_DESC[cls]||"";
-  return `${gender} ${race} ${cls}, ${age}, ${raceDesc}, ${classDesc}, fantasy character portrait, head and shoulders, bust shot, natural proportions, realistic detailed skin texture with visible pores and imperfections, not airbrushed, cinematic dramatic lighting, rich atmospheric blurred background, photorealistic, highly detailed, sharp focus on face`;
+  return `${gender} ${race} ${cls}, clearly an adult, mature facial features, ${age}, ${raceDesc}, ${classDesc}, fantasy character portrait, head and shoulders, bust shot, natural proportions, realistic detailed skin texture with visible pores and imperfections, not airbrushed, cinematic dramatic lighting, rich atmospheric blurred background, photorealistic, highly detailed, sharp focus on face`;
 }
 function pollinationsImageUrl(prompt,seed){
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=false&model=turbo`;
