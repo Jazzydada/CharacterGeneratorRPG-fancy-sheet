@@ -666,7 +666,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
     </div>)}
     {eqTab==="gear"&&(<div>
       <div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
-        <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.35rem"}}>{t("Currency")}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"0.35rem"}}><span style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Currency")}</span><span style={{fontSize:"0.72rem",fontWeight:700,color:G.gold}}>{(coinsTotalCP(coins)/100).toFixed(2)} GP</span></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.35rem"}}/></div>)}</div>
       </div>
       <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Starting equipment for {cn}:</div>
@@ -682,7 +682,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
     </div>)}
     {eqTab==="shop"&&(()=>{const gq=gearSearch.toLowerCase();const rows=ADVENTURING_GEAR.filter(([n])=>!gq||n.toLowerCase().includes(gq));return(<div style={{maxHeight:"55vh",overflowY:"auto",paddingRight:4}}>
       <div style={{marginBottom:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
-        <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.35rem"}}>{t("Currency")}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"0.35rem"}}><span style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>{t("Currency")}</span><span style={{fontSize:"0.72rem",fontWeight:700,color:G.gold}}>{(coinsTotalCP(coins)/100).toFixed(2)} GP</span></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.3rem"}}/></div>)}</div>
       </div>
       <div style={{display:"flex",gap:"0.35rem",marginBottom:"0.5rem",alignItems:"center"}}>
