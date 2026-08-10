@@ -23,14 +23,33 @@ function ORul(){return <div style={{display:"flex",alignItems:"center",gap:6,mar
 
 
 const DAMAGE_EMOJI={Fire:"🔥",Cold:"❄️",Poison:"☠️",Necrotic:"💀",Radiant:"✨",Acid:"🧪",Lightning:"⚡",Thunder:"💥",Force:"🔮",Psychic:"🧠",Bludgeoning:"🔨",Piercing:"🗡️",Slashing:"⚔️"};
+// Flavor descriptors for the AI portrait prompt — a seed-derived age bucket (so the same seed always
+// gets the same age, but regenerating picks a new one) and a physical-feature line per species so the
+// generator actually draws race-appropriate anatomy instead of a generic human face with a reskin.
+const AGE_DESCRIPTORS=["young adult in their twenties","adult in their thirties","middle-aged in their forties","weathered in their fifties","older with grey hair in their sixties","elderly and wise in their seventies"];
+const RACE_PORTRAIT_DESC={
+  Human:"human features",
+  Elf:"slender build, elegant angular features, long pointed ears",
+  Dwarf:"stocky muscular build, thick braided beard, weathered rugged face, broad nose",
+  Halfling:"small youthful round face, curly hair, big warm eyes",
+  Orc:"green-grey skin, prominent lower tusks, heavy brow, muscular jaw",
+  Goliath:"towering powerful build, stone-grey mottled skin, faint tribal markings",
+  Gnome:"small stature, large expressive eyes, pointed ears, mischievous smile",
+  Tiefling:"small curved horns, faintly glowing eyes, reddish or unusual skin tone",
+  Dragonborn:"draconic scaled skin, reptilian snout, no hair, colored scales",
+  Aasimar:"glowing eyes, faint celestial halo of light, otherworldly beauty",
+};
 function buildPortraitPromptFromSheet(sh){
-  const race=(sh.species||"human").split(" ")[0];
+  const race=(sh.species||"Human").split(" ")[0];
   const cls=(sh.classLevel||"Fighter").split(" ")[0];
   const gender=sh.gender||"male";
-  return `${gender} ${race} ${cls}, fantasy rpg character, head and shoulders portrait, bust shot, natural facial proportions, symmetrical face, detailed character art`;
+  const seed=sh.portraitSeed||1;
+  const age=AGE_DESCRIPTORS[seed%AGE_DESCRIPTORS.length];
+  const raceDesc=RACE_PORTRAIT_DESC[race]||"";
+  return `${gender} ${race} ${cls}, ${age}, ${raceDesc}, fantasy rpg character, head and shoulders portrait, bust shot, natural proportions, detailed character art`;
 }
 function pollinationsImageUrl(prompt,seed){
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=896&height=1024&seed=${seed}&nologo=true&enhance=false&model=flux`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=false&model=flux`;
 }
 const LEVEL_XP_5E=[0,0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
 function levelFromClassLevel(classLevel){
