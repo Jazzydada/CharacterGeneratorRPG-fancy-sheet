@@ -35,7 +35,7 @@ const DA={
   // identity fields
   "Character Name":"Karakternavn",
   "Auto-generated if empty":"Genereres automatisk hvis tom",
-  Gender:"Køn",
+  Gender:"Køn",total:"i alt",
   He:"Han",She:"Hun",Hen:"Hen",Neutral:"Neutral",
   male:"mand",female:"kvinde",
   Alignment:"Sindelag",
