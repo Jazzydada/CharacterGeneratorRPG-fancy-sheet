@@ -62,9 +62,9 @@ function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,sp
 }
 function Pip({filled,danger,size=6}){return <div style={{width:size,height:size,borderRadius:"50%",flexShrink:0,border:"0.75px solid "+(danger?"#8b0000":GOLD),background:filled?(danger?"#8b0000":INK+"cc"):"transparent"}}/>;}
 function CoinCircle({value,interactive,onChange,size=28,fontSize=7,bg}){
-  const circleStyle={width:size,height:size,borderRadius:"50%",border:"1.5px solid "+RULE,background:bg+"22",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color:INK};
+  const circleStyle={width:size,height:size,borderRadius:"50%",border:"1.5px solid "+RULE,background:bg+"22",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color:INK,textAlign:"center"};
   if(!interactive)return <div style={circleStyle}>{value}</div>;
-  return <input type="text" inputMode="numeric" pattern="[0-9]*" value={value} onChange={e=>{const n=e.target.value.replace(/[^0-9]/g,"");onChange(n===""?0:Math.max(0,parseInt(n,10)));}} style={{...circleStyle,padding:0,outline:"none",cursor:"text"}}/>;
+  return <input type="number" min={0} value={value} onChange={e=>onChange(Math.max(0,Number(e.target.value)||0))} style={{...circleStyle,padding:0,outline:"none",cursor:"text"}}/>;
 }
 function PRow({prof,name,ab,bonus}){return <div style={{display:"flex",alignItems:"center",gap:4,padding:"1.5px 0",borderBottom:"0.5px solid #ede3cc"}}><Pip filled={prof}/><span style={{flex:1,fontSize:7.5,color:INK,fontFamily:"sans-serif"}}>{name}</span><span style={{fontSize:7,color:GOLD,fontFamily:"sans-serif",marginRight:2}}>{ab}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"sans-serif",minWidth:18,textAlign:"right"}}>{bonus}</span></div>;}
 function PSec({title,children,style={}}){return <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px",...style}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{title}</div>{children}</div>;}
