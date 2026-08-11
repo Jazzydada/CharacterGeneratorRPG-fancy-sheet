@@ -35,7 +35,7 @@ const DA={
   // identity fields
   "Character Name":"Karakternavn",
   "Auto-generated if empty":"Genereres automatisk hvis tom",
-  Gender:"Køn",total:"i alt",
+  Gender:"Køn",total:"i alt","cont'd":"fortsat",
   He:"Han",She:"Hun",Hen:"Hen",Neutral:"Neutral",
   male:"mand",female:"kvinde",
   Alignment:"Sindelag",
@@ -692,13 +692,13 @@ function deductCost(coins,amt,denom){
 function addCost(coins,amt,denom){return coinsWithDeltaCP(coins,amt*COIN_TO_CP[denom]);}
 const EQUIP={Barbarian:["Greataxe","4x Handaxe","Explorers Pack","15 GP"],Bard:["Leather armor","Rapier","Diplomats Pack","Lute","Dagger","15 GP"],Cleric:["Chain shirt","Shield","Mace","Holy symbol","Priests Pack","10 GP"],Druid:["Leather armor","Shield","Scimitar","Druidic focus","Explorers Pack","9 GP"],Fighter:["Chain mail","Longsword","Shield","Light crossbow","20 bolts","Dungeoneers Pack","4 GP"],Monk:["Shortsword","10x Darts","Explorers Pack","5 GP"],Paladin:["Chain mail","Shield","Longsword","6x Javelins","Priests Pack","Holy symbol","9 GP"],Ranger:["Scale mail","Longbow","20 arrows","Shortsword x2","Dungeoneers Pack","Quiver","10 GP"],Rogue:["Leather armor","Rapier","Shortbow","20 arrows","Thieves tools","Burglars Pack","Dagger x2","8 GP"],Sorcerer:["Spear","2x Daggers","Arcane focus","Dungeoneers Pack","50 GP"],Warlock:["Leather armor","Dagger x2","Arcane focus","Scholars Pack","15 GP"],Wizard:["Quarterstaff","Spellbook","2x Daggers","Arcane focus","Scholars Pack","5 GP"]};
 function baseStartingGoldFor(cn){const last=(EQUIP[cn]||[]).slice(-1)[0]||"";const m=/^(\d+)\s*GP$/.exec(last);return m?parseInt(m[1],10):0;}
-// Starting Equipment at Higher Levels (PHB 2024 p.43), verified against the book.
-function higherLevelGold(level){
-  const roll10=()=>1+Math.floor(Math.random()*10);
-  if(level<=4)return 0;
-  if(level<=10)return 500+roll10()*25;
-  if(level<=16)return 5000+roll10()*250;
-  return 20000+roll10()*250;
+// House rule (deliberately not the PHB 2024 p.43 table): characters should generally end up
+// with roughly 50 GP per level, not the book's much larger high-level lump sums. Jitter it
+// +/-15% so characters of the same level don't all carry an identical purse.
+function higherLevelGold(level,cn){
+  const base=baseStartingGoldFor(cn);
+  const target=Math.round(level*50*(0.85+Math.random()*0.3));
+  return Math.max(0,target-base);
 }
 
 const ALL_FEATS={Alert:{desc:"Add Prof. Bonus to Initiative. Cannot be surprised while conscious.",cat:"General",pg:200},Crafter:{desc:"Proficiency in 3 artisan tools. Craft at 20% discount.",cat:"General",pg:200},Healer:{desc:"Battle Medic: expend a Healer's Kit use to let a creature within 5 ft spend a Hit Die (regain roll+Prof.Bonus HP). Reroll 1s on any healing die.",cat:"General",pg:201},Lucky:{desc:"3 luck points per long rest. Reroll any d20 and choose either result.",cat:"General",pg:201},"Magic Initiate":{desc:"Learn 2 cantrips and 1 1st-level spell from any class.",cat:"General",pg:201},"Savage Attacker":{desc:"Once per turn, reroll melee weapon damage and use either result.",cat:"General",pg:201},Skilled:{desc:"Gain proficiency in any 3 skills or tools.",cat:"General",skilled:true,pg:201},"Tavern Brawler":{desc:"Unarmed strikes use d4+STR. Bonus action grapple on hit.",cat:"General",pg:202},Tough:{desc:"HP maximum +2 per level (retroactive).",cat:"General",tough:true,pg:202},"War Caster":{desc:"Advantage on CON concentration saves. Cast spells as OA.",cat:"General",pg:209},"Great Weapon Master":{desc:"+1 STR. Heavy weapon hits deal +Prof.Bonus damage. Hew: bonus attack on crit/kill.",cat:"General",pg:204},Resilient:{desc:"Proficiency in one saving throw. +1 to that ability.",cat:"General",pg:206},Sentinel:{desc:"OA reduces speed to 0. OA on Disengage. React when ally targeted.",cat:"General",pg:207},Sharpshooter:{desc:"+1 DEX. Ranged attacks ignore half and three-quarters cover.",cat:"General",pg:207},"Inspiring Leader":{desc:"10-min speech: up to 6 allies gain temp HP = level+CHA.",cat:"General",pg:204},Skulker:{desc:"Hide when lightly obscured. Missed ranged attack does not reveal you.",cat:"General",pg:208},Durable:{desc:"+1 CON. Min HP from Hit Dice = 2x CON mod.",cat:"General",pg:203},"Spell Sniper":{desc:"Double range of attack spells. Ignore half and 3/4 cover.",cat:"General",pg:208},"Polearm Master":{desc:"Bonus butt-end attack (1d4). OA when enemy enters reach.",cat:"General",pg:206},Actor:{desc:"+1 CHA. Advantage on Deception/Performance checks to impersonate. Mimic sounds and speech.",cat:"General",pg:202},

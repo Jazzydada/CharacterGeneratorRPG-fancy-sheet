@@ -14,6 +14,52 @@ const pgStyle={background:PA,padding:"11mm 10mm 9mm",maxWidth:"210mm",margin:"0 
 const MM_PX=96/25.4;
 const PAGE_W_PX=210*MM_PX;
 const PAGE_H_PX=297*MM_PX;
+const GOLD_LINE_RE=/^\d+\s*gp$/i;
+// Starting gold from EQUIP is tracked by the Currency counter now, so it shouldn't also
+// show up as a plain-text item line in the equipment/inventory list — that just duplicates it.
+function nonGoldItems(arr){return(arr||[]).filter(l=>!GOLD_LINE_RE.test(l.trim()));}
+const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
+// Heuristic: past this many total known/prepared spells, the Features+Spells+Backstory
+// page gets too dense to fit on one sheet of paper, so we spill the rest of the spell
+// list (and the backstory box) onto a dedicated continuation page instead of clipping it.
+const SPELL_SPLIT_THRESHOLD=16;
+function splitSpellsByLevel(spellsByLevel,maxCount){
+  const page1={},page2={};let count=0;
+  for(let li=0;li<10;li++){
+    const arr=spellsByLevel[li]||[];
+    if(!arr.length){page1[li]=arr;page2[li]=arr;continue;}
+    if(count>=maxCount){page1[li]=[];page2[li]=arr;continue;}
+    if(count+arr.length<=maxCount){page1[li]=arr;page2[li]=[];count+=arr.length;}
+    else{const room=maxCount-count;page1[li]=arr.slice(0,room);page2[li]=arr.slice(room);count=maxCount;}
+  }
+  return[page1,page2];
+}
+function SpellLevelCards({sh,spellsByLevel,interactive,spPrep,setSpPrep}){
+  const{spellSlots}=sh;
+  return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=>{
+    const canTogglePrep=interactive&&sh.cn==="Wizard"&&li>0&&!sp.source;
+    const unprepared=canTogglePrep?(spPrep?.[sp.name]===false):sp.prepared===false;
+    return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
+  })}</div></div>;})}</>;
+}
+function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,spPrep,setSpPrep}){
+  return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Spells")+" ("+t("cont'd")+")"}</div></div>
+    </div>
+    <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
+      <SpellLevelCards sh={sh} spellsByLevel={spellsByLevel} interactive={interactive} spPrep={spPrep} setSpPrep={setSpPrep}/>
+    </div>
+    <div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
+      <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
+      <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
+        <div style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
+      </div>
+    </div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
+  </div>);
+}
 function Pip({filled,danger,size=6}){return <div style={{width:size,height:size,borderRadius:"50%",flexShrink:0,border:"0.75px solid "+(danger?"#8b0000":GOLD),background:filled?(danger?"#8b0000":INK+"cc"):"transparent"}}/>;}
 function PRow({prof,name,ab,bonus}){return <div style={{display:"flex",alignItems:"center",gap:4,padding:"1.5px 0",borderBottom:"0.5px solid #ede3cc"}}><Pip filled={prof}/><span style={{flex:1,fontSize:7.5,color:INK,fontFamily:"sans-serif"}}>{name}</span><span style={{fontSize:7,color:GOLD,fontFamily:"sans-serif",marginRight:2}}>{ab}</span><span style={{fontSize:8,fontWeight:700,fontFamily:"sans-serif",minWidth:18,textAlign:"right"}}>{bonus}</span></div>;}
 function PSec({title,children,style={}}){return <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px",...style}}><div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{title}</div>{children}</div>;}
@@ -283,10 +329,10 @@ function Page1({sh}){
   </div>);
 }
 
-function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep}){
-  const{name,classLevel,subclass,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel,isCaster}=sh;
+function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep,spellsByLevelOverride,hideBackstory}){
+  const{name,classLevel,subclass,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel:fullSpellsByLevel,isCaster}=sh;
+  const spellsByLevel=spellsByLevelOverride||fullSpellsByLevel;
   const classLevelSub=classLevel+(subclass?" ("+subclass+")":"");
-  const LVLL=["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"];
   // Parse the features text into readable entries (bold the label before the colon).
   const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
   const DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
@@ -329,26 +375,22 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
     {isCaster&&<div style={{flex:"0 1 auto",overflow:"hidden"}}>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
       <div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{t("Spell Slots")}{sh.cn==="Wizard"&&sh.preparedMax>0&&(()=>{
-        const preparedCount=[1,2,3,4,5,6,7,8,9].flatMap(l=>spellsByLevel[l]||[]).filter(s=>!s.source).filter(s=>interactive?(spPrep?.[s.name]!==false):s.prepared!==false).length;
+        const preparedCount=[1,2,3,4,5,6,7,8,9].flatMap(l=>fullSpellsByLevel[l]||[]).filter(s=>!s.source).filter(s=>interactive?(spPrep?.[s.name]!==false):s.prepared!==false).length;
         return <span style={{textTransform:"none",fontWeight:400,color:preparedCount>sh.preparedMax?"#c0392b":"#555",letterSpacing:"normal"}}> · {t("Prepared")}: {preparedCount}/{sh.preparedMax}</span>;
       })()}</div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${spellSlots.filter(s=>s>0).length||1},1fr)`,gap:4,textAlign:"center"}}>
         {spellSlots.map((cnt,i)=>{if(!(cnt>0))return null;const lvl=i+1;const used=usedSlots?.[lvl]||0;return(<div key={i}><div style={{...capL,textAlign:"center",fontSize:5.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=>{const isAvailable=j<(cnt-used);return <div key={j} onClick={interactive?()=>setUsedSlots(prev=>{const cur=prev[lvl]||0;return{...prev,[lvl]:isAvailable?Math.min(cnt,cur+1):Math.max(0,cur-1)};}):undefined} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:isAvailable?GOLD_L:"#fff",cursor:interactive?"pointer":undefined}}/>;})}</div></div>);})}
       </div>
     </div>
-    {LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=>{
-      const canTogglePrep=interactive&&sh.cn==="Wizard"&&li>0&&!sp.source;
-      const unprepared=canTogglePrep?(spPrep?.[sp.name]===false):sp.prepared===false;
-      return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
-    })}</div></div>;})}
+    <SpellLevelCards sh={sh} spellsByLevel={spellsByLevel} interactive={interactive} spPrep={spPrep} setSpPrep={setSpPrep}/>
     </div>}
-    <div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
+    {!hideBackstory&&<div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
       <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
       <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
         <div style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
       </div>
-    </div>
+    </div>}
     <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
@@ -385,8 +427,8 @@ function parsePackLine(line){
   if(!PACK_CONTENTS[base])return null;
   return{name:m[1],contents:m[2].split(", ")};
 }
-function Page3({sh,forms,totalPages}){
-  const invLines=(sh.inventory||"").split("\n").filter(Boolean);
+function Page3({sh,forms,totalPages,pageNum=3}){
+  const invLines=(sh.inventory||"").split("\n").filter(Boolean).filter(l=>!GOLD_LINE_RE.test(l.trim()));
   const packLines=[],normalLines=[];
   invLines.forEach(l=>{const p=parsePackLine(l);if(p)packLines.push(p);else normalLines.push(l);});
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -394,8 +436,13 @@ function Page3({sh,forms,totalPages}){
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
     </div>
     <div style={{flex:"0 0 auto",marginBottom:8}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span><span style={{fontSize:8,fontFamily:"serif"}}>{(()=>{const c=sh.coins||{};const parts=[["pp","PP"],["gp","GP"],["ep","EP"],["sp","SP"],["cp","CP"]].filter(([k])=>c[k]).map(([k,l])=>c[k]+" "+l);const mixed=parts.length>1;const totalGp=coinsTotalCP(c)/100;const totalStr=Number.isInteger(totalGp)?String(totalGp):totalGp.toFixed(2);return<span style={{fontWeight:700}}>{parts.length?parts.join(" "):"0 GP"}{mixed&&<span style={{color:GOLD,marginLeft:6}}>({totalStr} GP {t("total")})</span>}</span>;})()}</span></div>
-      <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"55mm":"110mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,border:"1px solid "+RULE,borderRadius:4,background:"#fff",padding:"5px 8px"}}>
+        <span style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif"}}>{t("Currency")}</span>
+        <div style={{display:"flex",gap:10}}>{[["cp","CP","#b87333"],["sp","SP","#aaa"],["ep","EP","#8fbc8f"],["gp","GP","#d4af37"],["pp","PP","#e5e4e2"]].map(([k,l,c])=><div key={l} style={{textAlign:"center"}}><div style={{width:24,height:24,borderRadius:"50%",border:"1.5px solid "+RULE,background:c+"22",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:INK}}>{(sh.coins&&sh.coins[k])||0}</div><div style={{...capL,textAlign:"center",marginTop:2,fontSize:5.5}}>{l}</div></div>)}</div>
+        {(()=>{const c=sh.coins||{};const mixed=[c.cp,c.sp,c.ep,c.gp,c.pp].filter(Boolean).length>1;if(!mixed)return null;const totalGp=coinsTotalCP(c)/100;const totalStr=Number.isInteger(totalGp)?String(totalGp):totalGp.toFixed(2);return<span style={{fontSize:7.5,fontWeight:700,fontFamily:"serif",color:INK,whiteSpace:"nowrap"}}>= {totalStr} GP</span>;})()}
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
+      <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
           {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
           {Array.from({length:forms.length?4:10}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
@@ -411,7 +458,7 @@ function Page3({sh,forms,totalPages}){
     {forms.length>0&&<div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>2?"1fr 1fr":"1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
       {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
     </div>}
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 3 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
 
@@ -670,7 +717,7 @@ function EquipmentPanel({cn,level,dm,sm,pb,equipped,equipItem,coins,setCoins,ac,
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"0.4rem"}}>{["cp","sp","ep","gp","pp"].map(d=><div key={d}><div style={{fontSize:"0.6rem",color:G.dim,textTransform:"uppercase",textAlign:"center",marginBottom:"0.2rem"}}>{d}</div><input type="number" min={0} value={coins[d]||0} onChange={e=>setCoins(c=>({...c,[d]:Math.max(0,Number(e.target.value))}))} style={{...inp,textAlign:"center",padding:"0.35rem"}}/></div>)}</div>
       </div>
       <div style={{fontSize:"0.75rem",color:G.muted,marginBottom:"0.5rem"}}>Starting equipment for {cn}:</div>
-      {EQUIP[cn].map((item,i)=><EquipRow key={i} item={item} equipped={equipped} onEquip={()=>equipItem(item)}/>)}
+      {nonGoldItems(EQUIP[cn]).map((item,i)=><EquipRow key={i} item={item} equipped={equipped} onEquip={()=>equipItem(item)}/>)}
       {purchases.length>0&&<div style={{marginTop:"0.75rem",padding:"0.5rem 0.65rem",borderRadius:"0.6rem",background:"#1e293b",border:"1px solid #334155"}}>
         <div style={{fontSize:"0.68rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"0.4rem"}}>{t("Purchased")}</div>
         <div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>{purchases.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
@@ -774,7 +821,7 @@ export default function App(){
   const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
   const [anotes,setAnotes]=useState("");
-  const [inventory,setInventory]=useState(()=>expandPacks(EQUIP[initChar.cn]||[]).join("\n"));
+  const [inventory,setInventory]=useState(()=>expandPacks(nonGoldItems(EQUIP[initChar.cn])).join("\n"));
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
   const [masteredWeapons,setMasteredWeapons]=useState(()=>defaultMasteredWeaponsForClass(initChar.cn));
   const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
@@ -811,7 +858,7 @@ export default function App(){
   const [bonds,setBonds]=useState("");
   const [flaws,setFlaws]=useState("");
   const [backstory,setBackstory]=useState("");
-  const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+higherLevelGold(initChar.level),pp:0}));
+  const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+higherLevelGold(initChar.level,initChar.cn),pp:0}));
   const [purchases,setPurchases]=useState([]);
   const [ownedExtra,setOwnedExtra]=useState([]);
   const [selSp,setSelSp]=useState({});
@@ -1032,7 +1079,7 @@ export default function App(){
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
   React.useEffect(()=>{setSelSavant([]);setSelLore([]);},[cn,sub]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(EQUIP[newCn]||[]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(nonGoldItems(EQUIP[newCn])).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1142,7 +1189,7 @@ export default function App(){
     setSavedChars([]);
     setActiveSlotId(null);
   }
-  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+higherLevelGold(next))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
+  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+higherLevelGold(next,cn))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
 
   // START PATCH RAND-SPELLS — helper: pick random spells for a caster on randomize
   function randomizeSpellsForCharacter(className,charLevel,spellAbilityMod){
@@ -1237,12 +1284,12 @@ export default function App(){
     else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs,rg));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
-    setInventory(expandPacks(EQUIP[useCn]||[]).join("\n"));
+    setInventory(expandPacks(nonGoldItems(EQUIP[useCn])).join("\n"));
     const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(useCn,rolls);
     setRstats(ns);setMstats(ns);setSmode("Rolled");
     // Respect 2024 feat budget: ASI levels 4/8/12/16/19 (+Fighter 6/14, +Rogue 10, +1 Origin for Human)
     const rlvl=lvLocked?level:rl;
-    setCoins({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(useCn)+higherLevelGold(rlvl),pp:0});
+    setCoins({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(useCn)+higherLevelGold(rlvl,useCn),pp:0});
     setPurchases([]);
     setSelWildShapes(useCn==="Druid"&&rlvl>=2?pickWildShapeForms(rlvl):[]);
     const asiCount=[4,8,12,16,19].filter(x=>x<=rlvl).length+(useCn==="Fighter"?[6,14].filter(x=>x<=rlvl).length:useCn==="Rogue"&&rlvl>=10?1:0)+(useSp==="Human"?1:0);
@@ -1470,7 +1517,7 @@ export default function App(){
     // Sneak Attack dice (PHB 2024 p.129, Rogue Features table): ceil(Rogue level/2), tracked per the character's actual Rogue level in case of multiclassing.
     const rogueLevel=cn==="Rogue"?lv1e:(mc&&cn2==="Rogue"?lv2c:0);
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:EQUIP[cn].join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:nonGoldItems(EQUIP[cn]).join("\n"),equippedGear,acBreakdown,resource:nextResource,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
@@ -1482,9 +1529,13 @@ export default function App(){
     const page3Forms=[];
     const extraFormPages=hasFormsPage?[true]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
-    const totalPages=3+extraFormPages.length+(wildMagic?1:0);
+    const totalSpellCount=Object.values(sheet.spellsByLevel||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
+    const needsSpellOverflow=sheet.isCaster&&totalSpellCount>SPELL_SPLIT_THRESHOLD;
+    const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,SPELL_SPLIT_THRESHOLD):[null,null];
+    const overflowOffset=needsSpellOverflow?1:0;
+    const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
     const fitScale=Math.min(1,(vw-24)/PAGE_W_PX);
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep}/><Page3 sh={sheet} forms={page3Forms} totalPages={totalPages}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span></div><div className="sheet-fit-outer" style={{width:PAGE_W_PX*fitScale,height:PAGE_H_PX*totalPages*fitScale,overflow:"hidden",margin:"0 auto"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${fitScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} hideBackstory={needsSpellOverflow}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
