@@ -1483,7 +1483,6 @@ export default function App(){
     if((speciesData.traits||[]).includes("Dwarven Resilience"))nextResistances.push("Poison");
     if((speciesData.traits||[]).includes("Celestial Resistance"))nextResistances.push("Necrotic","Radiant");
     if(sp==="Tiefling")nextResistances.push(tieflingLegacyData.resist);
-    if(mechFeats.has("Infernal Constitution"))nextResistances.push("Cold","Poison");
     const resistances=[...new Set(nextResistances)];
     // Same resistances, but grouped by the exact (localized) trait label they appear under in
     // Features & Traits, so Page2 can show the matching badge right on that trait's card.
@@ -1492,7 +1491,6 @@ export default function App(){
     if((speciesData.traits||[]).includes("Dwarven Resilience"))resistanceByTrait[da?(TRAIT_DA["Dwarven Resilience"]):"Dwarven Resilience"]=["Poison"];
     if((speciesData.traits||[]).includes("Celestial Resistance"))resistanceByTrait[da?(TRAIT_DA["Celestial Resistance"]):"Celestial Resistance"]=["Necrotic","Radiant"];
     if(sp==="Tiefling")resistanceByTrait[da?(TRAIT_DA["Fiendish Legacy"]):"Fiendish Legacy"]=[tieflingLegacyData.resist];
-    if(mechFeats.has("Infernal Constitution"))resistanceByTrait["Infernal Constitution"]=["Cold","Poison"];
     const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
     const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
     const metamagicLine=(isSorcerer&&selMetamagic.length)?selMetamagic.map(n=>{const d=METAMAGIC_OPTIONS[n];return "• "+n+" ("+d[2]+"): "+d[da?1:0];}).join("\n"):"";
