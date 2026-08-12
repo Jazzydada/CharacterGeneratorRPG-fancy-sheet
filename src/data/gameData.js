@@ -455,6 +455,7 @@ const RESOURCE_DESC={
   "Sorcery Points":["Spend to fuel Metamagic options, or convert to/from spell slots (2 points = a level 1 slot, more for higher levels).","Brug til at drive Metamagic-muligheder, eller konverter til/fra spell-slots (2 points = en niveau 1-slot, flere for højere niveauer)."],
   "Second Wind":["Bonus Action: regain 1d10 plus your Fighter level in Hit Points.","Bonus-handling: genopret 1d10 plus dit Fighter-niveau i Hit Points."],
   "Action Surge":["Take one additional action on your turn, except the Magic action.","Tag én ekstra handling på din tur, undtagen Magic action."],
+  "Psionic Energy Dice":["Expend a die to fuel Psi-Bolstered Knack, Psychic Whispers, and other Soulknife powers. Regain one on a Short Rest, all on a Long Rest.","Brug en terning til at drive Psi-Bolstered Knack, Psychic Whispers og andre Soulknife-evner. Genopret én ved en Short Rest, alle ved en Long Rest."],
 };
 // PHB 2024 p.129 (Fighter Features table): 1 use until level 17, then 2 (but still only once per turn).
 function fighterActionSurgeUses(level){return level>=17?2:1;}
