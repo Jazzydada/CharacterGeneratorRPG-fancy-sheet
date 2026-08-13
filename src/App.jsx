@@ -1475,7 +1475,7 @@ export default function App(){
     const tieflingTraitDetail={
       "Fiendish Legacy":tieflingLegacy+" — "+(da?("Resistance mod "+trDamageType(tieflingLegacyData.resist)+"-skade, kender "+tieflingLegacyData.cantrip+"-cantrippen. Niv 3: "+tieflingLegacyData.lvl3+". Niv 5: "+tieflingLegacyData.lvl5+". ("+tieflingLegacyAbility+")"):("Resistance to "+tieflingLegacyData.resist+" damage, knows the "+tieflingLegacyData.cantrip+" cantrip. Lvl 3: "+tieflingLegacyData.lvl3+". Lvl 5: "+tieflingLegacyData.lvl5+". ("+tieflingLegacyAbility+")")),
     };
-    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=(sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:sp==="Tiefling"?tieflingTraitDetail[tr]:null)||TRAIT_DESC[tr]?.[da?1:0];return d?label+": "+d:label;}).join("\n");
+    const racialTraitsTxt=(speciesData.traits||[]).map(tr=>{const label=da?(TRAIT_DA[tr]||tr):tr;const d=(sp==="Dragonborn"?dragonTraitDetail[tr]:sp==="Goliath"?goliathTraitDetail[tr]:sp==="Tiefling"?tieflingTraitDetail[tr]:null)||TRAIT_DESC[tr]?.[da?1:0];const pgSuffix=TRAIT_PG[tr]?" (PHB p."+TRAIT_PG[tr]+")":"";return(d?label+": "+d:label)+pgSuffix;}).join("\n");
     // Damage resistances the character actually has, for the small badge shown on the HP panel —
     // each entry's full rules text already appears in Features & Traits (racialTraitsTxt above).
     const nextResistances=[];
