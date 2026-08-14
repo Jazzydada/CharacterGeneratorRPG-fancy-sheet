@@ -347,6 +347,21 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
   const ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
   const ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
   const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom|Giant Ancestry|Kæmpe-afstamning|Adrenaline Rush|Adrenalinsus|Stonecunning|Stenkløgt|Breath Weapon|Åndevåben)\b/;
+  // Some subclass/racial features spell out their daily use count in their own description
+  // (e.g. "Uses = WIS mod (min 1), regain all on Long Rest" / "Bruges = WIS-mod (min 1), ...")
+  // rather than being a fixed Proficiency-Bonus pool like the ALWAYS_CARD_NAMES set below —
+  // parse that out so those get a pip tracker too instead of sitting there as plain text.
+  const USE_MOD_RE=/(?:Uses|Bruges)\s*=\s*([A-Za-z]{3})[\s-]*mod/i;
+  const MIN1_RE=/\(min\s*1\)/i;
+  const computeTrackedUses=(line,rest)=>{
+    if(ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line))return sh.profBonus||0;
+    const m=USE_MOD_RE.exec(rest);
+    if(m&&AB.includes(m[1].toUpperCase())){
+      const modVal=mf((sh.finalStats||{})[m[1].toUpperCase()]??10);
+      return MIN1_RE.test(rest)?Math.max(1,modVal):Math.max(0,modVal);
+    }
+    return 0;
+  };
   const cardEntries=[],textEntries=[];
   let forceCard=false;
   featEntries.forEach(line=>{
@@ -354,7 +369,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
     const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
     if(isHead){textEntries.push(line);forceCard=ALWAYS_CARD_SECTIONS.test(line);return;}
     const rest=ci>0?line.slice(ci+1):"";
-    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)||ACTION_RE.test(rest)?cardEntries:textEntries).push(line);
+    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)||ACTION_RE.test(rest)||USE_MOD_RE.test(rest)?cardEntries:textEntries).push(line);
   });
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
@@ -367,7 +382,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         const ci=line.indexOf(":");
         const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
         const rest=ci>0?line.slice(ci+1).trim():"";
-        const trackedUses=ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line)?(sh.profBonus||0):0;
+        const trackedUses=computeTrackedUses(line,rest);
         const resistTypes=sh.resistanceByTrait?.[label]||[];
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
           <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
