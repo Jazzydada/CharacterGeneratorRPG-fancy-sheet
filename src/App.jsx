@@ -1,7 +1,7 @@
 import React,{useMemo,useState,useRef,useCallback,useEffect}from"react";
 import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVertical,Package,Lock,Unlock,RefreshCw}from"lucide-react";
 import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
-import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC}from"./sheet_da.js";
+import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC,CLASS_FEATURE_PG}from"./sheet_da.js";
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
@@ -1461,7 +1461,7 @@ export default function App(){
       const pickNote=name==="Hunter's Prey"&&selHunterPrey?" — "+t("Chosen")+": "+selHunterPrey:name==="Defensive Tactics"&&selDefensiveTactics?" — "+t("Chosen")+": "+selDefensiveTactics:name==="Primal Companion"&&selBeastType?" — "+t("Chosen")+": "+selBeastType:"";
       return trSc(name)+" ("+subLabel+"): "+trSc(txt[da?1:0])+psiNote+pickNote+(subPg?" (PHB p."+subPg+")":"");
     }):[];
-    const classFeaturesTxt=[...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return d?label+": "+d:label;}),...subFeatureLines].filter(Boolean).join("\n");
+    const classFeaturesTxt=[...(cls.features||[]).filter(f=>!(sub&&/^Subclass\b/i.test(f))).filter(f=>featureLevel(f)<=level).map(f=>{const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];const cfPg=CLASS_FEATURE_PG[cn]?.[f];const pgSuffix=cfPg&&!/PHB p\./.test(d||"")?" (PHB p."+cfPg+")":"";return(d?label+": "+d:label)+pgSuffix;}),...subFeatureLines].filter(Boolean).join("\n");
     const breathDC=8+cm+pb;
     const dragonTraitDetail={
       "Draconic Ancestry":dragonColor+" — "+trDamageType(DRACONIC_ANCESTRY[dragonColor]),

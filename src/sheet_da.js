@@ -125,6 +125,13 @@ export const TRAIT_DESC={
 };
 
 // PHB page reference for each species trait (2024 edition, Character Origins chapter).
+// Base class feature page refs (PHB 2024), keyed by class then by the exact string used in
+// CLASSES[cn].features — several feature names (Subclass Lvl3, Channel Divinity, Extra Attack, ...)
+// are reused across classes on different pages, so this can't be a single flat lookup like TRAIT_PG.
+// Only classes verified against the book so far are filled in; others fall back to no citation.
+export const CLASS_FEATURE_PG={
+  Cleric:{"Divine Order Lvl1":70,"Channel Divinity":70,"Subclass Lvl3":71,"Blessed Strikes Lvl7":71},
+};
 export const TRAIT_PG={
   "Adrenaline Rush":195,"Brave":193,"Breath Weapon":187,"Celestial Resistance":186,"Celestial Revelation":186,
   "Damage Resistance":187,"Darkvision 120 ft":188,"Darkvision 60 ft":186,"Draconic Ancestry":187,"Draconic Flight":187,
