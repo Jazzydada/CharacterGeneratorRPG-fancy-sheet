@@ -451,9 +451,13 @@ function parsePackLine(line){
 function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,inventory,setInventory}){
   const displayCoins=coins||sh.coins||{};
   const displayInventory=(inventory!==undefined?inventory:sh.inventory)||"";
-  const invLines=displayInventory.split("\n").filter(Boolean).filter(l=>!GOLD_LINE_RE.test(l.trim()));
-  const packLines=[],normalLines=[];
-  invLines.forEach(l=>{const p=parsePackLine(l);if(p)packLines.push(p);else normalLines.push(l);});
+  // Keep blank lines here (only strip literal gold lines) so the editable textarea below doesn't
+  // eat a bare Enter keypress on re-render — filtering blanks is fine for the read-only pack
+  // checklist, but it silently erases the new empty line a typing user just created.
+  const rawLines=displayInventory.split("\n").filter(l=>!GOLD_LINE_RE.test(l.trim()));
+  const packLines=[],packLinesRaw=[],normalLinesRaw=[];
+  rawLines.forEach(l=>{const p=parsePackLine(l);if(p){packLines.push(p);packLinesRaw.push(l);}else normalLinesRaw.push(l);});
+  const normalLines=normalLinesRaw.filter(Boolean);
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
@@ -465,20 +469,20 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
         {(()=>{const c=displayCoins;const mixed=[c.cp,c.sp,c.ep,c.gp,c.pp].filter(Boolean).length>1;if(!mixed)return null;const totalGp=coinsTotalCP(c)/100;const totalStr=Number.isInteger(totalGp)?String(totalGp):totalGp.toFixed(2);return<span style={{fontSize:7.5,fontWeight:700,fontFamily:"serif",color:INK,whiteSpace:"nowrap"}}>= {totalStr} GP</span>;})()}
       </div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
-      {interactive&&setInventory?
-      <textarea value={displayInventory} onChange={e=>setInventory(e.target.value)} placeholder={t("Backpack, rope, torches...")} style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",width:"100%",boxSizing:"border-box",fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",outline:"none",resize:"none",overflow:"auto"}}/>:
       <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {interactive&&setInventory?
+        <textarea value={normalLinesRaw.join("\n")} onChange={e=>setInventory([e.target.value,...packLinesRaw].join("\n"))} placeholder={t("Backpack, rope, torches...")} style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",border:"none",outline:"none",resize:"none",width:"100%",height:"100%",minHeight:0,minWidth:0,overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:
         <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
           {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
           {Array.from({length:forms.length?4:10}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
-        </div>
-        <div style={{fontSize:7.4,lineHeight:1.5,fontFamily:"sans-serif",color:"#222"}}>
+        </div>}
+        <div style={{fontSize:7.4,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",overflow:"auto",minHeight:0,minWidth:0}}>
           {packLines.map((p,i)=><div key={i} style={{marginBottom:4,breakInside:"avoid"}}>
             <div style={{fontWeight:700,color:"#a37a1c"}}>{p.name}</div>
             {p.contents.map((c,j)=><div key={j} style={{paddingLeft:5}}>✓ {c}</div>)}
           </div>)}
         </div>
-      </div>}
+      </div>
     </div>
     {forms.length>0&&<div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>2?"1fr 1fr":"1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
       {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
