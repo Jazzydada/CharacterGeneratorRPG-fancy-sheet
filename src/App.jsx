@@ -466,7 +466,7 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
       </div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
       {interactive&&setInventory?
-      <textarea value={invLines.join("\n")} onChange={e=>setInventory(e.target.value)} placeholder={t("Backpack, rope, torches...")} style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",width:"100%",boxSizing:"border-box",fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",outline:"none",resize:"none",overflow:"auto"}}/>:
+      <textarea value={displayInventory} onChange={e=>setInventory(e.target.value)} placeholder={t("Backpack, rope, torches...")} style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",width:"100%",boxSizing:"border-box",fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",outline:"none",resize:"none",overflow:"auto"}}/>:
       <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
           {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
