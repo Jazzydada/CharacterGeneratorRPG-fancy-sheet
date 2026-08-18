@@ -466,7 +466,7 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
       </div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
       <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {interactive&&setInventory?<textarea value={normalLines.join("\n")} onChange={e=>setInventory([e.target.value,...packLinesRaw].filter(Boolean).join("\n"))} placeholder={t("Backpack, rope, torches...")} style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",border:"none",outline:"none",resize:"none",width:"100%",height:"100%",background:"transparent"}}/>:
+        {interactive&&setInventory?<textarea value={normalLines.join("\n")} onChange={e=>setInventory([e.target.value,...packLinesRaw].filter(Boolean).join("\n"))} placeholder={t("Backpack, rope, torches...")} style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",border:"none",outline:"none",resize:"none",width:"100%",height:"100%",minHeight:0,minWidth:0,overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:
         <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
           {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
           {Array.from({length:forms.length?4:10}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
