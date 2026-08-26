@@ -5,7 +5,7 @@ import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEAT
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
-import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,bgStartingGold,bgStartingGear,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -850,7 +850,7 @@ export default function App(){
   const [playerName,setPlayerName]=useState("");
   const [sub,setSub]=useState("");
   const [anotes,setAnotes]=useState("");
-  const [inventory,setInventory]=useState(()=>expandPacks(nonGoldItems(EQUIP[initChar.cn])).join("\n"));
+  const [inventory,setInventory]=useState(()=>expandPacks([...nonGoldItems(EQUIP[initChar.cn]),...bgStartingGear(initChar.bg)]).join("\n"));
   const [equipped,setEquipped]=useState(()=>({...CLASS_DEFAULTS[initChar.cn]}));
   const [masteredWeapons,setMasteredWeapons]=useState(()=>defaultMasteredWeaponsForClass(initChar.cn));
   const [selWeapons,setSelWeapons]=useState(()=>(CW[initChar.cn]||[]).filter(n=>n!=="Unarmed strike"));
@@ -887,7 +887,7 @@ export default function App(){
   const [bonds,setBonds]=useState("");
   const [flaws,setFlaws]=useState("");
   const [backstory,setBackstory]=useState("");
-  const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+higherLevelGold(initChar.level,initChar.cn),pp:0}));
+  const [coins,setCoins]=useState(()=>({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(initChar.cn)+bgStartingGold(initChar.bg)+higherLevelGold(initChar.level,initChar.cn),pp:0}));
   const [purchases,setPurchases]=useState([]);
   const [ownedExtra,setOwnedExtra]=useState([]);
   const [selSp,setSelSp]=useState({});
@@ -1109,7 +1109,7 @@ export default function App(){
   React.useEffect(()=>{if(mc&&lv2>level-1)setLv2(Math.max(1,level-1));},[mc,lv2,level]);
   React.useEffect(()=>{setSelSavant([]);setSelLore([]);},[cn,sub]);
 
-  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks(nonGoldItems(EQUIP[newCn])).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
+  function changeClass(newCn){setCn(newCn);setSub("");setClassOrder(defaultOrder(newCn));setInventory(expandPacks([...nonGoldItems(EQUIP[newCn]),...bgStartingGear(bg)]).join("\n"));setSelInv([]);setSelRituals([]);setSelTomeCantrips([]);setSelSp({});setSpPrep({});setUsedSlots({});setMstats(assignArr(newCn));setSelSk(CLASSES[newCn].sc.slice(0,CLASSES[newCn].ns));setEquipped({...CLASS_DEFAULTS[newCn]});setMasteredWeapons(defaultMasteredWeaponsForClass(newCn));setSelWeapons((CW[newCn]||[]).filter(n=>n!=="Unarmed strike"));setSelExpertise([]);setSelWildShapes(newCn==="Druid"&&level>=2?pickWildShapeForms(level):[]);setPurchases([]);setOwnedExtra([]);setSelMetamagic([]);}
 
   function buildW(){
     const weapons=[];const wname=equipped.weapon;const weapProfs=WEAPON_PROF[cn]||[];
@@ -1219,7 +1219,7 @@ export default function App(){
     setSavedChars([]);
     setActiveSlotId(null);
   }
-  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+higherLevelGold(next,cn))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
+  function levelUpCharacter(){setLevel(prev=>{if(prev>=20){alert("Already level 20.");return prev;}const next=prev+1;const minGoldCP=(baseStartingGoldFor(cn)+bgStartingGold(bg)+higherLevelGold(next,cn))*100;setCoins(c=>coinsTotalCP(c)<minGoldCP?{cp:0,sp:0,ep:0,gp:Math.round(minGoldCP/100),pp:0}:c);return next;});}
 
   // START PATCH RAND-SPELLS — helper: pick random spells for a caster on randomize
   function randomizeSpellsForCharacter(className,charLevel,spellAbilityMod){
@@ -1314,12 +1314,12 @@ export default function App(){
     else{if(!clsLocked){setCn(rc);setSelSk(CLASSES[rc].sc.slice(0,CLASSES[rc].ns));setEquipped({...CLASS_DEFAULTS[rc]});setMasteredWeapons(defaultMasteredWeaponsForClass(rc));}if(!spLocked)setSp(rs);setBg(rb);setCname(pickName(spLocked?sp:rs,rg));}
     if(!lvLocked)setLevel(rl);
     const useBg=rb,useSp=spLocked?sp:rs,useCn=clsLocked?cn:rc;
-    setInventory(expandPacks(nonGoldItems(EQUIP[useCn])).join("\n"));
+    setInventory(expandPacks([...nonGoldItems(EQUIP[useCn]),...bgStartingGear(useBg)]).join("\n"));
     const rolls=Array.from({length:6},r4d6);const ns=assignByPriority(useCn,rolls);
     setRstats(ns);setMstats(ns);setSmode("Rolled");
     // Respect 2024 feat budget: ASI levels 4/8/12/16/19 (+Fighter 6/14, +Rogue 10, +1 Origin for Human)
     const rlvl=lvLocked?level:rl;
-    setCoins({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(useCn)+higherLevelGold(rlvl,useCn),pp:0});
+    setCoins({cp:0,sp:0,ep:0,gp:baseStartingGoldFor(useCn)+bgStartingGold(useBg)+higherLevelGold(rlvl,useCn),pp:0});
     setPurchases([]);
     setSelWildShapes(useCn==="Druid"&&rlvl>=2?pickWildShapeForms(rlvl):[]);
     const asiCount=[4,8,12,16,19].filter(x=>x<=rlvl).length+(useCn==="Fighter"?[6,14].filter(x=>x<=rlvl).length:useCn==="Rogue"&&rlvl>=10?1:0)+(useSp==="Human"?1:0);
@@ -1547,7 +1547,7 @@ export default function App(){
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
     // Soulknife Psionic Energy Dice (PHB 2024 p.135): number/die-size scale with Rogue level, starting at 3.
     const nextResourcePED=(sub==="Soulknife"&&rogueLevel>=3)?{name:"Psionic Energy Dice",uses:psiEnergyDiceCount(rogueLevel),note:psiEnergyDieSize(rogueLevel),recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC["Psionic Energy Dice"]}:null;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:nonGoldItems(EQUIP[cn]).join("\n"),equippedGear,acBreakdown,resource:nextResource||nextResourcePED,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:[...nonGoldItems(EQUIP[cn]),...bgStartingGear(bg)].join("\n"),equippedGear,acBreakdown,resource:nextResource||nextResourcePED,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
@@ -1765,7 +1765,7 @@ export default function App(){
 
       <div style={{marginBottom:"0.85rem",background:"rgba(251,191,36,0.08)",border:"1px solid #fbbf2455",borderRadius:"0.85rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.7rem",fontWeight:800,color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>2. {t("Background")}</div>
-        <GFld label={t("Background")}><select value={bg} onChange={e=>setBg(e.target.value)} style={inp}>{Object.keys(BGS).map(b=><option key={b}>{b}</option>)}</select><div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.25rem",fontWeight:700}}>{t("Origin Feat")}: {bgo.feat}</div><div style={{fontSize:"0.73rem",color:G.muted,fontStyle:"italic"}}>{bgo.flavor}</div></div></GFld>
+        <GFld label={t("Background")}><select value={bg} onChange={e=>{const newBg=e.target.value;const oldGear=bgStartingGear(bg);setInventory(prev=>{const lines=prev.split("\n");oldGear.forEach(item=>{const idx=lines.indexOf(item);if(idx>=0)lines.splice(idx,1);});return expandPacks([...lines.filter(Boolean),...bgStartingGear(newBg)]).join("\n");});setCoins(c=>({...c,gp:Math.max(0,(c.gp||0)+(bgStartingGold(newBg)-bgStartingGold(bg)))}));setBg(newBg);}} style={inp}>{Object.keys(BGS).map(b=><option key={b}>{b}</option>)}</select><div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.25rem",fontWeight:700}}>{t("Origin Feat")}: {bgo.feat}</div><div style={{fontSize:"0.73rem",color:G.muted,fontStyle:"italic"}}>{bgo.flavor}</div></div></GFld>
       </div>
 
       <div style={{background:"rgba(167,139,250,0.08)",border:"1px solid #a78bfa55",borderRadius:"0.85rem",padding:"0.75rem"}}>
