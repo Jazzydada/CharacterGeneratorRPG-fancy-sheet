@@ -8,7 +8,7 @@ const RULES_VERSION="2024";
 // without prop-threading. App sets CURRENT_LANG at the top of each render.
 let CURRENT_LANG=(typeof localStorage!=="undefined"&&localStorage.getItem("cg_lang"))||"da";
 const DA={
-  "Blessed Strikes":"Velsignede slag","Divine Strike":"Divine Strike","Potent Spellcasting":"Potent Spellcasting",
+  "Blessed Strikes":"Velsignede slag","Divine Strike":"Divine Strike","Potent Spellcasting":"Potent Spellcasting","Base roll":"Grundslag",
   // header
   "D&D 2024-inspired quick builder":"D&D 2024 hurtig karakterbygger",
   "Generate and customize your RPG character with stats, spells and gear — in seconds.":"Byg og tilpas din RPG-karakter med stats, spells og udstyr — på få sekunder.",
