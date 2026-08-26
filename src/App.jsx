@@ -1082,6 +1082,35 @@ export default function App(){
   function togLore(name){setSelLore(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=loreBudget)return prev;return[...prev,name];});}
   function togRitual(name){setSelRituals(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=2)return prev;return[...prev,name];});}
   function togTomeCantrip(name){setSelTomeCantrips(prev=>{if(prev.includes(name))return prev.filter(n=>n!==name);if(prev.length>=3)return prev;return[...prev,name];});}
+  // Sliding the level slider down should also drop choices that no longer fit — not just stop
+  // offering new ones. Mirrors the same budget/limit expressions each picker already shows as
+  // "X / Y", so a selection that's now over budget gets trimmed back down to the new limit.
+  useEffect(()=>{
+    if(level<3&&sub)setSub("");
+    const maxExp=expertiseSlots(cn,level);
+    setSelExpertise(prev=>prev.length>maxExp?prev.slice(0,maxExp):prev);
+    const maxForms=cn==="Druid"?wildShapeKnownForms(level):0;
+    setSelWildShapes(prev=>prev.length>maxForms?prev.slice(0,maxForms):prev);
+    setSelInv(prev=>prev.length>invLimit?prev.slice(0,invLimit):prev);
+    setSelMetamagic(prev=>prev.length>metamagicLimit?prev.slice(0,metamagicLimit):prev);
+    setSelManeuvers(prev=>prev.length>maneuverLimit?prev.slice(0,maneuverLimit):prev);
+    setSelSavant(prev=>prev.length>savantBudget?prev.slice(0,savantBudget):prev);
+    setSelLore(prev=>prev.length>loreBudget?prev.slice(0,loreBudget):prev);
+    const asiSlotsFor=(c,l)=>[4,8,12,16,19].filter(x=>x<=l).length+(c==="Fighter"?[6,14].filter(x=>x<=l).length:c==="Rogue"&&l>=10?1:0);
+    const featBudgetNow=asiSlotsFor(cn,lv1e)+(mc&&cn2?asiSlotsFor(cn2,lv2c):0)+(sp==="Human"?1:0);
+    const FS_UNLOCK_NOW={Fighter:1,Paladin:2,Ranger:2};
+    const canFSNow=(FS_UNLOCK_NOW[cn]&&lv1e>=FS_UNLOCK_NOW[cn])||(mc&&FS_UNLOCK_NOW[cn2]&&lv2c>=FS_UNLOCK_NOW[cn2]);
+    const canEpicBoonNow=lv1e>=19||(mc&&lv2c>=19);
+    setFeatMap(prev=>{
+      const names=Object.keys(prev).filter(n=>prev[n]);
+      if(!names.length)return prev;
+      const fs=[],eb=[],rest=[];
+      names.forEach(n=>{const cat=ALL_FEATS[n]?.cat;(cat==="Fighting Style"?fs:cat==="Epic Boon"?eb:rest).push(n);});
+      const keep=new Set([...(canFSNow?fs:[]),...(canEpicBoonNow?eb:[]),...rest.slice(0,featBudgetNow)]);
+      if(keep.size===names.length)return prev;
+      const next={};keep.forEach(n=>next[n]=true);return next;
+    });
+  },[level,cn,cn2,mc,lv1e,lv2c,sp,sub,expertiseSlots,wildShapeKnownForms,invLimit,metamagicLimit,maneuverLimit,savantBudget,loreBudget]);
   const ct2=mc?CTYPE[cn2]:null;
   const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
   const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
