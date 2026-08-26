@@ -902,6 +902,8 @@ export default function App(){
   const [lessonsFeat,setLessonsFeat]=useState("");
   const [classOrder,setClassOrder]=useState(()=>defaultOrder(initChar.cn));
   const [blessedStrikes,setBlessedStrikes]=useState("Divine Strike");
+  const [guided,setGuided]=useState(false);
+  const [gstep,setGstep]=useState(0);
   const [selRituals,setSelRituals]=useState([]);
   const [selTomeCantrips,setSelTomeCantrips]=useState([]);
   const [spPrep,setSpPrep]=useState({});
@@ -1686,7 +1688,7 @@ export default function App(){
     </div>);
   };
 
-  const identityPanel=(
+  const identityBasicsPanel=(
     <div>
       <GFld label={t("Character Name")}><input value={cname} onChange={e=>setCname(e.target.value)} placeholder={t("Auto-generated if empty")} style={inp}/></GFld>
       <GFld label={t("Player Name")}><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder={t("Who is playing this character?")} style={inp}/></GFld>
@@ -1698,8 +1700,12 @@ export default function App(){
       </GFld>}
       <GFld label={t("Alignment")}><select value={align} onChange={e=>setAlign(e.target.value)} style={inp}>{["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"].map(a=><option key={a}>{a}</option>)}</select></GFld>
       <GFld label={"Level: "+level}><input type="range" min="1" max="20" value={level} onChange={e=>{setLevel(Number(e.target.value));levelLockedRef.current=true;setLevelLocked(true);}} style={{width:"100%",accentColor:G.gold}}/><div style={{display:"flex",justifyContent:"space-between",fontSize:"0.7rem",color:G.dim}}><span>1</span><span>10</span><span>20</span></div></GFld>
+    </div>
+  );
 
-      <div style={{marginTop:"1rem",marginBottom:"0.85rem",background:"rgba(96,165,250,0.08)",border:"1px solid #60a5fa55",borderRadius:"0.85rem",padding:"0.75rem"}}>
+  const classPanel=(
+    <div>
+      <div style={{marginBottom:"0.85rem",background:"rgba(96,165,250,0.08)",border:"1px solid #60a5fa55",borderRadius:"0.85rem",padding:"0.75rem"}}>
         <div style={{fontSize:"0.7rem",fontWeight:800,color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>1. {t("Class")}</div>
         <GFld label={t("Class")}><select value={cn} onChange={e=>{changeClass(e.target.value);classLockedRef.current=true;setClassLocked(true);}} style={inp}>{Object.keys(CLASSES).map(c=><option key={c}>{c}</option>)}</select>{cls&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#60a5fa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Class Features")}</div>{cls.features.filter(f=>{const m=f.match(/Lvl(\d+)/);return(m?parseInt(m[1],10):1)<=level;}).map((f,i)=>{const da=CURRENT_LANG==="da";const label=da?(FEATURE_DA[f]||f):f;const d=FEATURE_DESC[f]?.[da?1:0];return <div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.25rem"}}>- <b style={{color:"#cbd5e1"}}>{label}</b>{d?<span style={{color:G.dim}}> — {d}</span>:""}</div>;})}</div>}
           {CLASS_ORDER[cn]&&<div style={{marginTop:"0.6rem",background:"#2d1a00",border:"1px solid "+G.gold,borderRadius:"0.75rem",padding:"0.6rem 0.7rem"}}><div style={{fontSize:"0.78rem",color:G.gold,marginBottom:"0.4rem",fontWeight:800,display:"flex",alignItems:"center",gap:"0.4rem"}}>⚡ {t("Choose")}: {CLASS_ORDER[cn].label}</div><div style={{display:"flex",flexDirection:"column",gap:"0.35rem"}}>{CLASS_ORDER[cn].options.map(([nm,desc,cantrip])=>{const sel=classOrder===nm;return <button key={nm} onClick={()=>setClassOrder(nm)} style={{textAlign:"left",padding:"0.45rem 0.6rem",borderRadius:"0.6rem",border:"1px solid "+(sel?G.gold:"#334155"),background:sel?"#4a3800":"#0f172a",cursor:"pointer"}}><div style={{fontSize:"0.8rem",fontWeight:700,color:sel?G.gold:"#e2e8f0"}}>{sel?"✓ ":""}{nm}{cantrip?<span style={{fontSize:"0.6rem",marginLeft:"0.4rem",color:"#4ade80",border:"1px solid #4ade80",borderRadius:"0.3rem",padding:"0 0.3rem"}}>+{cantrip} cantrip</span>:""}</div><div style={{fontSize:"0.7rem",color:G.muted,marginTop:"1px"}}>{desc[CURRENT_LANG==="da"?1:0]}</div></button>;})}</div></div>}
@@ -1762,14 +1768,18 @@ export default function App(){
           </div>
         </div>}
       </div>
+    </div>
+  );
 
+  const originPanel=(
+    <div>
       <div style={{marginBottom:"0.85rem",background:"rgba(251,191,36,0.08)",border:"1px solid #fbbf2455",borderRadius:"0.85rem",padding:"0.75rem"}}>
-        <div style={{fontSize:"0.7rem",fontWeight:800,color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>2. {t("Background")}</div>
+        <div style={{fontSize:"0.7rem",fontWeight:800,color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>1. {t("Background")}</div>
         <GFld label={t("Background")}><select value={bg} onChange={e=>{const newBg=e.target.value;const oldGear=bgStartingGear(bg);setInventory(prev=>{const lines=prev.split("\n");oldGear.forEach(item=>{const idx=lines.indexOf(item);if(idx>=0)lines.splice(idx,1);});return expandPacks([...lines.filter(Boolean),...bgStartingGear(newBg)]).join("\n");});setCoins(c=>({...c,gp:Math.max(0,(c.gp||0)+(bgStartingGold(newBg)-bgStartingGold(bg)))}));setBg(newBg);}} style={inp}>{Object.keys(BGS).map(b=><option key={b}>{b}</option>)}</select><div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.25rem",fontWeight:700}}>{t("Origin Feat")}: {bgo.feat}</div><div style={{fontSize:"0.73rem",color:G.muted,fontStyle:"italic"}}>{bgo.flavor}</div></div></GFld>
       </div>
 
       <div style={{background:"rgba(167,139,250,0.08)",border:"1px solid #a78bfa55",borderRadius:"0.85rem",padding:"0.75rem"}}>
-        <div style={{fontSize:"0.7rem",fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>3. {t("Species")}</div>
+        <div style={{fontSize:"0.7rem",fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.65rem"}}>2. {t("Species")}</div>
         <GFld label={t("Species")}><select value={sp} onChange={e=>{setSp(e.target.value);speciesLockedRef.current=true;setSpeciesLocked(true);}} style={inp}>{Object.keys(SPECIES).map(s=><option key={s}>{s}</option>)}</select>{speciesData&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}><div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Species Traits")}</div>{speciesData.traits.map((tr,i)=>{const dd=CURRENT_LANG==="da";const label=dd?(TRAIT_DA[tr]||tr):tr;const desc=TRAIT_DESC[tr]?.[dd?1:0];return <div key={i} style={{fontSize:"0.73rem",color:G.muted,marginBottom:"0.25rem"}}>- <b style={{color:"#cbd5e1"}}>{label}</b>{desc?<span style={{color:G.dim}}> — {desc}</span>:""}{TRAIT_PG[tr]?<span style={{color:G.dimmer}}> (PHB p.{TRAIT_PG[tr]})</span>:""}</div>;})}</div>}
           {sp==="Dragonborn"&&<div style={{marginTop:"0.4rem",background:G.card,borderRadius:"0.65rem",padding:"0.5rem 0.65rem"}}>
             <div style={{fontSize:"0.65rem",color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.3rem",fontWeight:700}}>{t("Draconic Ancestry")}</div>
@@ -2056,7 +2066,7 @@ export default function App(){
   </div>);
 
   const creatorPanel=(<div className="mob-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
-    <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Identity")}</div>{identityPanel}</div>
+    <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}><div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Identity")}</div>{identityBasicsPanel}{classPanel}{originPanel}</div>
     <div style={{background:"rgba(15,23,42,0.8)",border:"1px solid "+G.border,borderRadius:"1rem",padding:"1rem"}}>
       <div style={{fontSize:"0.75rem",fontWeight:700,color:G.gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"0.75rem"}}>{t("Ability Scores & Skills")}</div>
       {statsPanel}
@@ -2067,6 +2077,18 @@ export default function App(){
     </div>
   </div>);
   const panelContent={overview:buildOverview(),creator:creatorPanel,spells:spellsPanel,equipment:<EquipmentPanel cn={cn} level={level} dm={dm} sm={sm} pb={pb} equipped={equipped} equipItem={equipItem} coins={coins} setCoins={setCoins} ac={ac} masteredWeapons={masteredWeapons} setMasteredWeapons={setMasteredWeapons} selWeapons={selWeapons} setSelWeapons={setSelWeapons} inventory={inventory} setInventory={setInventory} purchases={purchases} setPurchases={setPurchases} ownedExtra={ownedExtra} setOwnedExtra={setOwnedExtra}/>,notes:notesPanel};
+  // Guided Creation: the same panels as above, walked through one at a time in the PHB 2024
+  // Chapter 2 order (Class -> Origin -> Ability Scores -> Feats -> Details -> Equipment) instead
+  // of all at once — aimed at new players who find the single-page builder overwhelming.
+  const guidedSteps=[
+    {title:t("Class"),content:classPanel},
+    {title:t("Origin"),content:originPanel},
+    {title:t("Ability Scores & Skills"),content:statsPanel},
+    {title:t("Feats"),content:buildFeatsPanel()},
+    {title:t("Details"),content:identityBasicsPanel},
+    {title:t("Personality & Notes"),content:notesPanel},
+    {title:t("Equipment & Weapons"),content:panelContent.equipment},
+  ];
   const panelMeta={overview:{title:t("Combat Overview"),icon:<Shield size={15}/>},creator:{title:t("Character Creator"),icon:<Shield size={15}/>},spells:{title:t("Spells"),icon:<Zap size={15}/>},equipment:{title:t("Equipment & Weapons"),icon:<Package size={15}/>},notes:{title:t("Personality & Notes"),icon:<BookOpen size={15}/>}};
 
   return(<div className="mob-page-pad" style={{minHeight:"100vh",background:G.bg,color:"#f1f5f9",padding:"1.5rem",fontFamily:"system-ui,sans-serif",userSelect:"none"}}>
@@ -2093,6 +2115,7 @@ export default function App(){
             <div style={{display:"flex",border:"1px solid "+G.border,borderRadius:"0.6rem",overflow:"hidden"}}>
               {[["da","DA"],["en","EN"]].map(([code,label])=><button key={code} onClick={()=>switchLang(code)} style={{padding:"0.4rem 0.6rem",fontSize:"0.75rem",fontWeight:800,border:"none",cursor:"pointer",background:lang===code?G.gold:"transparent",color:lang===code?G.bg:G.muted}}>{label}</button>)}
             </div>
+            <GBtn onClick={()=>{setGuided(v=>!v);setGstep(0);}} gold={guided}>{guided?"✓ ":""}{t("Guided Creation")}</GBtn>
             <GBtn onClick={rand} gold><RotateCcw size={15}/> {t("Randomize")}</GBtn>
             <GBtn onClick={()=>{setInteractiveMode(false);genSheet("sheet");}} amber><Printer size={15}/> {t("Generate Sheet")}</GBtn>
             <GBtn onClick={()=>{setInteractiveMode(true);genSheet("sheet");}}><Shield size={15}/> {t("Interactive Sheet")}</GBtn>
@@ -2169,9 +2192,23 @@ export default function App(){
         </div>
       </div>
 
+      {guided?(()=>{const step=guidedSteps[gstep];const last=gstep>=guidedSteps.length-1;return(
+      <div style={{background:"rgba(15,23,42,0.9)",border:"1px solid "+G.gold,borderRadius:"1rem",padding:"1rem 1.25rem"}}>
+        <div style={{fontSize:"0.7rem",color:G.dim,marginBottom:"0.5rem"}}>{t("Follow the book's character creation steps one at a time — good for a first character.")}</div>
+        <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.85rem"}}>{guidedSteps.map((s,i)=><div key={i} onClick={()=>setGstep(i)} title={s.title} style={{flex:1,height:"6px",borderRadius:"3px",cursor:"pointer",background:i<=gstep?G.gold:G.border}}/>)}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"0.85rem"}}>
+          <span style={{fontSize:"0.7rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t("Step")} {gstep+1} {t("of")} {guidedSteps.length}</span>
+          <span style={{fontSize:"1.1rem",fontWeight:800,color:G.gold}}>{step.title}</span>
+        </div>
+        <div>{step.content}</div>
+        <div style={{display:"flex",justifyContent:"space-between",gap:"0.5rem",marginTop:"1rem",paddingTop:"0.85rem",borderTop:"1px solid "+G.border}}>
+          <GBtn onClick={()=>setGstep(g=>Math.max(0,g-1))} disabled={gstep===0}>{t("Back")}</GBtn>
+          {last?<GBtn gold onClick={()=>setGuided(false)}>{t("Finish")}</GBtn>:<GBtn gold onClick={()=>setGstep(g=>Math.min(guidedSteps.length-1,g+1))}>{t("Next")}</GBtn>}
+        </div>
+      </div>);})():
       <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
         {panelOrder.filter(pid=>pid!=="overview").filter(pid=>pid!=="spells"||isCaster).map(pid=>(<CPanel key={pid} title={panelMeta[pid].title} icon={panelMeta[pid].icon} collapsed={!!collapsed[pid]} onToggle={()=>togCollapsed(pid)} dragging={draggingPanel===pid} onDragStart={()=>onDragStart(pid)} onDrop={()=>onDrop(pid)}>{panelContent[pid]}</CPanel>))}
-      </div>
+      </div>}
     </div>
   </div>);
 }
