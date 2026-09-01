@@ -2115,6 +2115,7 @@ export default function App(){
   // of all at once — aimed at new players who find the single-page builder overwhelming.
   const guidedSteps=[
     {title:t("Class"),content:classPanel},
+    ...(isCaster?[{title:t("Spells"),content:spellsPanel}]:[]),
     {title:t("Origin"),content:originPanel},
     {title:t("Ability Scores & Skills"),content:statsPanel},
     {title:t("Feats"),content:buildFeatsPanel()},
