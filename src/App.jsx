@@ -951,7 +951,82 @@ export default function App(){
   const [collapsed,setCollapsed]=useState({overview:true,creator:true,spells:true,equipment:true,notes:true});
   const [draggingPanel,setDraggingPanel]=useState(null);
   const [vw,setVw]=useState(typeof window!=="undefined"?window.innerWidth:1200);
-  const [sheetZoom,setSheetZoom]=useState(1);
+  // Photo-viewer-style pinch-zoom-and-pan for the generated sheet: sheetViewRef is the source of
+  // truth (mutated directly on every touch/mouse move for smoothness, no stale-closure risk in the
+  // gesture handlers), sheetRenderTick just forces a re-render to paint it.
+  const sheetViewRef=useRef({scale:1,x:0,y:0});
+  const [,setSheetRenderTick]=useState(0);
+  const bumpSheetRender=()=>setSheetRenderTick(n=>n+1);
+  const sheetGestureRef=useRef(null);
+  const sheetContainerRef=useRef(null);
+  const sheetFitScale=()=>Math.max(0.55,Math.min(1,(vw-24)/PAGE_W_PX));
+  const resetSheetView=()=>{sheetViewRef.current={scale:sheetFitScale(),x:0,y:0};bumpSheetRender();};
+  useEffect(()=>{if(view==="sheet")resetSheetView();},[view]);
+  useEffect(()=>{
+    const el=sheetContainerRef.current;
+    if(!el||view!=="sheet")return;
+    const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    const mid=(a,b)=>({x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2});
+    const local=pt=>{const r=el.getBoundingClientRect();return{x:pt.x-r.left,y:pt.y-r.top};};
+    const clampScale=s=>Math.max(0.35,Math.min(3.5,s));
+    function onTouchStart(e){
+      if(e.touches.length===2){
+        const cur=sheetViewRef.current;
+        sheetGestureRef.current={mode:"pinch",startDist:dist(e.touches[0],e.touches[1]),startScale:cur.scale,startLocal:local(mid(e.touches[0],e.touches[1])),startX:cur.x,startY:cur.y};
+      }else if(e.touches.length===1){
+        sheetGestureRef.current={mode:"pan",lastX:e.touches[0].clientX,lastY:e.touches[0].clientY};
+      }
+    }
+    function onTouchMove(e){
+      const g=sheetGestureRef.current;
+      if(!g)return;
+      if(e.cancelable)e.preventDefault();
+      if(g.mode==="pinch"&&e.touches.length===2){
+        const newScale=clampScale(g.startScale*(dist(e.touches[0],e.touches[1])/g.startDist));
+        const m=local(mid(e.touches[0],e.touches[1]));
+        const contentX=(g.startLocal.x-g.startX)/g.startScale,contentY=(g.startLocal.y-g.startY)/g.startScale;
+        sheetViewRef.current={scale:newScale,x:m.x-contentX*newScale,y:m.y-contentY*newScale};
+        bumpSheetRender();
+      }else if(g.mode==="pan"&&e.touches.length===1){
+        const dx=e.touches[0].clientX-g.lastX,dy=e.touches[0].clientY-g.lastY;
+        g.lastX=e.touches[0].clientX;g.lastY=e.touches[0].clientY;
+        const cur=sheetViewRef.current;
+        sheetViewRef.current={...cur,x:cur.x+dx,y:cur.y+dy};
+        bumpSheetRender();
+      }
+    }
+    function onTouchEnd(e){
+      if(e.touches.length===0)sheetGestureRef.current=null;
+      else if(e.touches.length===1)sheetGestureRef.current={mode:"pan",lastX:e.touches[0].clientX,lastY:e.touches[0].clientY};
+    }
+    function onMouseDown(e){sheetGestureRef.current={mode:"pan",lastX:e.clientX,lastY:e.clientY};}
+    function onMouseMove(e){
+      const g=sheetGestureRef.current;
+      if(!g||g.mode!=="pan"||e.buttons!==1)return;
+      const dx=e.clientX-g.lastX,dy=e.clientY-g.lastY;
+      g.lastX=e.clientX;g.lastY=e.clientY;
+      const cur=sheetViewRef.current;
+      sheetViewRef.current={...cur,x:cur.x+dx,y:cur.y+dy};
+      bumpSheetRender();
+    }
+    function onMouseUp(){sheetGestureRef.current=null;}
+    el.addEventListener("touchstart",onTouchStart,{passive:true});
+    el.addEventListener("touchmove",onTouchMove,{passive:false});
+    el.addEventListener("touchend",onTouchEnd,{passive:true});
+    el.addEventListener("touchcancel",onTouchEnd,{passive:true});
+    el.addEventListener("mousedown",onMouseDown);
+    window.addEventListener("mousemove",onMouseMove);
+    window.addEventListener("mouseup",onMouseUp);
+    return()=>{
+      el.removeEventListener("touchstart",onTouchStart);
+      el.removeEventListener("touchmove",onTouchMove);
+      el.removeEventListener("touchend",onTouchEnd);
+      el.removeEventListener("touchcancel",onTouchEnd);
+      el.removeEventListener("mousedown",onMouseDown);
+      window.removeEventListener("mousemove",onMouseMove);
+      window.removeEventListener("mouseup",onMouseUp);
+    };
+  },[view]);
   useEffect(()=>{const onR=()=>setVw(window.innerWidth);window.addEventListener("resize",onR);return()=>window.removeEventListener("resize",onR);},[]);
   const [classLocked,setClassLocked]=useState(false);
   const [speciesLocked,setSpeciesLocked]=useState(false);
@@ -1600,9 +1675,10 @@ export default function App(){
     const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,SPELL_SPLIT_THRESHOLD):[null,null];
     const overflowOffset=needsSpellOverflow?1:0;
     const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
-    const fitScale=Math.max(0.55,Math.min(1,(vw-24)/PAGE_W_PX));
-    const effScale=fitScale*sheetZoom;
-    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center",flexWrap:"wrap"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span><div style={{display:"flex",alignItems:"center",gap:4,marginLeft:"auto"}}><button onClick={()=>setSheetZoom(z=>Math.max(0.6,+(z-0.2).toFixed(2)))} title={t("Zoom out")} style={{width:26,height:26,borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:14,fontWeight:700}}>−</button><span style={{fontSize:11,color:"#8a6a2a",minWidth:34,textAlign:"center"}}>{Math.round(sheetZoom*100)}%</span><button onClick={()=>setSheetZoom(z=>Math.min(2.4,+(z+0.2).toFixed(2)))} title={t("Zoom in")} style={{width:26,height:26,borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:14,fontWeight:700}}>+</button>{sheetZoom!==1&&<button onClick={()=>setSheetZoom(1)} style={{padding:"4px 8px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:11}}>{t("Reset")}</button>}</div></div><div className="sheet-fit-outer" style={{width:"100%",maxWidth:PAGE_W_PX*fitScale,height:"min(80vh, "+(PAGE_H_PX*totalPages*effScale)+"px)",overflow:"auto",WebkitOverflowScrolling:"touch",margin:"0 auto",touchAction:"pan-x pan-y pinch-zoom"}}><div className="print-area sheet-fit-inner" style={{transform:`scale(${effScale})`,transformOrigin:"top left"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
+    const fitScale=sheetFitScale();
+    const view_=sheetViewRef.current;
+    const zoomPct=Math.round((view_.scale/fitScale)*100);
+    return <div><div className="no-print" style={{display:"flex",gap:8,padding:"8px 14px",background:"#1a0e00",alignItems:"center",flexWrap:"wrap"}}><button onClick={()=>setView("gen")} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:12,fontWeight:600}}>{t("Back")}</button><button onClick={downloadImagePdf} disabled={exportingImg} style={{padding:"5px 14px",borderRadius:4,border:"1px solid #4ade80",background:"#14532d",color:"#4ade80",cursor:exportingImg?"wait":"pointer",fontSize:12,fontWeight:600,opacity:exportingImg?0.6:1}}>{exportingImg?t("Generating…"):t("Download PDF")}</button><span style={{fontSize:11,color:"#8a6a2a"}}>{totalPages+" "+t("pages")}</span><div style={{display:"flex",alignItems:"center",gap:4,marginLeft:"auto"}}><button onClick={()=>{sheetViewRef.current={...view_,scale:Math.max(0.35,+(view_.scale-fitScale*0.2).toFixed(3))};bumpSheetRender();}} title={t("Zoom out")} style={{width:26,height:26,borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:14,fontWeight:700}}>−</button><span style={{fontSize:11,color:"#8a6a2a",minWidth:34,textAlign:"center"}}>{zoomPct}%</span><button onClick={()=>{sheetViewRef.current={...view_,scale:Math.min(3.5,+(view_.scale+fitScale*0.2).toFixed(3))};bumpSheetRender();}} title={t("Zoom in")} style={{width:26,height:26,borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:14,fontWeight:700}}>+</button>{zoomPct!==100&&<button onClick={resetSheetView} style={{padding:"4px 8px",borderRadius:4,border:"1px solid #c9a84c",background:"#2d1a00",color:"#fcd34d",cursor:"pointer",fontSize:11}}>{t("Reset")}</button>}</div></div><div ref={sheetContainerRef} className="sheet-fit-outer" style={{width:"100%",height:"75vh",overflow:"hidden",position:"relative",background:"#0a0a0a",touchAction:"none",cursor:"grab"}}><div className="print-area sheet-fit-inner" style={{transform:`translate(${view_.x}px,${view_.y}px) scale(${view_.scale})`,transformOrigin:"top left",willChange:"transform"}}><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</div></div><style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style></div>;
   }
 
   const buildOverview=()=>{
