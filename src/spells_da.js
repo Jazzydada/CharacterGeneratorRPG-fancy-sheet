@@ -100,7 +100,7 @@ export const SDD={
   "Arms of Hadar":"STR save eller 2d6 nekrotisk, ingen reaktioner.",
   "Hex":"+1d6 nekrotisk på våben- og magiangreb.",
   "Hellish Rebuke":"DEX save eller 2d10 ild.",
-  "Witch Bolt":"1d12 lyn, oprethold for 1d12 pr. tur.",
+  "Witch Bolt":"2d12 lyn, oprethold for 1d12 pr. tur.",
   "Darkness":"15-ft magisk mørke.",
   "Vampiric Touch":"3d6 nekrotisk; få halvdelen som HP.",
   "Hunger of Hadar":"20-ft mørketomrum: 2d6 kulde + 2d6 syre.",
