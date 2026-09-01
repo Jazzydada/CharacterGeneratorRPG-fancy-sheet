@@ -1565,6 +1565,7 @@ export default function App(){
       selLore.forEach(name=>addBonus(name,sub));
     }
     if(sp==="Tiefling"){
+      addBonus("Thaumaturgy","Otherworldly Presence");
       const lg=TIEFLING_LEGACY[tieflingLegacy];
       addBonus(lg.cantrip,"Fiendish Legacy");
       if(level>=3)addBonus(lg.lvl3,"Fiendish Legacy");
