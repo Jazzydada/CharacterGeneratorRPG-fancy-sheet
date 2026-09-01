@@ -1011,11 +1011,28 @@ export default function App(){
       bumpSheetRender();
     }
     function onMouseUp(){sheetGestureRef.current=null;}
+    // Desktop mice/trackpads have no touch events at all, so without this the pan/pinch handlers above
+    // are unreachable there. Plain wheel scrolls pan the view; Ctrl/Cmd+wheel (also what browsers report
+    // for a trackpad pinch gesture) zooms anchored under the cursor, mirroring the touch pinch math.
+    function onWheel(e){
+      e.preventDefault();
+      const cur=sheetViewRef.current;
+      if(e.ctrlKey||e.metaKey){
+        const newScale=clampScale(cur.scale*(1-e.deltaY*0.01));
+        const m=local({x:e.clientX,y:e.clientY});
+        const contentX=(m.x-cur.x)/cur.scale,contentY=(m.y-cur.y)/cur.scale;
+        sheetViewRef.current={scale:newScale,x:m.x-contentX*newScale,y:m.y-contentY*newScale};
+      }else{
+        sheetViewRef.current={...cur,x:cur.x-e.deltaX,y:cur.y-e.deltaY};
+      }
+      bumpSheetRender();
+    }
     el.addEventListener("touchstart",onTouchStart,{passive:true});
     el.addEventListener("touchmove",onTouchMove,{passive:false});
     el.addEventListener("touchend",onTouchEnd,{passive:true});
     el.addEventListener("touchcancel",onTouchEnd,{passive:true});
     el.addEventListener("mousedown",onMouseDown);
+    el.addEventListener("wheel",onWheel,{passive:false});
     window.addEventListener("mousemove",onMouseMove);
     window.addEventListener("mouseup",onMouseUp);
     return()=>{
@@ -1024,6 +1041,7 @@ export default function App(){
       el.removeEventListener("touchend",onTouchEnd);
       el.removeEventListener("touchcancel",onTouchEnd);
       el.removeEventListener("mousedown",onMouseDown);
+      el.removeEventListener("wheel",onWheel);
       window.removeEventListener("mousemove",onMouseMove);
       window.removeEventListener("mouseup",onMouseUp);
     };
