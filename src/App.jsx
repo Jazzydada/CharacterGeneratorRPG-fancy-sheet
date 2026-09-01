@@ -1537,6 +1537,20 @@ export default function App(){
         res[lvl].push(mk(name,bonusLabel));
       });
     }
+    // Warlocks cast every leveled spell they know using a Pact Magic slot, and all Pact Magic slots
+    // are always the same level (PHB 2024 p.154), so a known spell of a lower level is always cast
+    // "upcast" at the pact slot level — display it under that level instead of its base spell level.
+    if(cn==="Warlock"&&!mc){
+      const pactLvl=maxSpellLevel("warlock",warlockLvl);
+      Object.keys(res).forEach(k=>{
+        const li=Number(k);
+        if(li>0&&li!==pactLvl){
+          if(!res[pactLvl])res[pactLvl]=[];
+          res[pactLvl].push(...res[li]);
+          delete res[li];
+        }
+      });
+    }
     // Merge Pact of the Tome cantrips/rituals and Magic Initiate spells into the same list, tagged with their source.
     const addBonus=(name,label)=>{
       const lvl=spellLevelOf(name);if(lvl===undefined)return;
