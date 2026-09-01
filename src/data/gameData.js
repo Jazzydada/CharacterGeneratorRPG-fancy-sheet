@@ -11,6 +11,7 @@ const DA={
   "Blessed Strikes":"Velsignede slag","Divine Strike":"Divine Strike","Potent Spellcasting":"Potent Spellcasting","Base roll":"Grundslag",
   "Guided Creation":"Guidet oprettelse","Free-form":"Frit valg","Step":"Trin","of":"af","Next":"Næste","Finish":"Afslut","Details":"Detaljer","Origin":"Oprindelse","Back":"Tilbage",
   "Zoom out":"Zoom ud","Zoom in":"Zoom ind","Reset":"Nulstil",
+  "Long Rest":"Long Rest","Exhaustion":"Udmattelse","Long rest complete. Resources restored, exhaustion reduced by 1.":"Long rest gennemført. Ressourcer genoprettet, udmattelse reduceret med 1.",
   "Follow the book's character creation steps one at a time — good for a first character.":"Følg bogens trin for karakteroprettelse ét ad gangen — godt til din første karakter.",
   // header
   "D&D 2024-inspired quick builder":"D&D 2024 hurtig karakterbygger",
