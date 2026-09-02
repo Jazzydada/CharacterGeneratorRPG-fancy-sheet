@@ -53,8 +53,8 @@ function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,sp
     <div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
       <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
       <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
-        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
-        <div style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
+        <div style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
         </>}
       </div>
@@ -241,7 +241,7 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
 
     <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.1mm",color:"#6e4a17",marginBottom:"0.6mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Grapple/Escape DC")}: {8+statMod("STR")+(sh.profBonus||0)}</div>{!!sh.sneakAttackDice&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}><b>{t("Sneak Attack")}</b>: {sh.sneakAttackDice}d6</div>}{weaponRows.map((w,i)=>{const showMastery=w.masteredActive&&w.mastery!=="—";const DA=CURRENT_LANG==="da";return <div key={i}>
         <div className="attack-row" style={{borderBottom:showMastery?"none":undefined}}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>
-        {showMastery&&<div style={{position:"relative",fontSize:"1.7mm",lineHeight:1.25,color:"#6e4a17",borderBottom:".25mm solid rgba(107,75,22,.27)",paddingBottom:"0.6mm",marginBottom:"0.6mm"}}><b style={{fontWeight:700,color:"#7c2d12",fontStyle:"normal"}}>{w.mastery}:</b> <span style={{fontStyle:"italic"}}>{(DA?MASTERY_DESC_DA[w.mastery]:MASTERY_DESC[w.mastery])||""}</span></div>}
+        {showMastery&&<div style={{position:"relative",fontSize:"2.1mm",lineHeight:1.25,color:"#6e4a17",borderBottom:".25mm solid rgba(107,75,22,.27)",paddingBottom:"0.6mm",marginBottom:"0.6mm"}}><b style={{fontWeight:700,color:"#7c2d12",fontStyle:"normal"}}>{w.mastery}:</b> <span style={{fontStyle:"italic"}}>{(DA?MASTERY_DESC_DA[w.mastery]:MASTERY_DESC[w.mastery])||""}</span></div>}
       </div>;})}
     </div>
 
@@ -257,7 +257,7 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
       {(()=>{const resList=[sh.resource,sh.resource2,sh.resource3?.name==="Action Surge"?sh.resource3:null].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
-          {r.desc&&<div style={{fontSize:"1.75mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
+          {r.desc&&<div style={{fontSize:"2.1mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const used=(resourceUses?.[r.name]||0)>j;return <span key={j} onClick={interactive?()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:used?j:j+1};}):undefined} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:used?"#7b5118":"#fff4d3",display:"inline-block",cursor:interactive?"pointer":undefined}}/>;})}</div>
           <div style={{fontSize:"1.9mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
         </div>);})()}
@@ -387,9 +387,9 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         const trackedUses=computeTrackedUses(line,rest);
         const resistTypes=sh.resistanceByTrait?.[label]||[];
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
-          <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
+          <div style={{fontSize:9,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
           {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:5.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
-          {rest&&<div style={{fontSize:7,lineHeight:1.5,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
+          {rest&&<div style={{fontSize:8,lineHeight:1.45,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
           {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
         </div>;
       })}</div>}
@@ -410,8 +410,8 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
     {!hideBackstory&&<div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
       <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
       <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
-        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
-        <div style={{fontSize:7.6,lineHeight:1.6,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
+        <div style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
         </>}
       </div>
