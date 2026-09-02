@@ -36,34 +36,34 @@ function splitSpellsByLevel(spellsByLevel,maxCount){
 }
 function SpellLevelCards({sh,spellsByLevel,interactive,spPrep,setSpPrep}){
   const{spellSlots}=sh;
-  return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:6,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=>{
+  return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:9.5,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:5}}>{spells.map((sp,i)=>{
     const canTogglePrep=interactive&&sh.cn==="Wizard"&&li>0&&!sp.source;
     const unprepared=canTogglePrep?(spPrep?.[sp.name]===false):sp.prepared===false;
-    return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:5.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:5.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:6,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:7,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:5.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
+    return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:9.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:9.5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:9.5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:9.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:9.5,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:9.5,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:9.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
   })}</div></div>;})}</>;
 }
 function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,spPrep,setSpPrep,backstory,setBackstory}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Spells")+" ("+t("cont'd")+")"}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {t("Spells")+" ("+t("cont'd")+")"}</div></div>
     </div>
     <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
       <SpellLevelCards sh={sh} spellsByLevel={spellsByLevel} interactive={interactive} spPrep={spPrep} setSpPrep={setSpPrep}/>
     </div>
     <div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
-      <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
+      <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
       <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
-        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
-        <div style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
+        <div style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
         </>}
       </div>
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
   </div>);
 }
 function Pip({filled,danger,size=6}){return <div style={{width:size,height:size,borderRadius:"50%",flexShrink:0,border:"0.75px solid "+(danger?"#8b0000":GOLD),background:filled?(danger?"#8b0000":INK+"cc"):"transparent"}}/>;}
-function CoinCircle({value,interactive,onChange,size=28,fontSize=7,bg}){
+function CoinCircle({value,interactive,onChange,size=28,fontSize=9.5,bg}){
   const circleStyle={width:size,height:size,borderRadius:"50%",border:"1.5px solid "+RULE,background:bg+"22",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize,fontWeight:700,color:INK,textAlign:"center"};
   if(!interactive)return <div style={circleStyle}>{value}</div>;
   return <input type="number" min={0} className="coin-num" value={value} onChange={e=>onChange(Math.max(0,Number(e.target.value)||0))} style={{...circleStyle,padding:0,outline:"none",cursor:"text"}}/>;
@@ -239,15 +239,15 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
 
     <div className="panel skills"><h2>{t("Skills")}</h2><table><tbody>{skillRows.map(sk=><tr key={sk.name}><td>{(sh.expertise||[]).includes(sk.name)?"◉":sh.skills?.includes(sk.name)?"●":"○"} {sk.name} ({sk.ab})</td><td>{skillBonus(sk)}</td></tr>)}</tbody></table><div style={{position:"relative",marginTop:"2mm",paddingTop:"1.5mm",borderTop:".3mm solid rgba(107,75,22,.35)",fontSize:"2.55mm"}}>{t("Passive Perception")} <b style={{float:"right"}}>{sh.passivePerc}</b></div></div>
 
-    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.1mm",color:"#6e4a17",marginBottom:"0.6mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Grapple/Escape DC")}: {8+statMod("STR")+(sh.profBonus||0)}</div>{!!sh.sneakAttackDice&&<div style={{position:"relative",fontSize:"2mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}><b>{t("Sneak Attack")}</b>: {sh.sneakAttackDice}d6</div>}{weaponRows.map((w,i)=>{const showMastery=w.masteredActive&&w.mastery!=="—";const DA=CURRENT_LANG==="da";return <div key={i}>
+    <div className="panel attacks"><div className="panel-titlebar">{t("Attacks & Spellcasting")}</div>{sh.equippedGear&&<div style={{position:"relative",fontSize:"2.5mm",color:"#6e4a17",marginBottom:"0.6mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Equipped")}: {sh.equippedGear}</div>}{sh.acBreakdown&&<div style={{position:"relative",fontSize:"2.5mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("AC")} {sh.ac}: {sh.acBreakdown}</div>}<div style={{position:"relative",fontSize:"2.5mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}>{t("Grapple/Escape DC")}: {8+statMod("STR")+(sh.profBonus||0)}</div>{!!sh.sneakAttackDice&&<div style={{position:"relative",fontSize:"2.5mm",color:"#6e4a17",marginBottom:"0.8mm",paddingBottom:"0.6mm",borderBottom:".25mm solid rgba(107,75,22,.3)"}}><b>{t("Sneak Attack")}</b>: {sh.sneakAttackDice}d6</div>}{weaponRows.map((w,i)=>{const showMastery=w.masteredActive&&w.mastery!=="—";const DA=CURRENT_LANG==="da";return <div key={i}>
         <div className="attack-row" style={{borderBottom:showMastery?"none":undefined}}><b>{w.name}</b><span>{w.atk}</span><span>{w.dmg}</span></div>
-        {showMastery&&<div style={{position:"relative",fontSize:"2.1mm",lineHeight:1.25,color:"#6e4a17",borderBottom:".25mm solid rgba(107,75,22,.27)",paddingBottom:"0.6mm",marginBottom:"0.6mm"}}><b style={{fontWeight:700,color:"#7c2d12",fontStyle:"normal"}}>{w.mastery}:</b> <span style={{fontStyle:"italic"}}>{(DA?MASTERY_DESC_DA[w.mastery]:MASTERY_DESC[w.mastery])||""}</span></div>}
+        {showMastery&&<div style={{position:"relative",fontSize:"2.5mm",lineHeight:1.25,color:"#6e4a17",borderBottom:".25mm solid rgba(107,75,22,.27)",paddingBottom:"0.6mm",marginBottom:"0.6mm"}}><b style={{fontWeight:700,color:"#7c2d12",fontStyle:"normal"}}>{w.mastery}:</b> <span style={{fontStyle:"italic"}}>{(DA?MASTERY_DESC_DA[w.mastery]:MASTERY_DESC[w.mastery])||""}</span></div>}
       </div>;})}
     </div>
 
-    <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div>{sh.resistances&&sh.resistances.length>0&&<div style={{flex:"0 0 auto",display:"flex",flexWrap:"wrap",justifyContent:"flex-end",gap:"0.7mm",marginBottom:"1.5mm"}}>{sh.resistances.map(r=><span key={r} title={t("Resistance")+": "+trDamageType(r)} style={{fontSize:"1.7mm",fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:"2.7mm",padding:"0.5mm 1.6mm",display:"flex",alignItems:"center",gap:"0.6mm",textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}><span>{DAMAGE_EMOJI[r]||"●"}</span>{trDamageType(r)}</span>)}</div>}<div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div>{interactive?<div style={{flex:1,display:"flex",flexDirection:"column",gap:"2mm",marginBottom:"2mm",minHeight:0}}>
+    <div className="panel hp"><div className="panel-titlebar gold">{t("Hit Points")}</div>{sh.resistances&&sh.resistances.length>0&&<div style={{flex:"0 0 auto",display:"flex",flexWrap:"wrap",justifyContent:"flex-end",gap:"0.7mm",marginBottom:"1.5mm"}}>{sh.resistances.map(r=><span key={r} title={t("Resistance")+": "+trDamageType(r)} style={{fontSize:"2.5mm",fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:"2.7mm",padding:"0.5mm 1.6mm",display:"flex",alignItems:"center",gap:"0.6mm",textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}><span>{DAMAGE_EMOJI[r]||"●"}</span>{trDamageType(r)}</span>)}</div>}<div className="hp-top"><div><div className="hp-lab">{t("Hit Dice")}</div><div style={{fontSize:"4.2mm",fontWeight:900,marginTop:"0.5mm"}}>{sh.hitDice}</div></div><div><div className="hp-lab">{t("HP Max")}</div><div className="hp-num">{sh.hpMax}</div></div></div>{interactive?<div style={{flex:1,display:"flex",flexDirection:"column",gap:"2mm",marginBottom:"2mm",minHeight:0}}>
   <div style={{flex:1,minHeight:"8mm",borderBottom:"0.5mm solid rgba(107,75,22,.42)",display:"flex",alignItems:"center",justifyContent:"center"}}><input type="number" value={currentHp??sh.hpMax} onChange={e=>setCurrentHp(Math.max(0,Math.min(sh.hpMax,Number(e.target.value)||0)))} style={{width:"70%",fontSize:"5.5mm",fontWeight:900,textAlign:"center",border:"none",background:"transparent",color:"#462b10"}}/></div>
-  <div style={{minHeight:"7mm",borderBottom:"0.4mm solid rgba(107,75,22,.42)",display:"flex",alignItems:"center",justifyContent:"center",gap:"1.5mm"}}><span style={{color:"#6e4a17",textTransform:"uppercase",fontWeight:800,fontSize:"1.9mm",letterSpacing:".04em"}}>{t("Temporary HP")}</span><input type="number" value={tempHp||0} onChange={e=>setTempHp(Math.max(0,Number(e.target.value)||0))} style={{width:"12mm",fontSize:"3.2mm",fontWeight:900,textAlign:"center",border:"none",background:"transparent",color:"#462b10"}}/></div>
+  <div style={{minHeight:"7mm",borderBottom:"0.4mm solid rgba(107,75,22,.42)",display:"flex",alignItems:"center",justifyContent:"center",gap:"1.5mm"}}><span style={{color:"#6e4a17",textTransform:"uppercase",fontWeight:800,fontSize:"2.5mm",letterSpacing:".04em"}}>{t("Temporary HP")}</span><input type="number" value={tempHp||0} onChange={e=>setTempHp(Math.max(0,Number(e.target.value)||0))} style={{width:"12mm",fontSize:"3.2mm",fontWeight:900,textAlign:"center",border:"none",background:"transparent",color:"#462b10"}}/></div>
 </div>:<div style={{flex:1,display:"flex",flexDirection:"column",gap:"2mm",marginBottom:"2mm",minHeight:0}}>
   <div className="hp-current" style={{flex:1,minHeight:"8mm",margin:0}}>{t("CURRENT HP")}</div>
   <div style={{minHeight:"7mm",borderBottom:"0.4mm solid rgba(107,75,22,.42)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(70,43,16,.18)",fontSize:"2.6mm",fontWeight:900}}>{t("TEMPORARY HP")}</div>
@@ -256,16 +256,16 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
     <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
       {(()=>{const resList=[sh.resource,sh.resource2,sh.resource3?.name==="Action Surge"?sh.resource3:null].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2mm",color:"#6e4a17"}}>{r.note}</span>}</div>
-          {r.desc&&<div style={{fontSize:"2.1mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2.5mm",color:"#6e4a17"}}>{r.note}</span>}</div>
+          {r.desc&&<div style={{fontSize:"2.5mm",lineHeight:1.2,color:"#4a3410",marginTop:"0.6mm"}}>{r.desc[CURRENT_LANG==="da"?1:0]}</div>}
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const used=(resourceUses?.[r.name]||0)>j;return <span key={j} onClick={interactive?()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:used?j:j+1};}):undefined} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:used?"#7b5118":"#fff4d3",display:"inline-block",cursor:interactive?"pointer":undefined}}/>;})}</div>
-          <div style={{fontSize:"1.9mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
+          <div style={{fontSize:"2.5mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
         </div>);})()}
       <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
-        <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"1.5mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();const resNames=[sh.resource,sh.resource2,sh.resource3].filter(Boolean).map(r=>r.name.toLowerCase());if(resNames.some(n=>t2.startsWith(n)))return false;if(resNames.includes("psionic energy dice")&&t2.startsWith("psionic power"))return false;return true;}).slice(0,Math.max(0,2-[sh.resource2,sh.resource3].filter(Boolean).length)).map((line,i)=><li key={i} style={{fontSize:"1.9mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
+        <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"2.5mm"}}>{t("Other Notes")}</div>
+        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();const resNames=[sh.resource,sh.resource2,sh.resource3].filter(Boolean).map(r=>r.name.toLowerCase());if(resNames.some(n=>t2.startsWith(n)))return false;if(resNames.includes("psionic energy dice")&&t2.startsWith("psionic power"))return false;return true;}).slice(0,Math.max(0,2-[sh.resource2,sh.resource3].filter(Boolean).length)).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
       </div>
-      <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.4mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
+      <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.5mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
     <div className="small-token speed"><b>{sh.speed} ft.</b><span>{t("Speed")}</span></div>
     <div className="langs">{sh.weaponProf?`⚔ ${sh.weaponProf}  ·  `:""}{sh.toolProf?`🛠 ${sh.toolProf}  ·  `:""}{t("Languages")}: {lang||"Common"}</div>
@@ -375,11 +375,11 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
   });
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:6}}>{classLevelSub} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
-      {isCaster&&<div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:5.5,textAlign:"center"}}>{l}</div></div>)}</div>}
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSub} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
+      {isCaster&&<div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:9.5,textAlign:"center"}}>{l}</div></div>)}</div>}
     </div>
     <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
-      <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
+      <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
       {cardEntries.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:5,marginBottom:6}}>{cardEntries.map((line,i)=>{
         const ci=line.indexOf(":");
         const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
@@ -387,36 +387,36 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
         const trackedUses=computeTrackedUses(line,rest);
         const resistTypes=sh.resistanceByTrait?.[label]||[];
         return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
-          <div style={{fontSize:9,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
-          {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:5.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
-          {rest&&<div style={{fontSize:8,lineHeight:1.45,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
+          <div style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
+          {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:9.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
+          {rest&&<div style={{fontSize:9.5,lineHeight:1.45,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
           {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
         </div>;
       })}</div>}
-      <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:7.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
+      <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:9.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
     </div>
     {isCaster&&<div style={{flex:"0 1 auto",overflow:"hidden"}}>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
-      <div style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{t("Spell Slots")}{sh.cn==="Wizard"&&sh.preparedMax>0&&(()=>{
+      <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{t("Spell Slots")}{sh.cn==="Wizard"&&sh.preparedMax>0&&(()=>{
         const preparedCount=[1,2,3,4,5,6,7,8,9].flatMap(l=>fullSpellsByLevel[l]||[]).filter(s=>!s.source).filter(s=>interactive?(spPrep?.[s.name]!==false):s.prepared!==false).length;
         return <span style={{textTransform:"none",fontWeight:400,color:preparedCount>sh.preparedMax?"#c0392b":"#555",letterSpacing:"normal"}}> · {t("Prepared")}: {preparedCount}/{sh.preparedMax}</span>;
       })()}</div>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${spellSlots.filter(s=>s>0).length||1},1fr)`,gap:4,textAlign:"center"}}>
-        {spellSlots.map((cnt,i)=>{if(!(cnt>0))return null;const lvl=i+1;const used=usedSlots?.[lvl]||0;return(<div key={i}><div style={{...capL,textAlign:"center",fontSize:5.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=>{const isAvailable=j<(cnt-used);return <div key={j} onClick={interactive?()=>setUsedSlots(prev=>{const cur=prev[lvl]||0;return{...prev,[lvl]:isAvailable?Math.min(cnt,cur+1):Math.max(0,cur-1)};}):undefined} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:isAvailable?GOLD_L:"#fff",cursor:interactive?"pointer":undefined}}/>;})}</div></div>);})}
+        {spellSlots.map((cnt,i)=>{if(!(cnt>0))return null;const lvl=i+1;const used=usedSlots?.[lvl]||0;return(<div key={i}><div style={{...capL,textAlign:"center",fontSize:9.5,marginBottom:3}}>{LVLL[i+1]}</div><div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center"}}>{Array.from({length:cnt}).map((_,j)=>{const isAvailable=j<(cnt-used);return <div key={j} onClick={interactive?()=>setUsedSlots(prev=>{const cur=prev[lvl]||0;return{...prev,[lvl]:isAvailable?Math.min(cnt,cur+1):Math.max(0,cur-1)};}):undefined} style={{width:10,height:10,borderRadius:"50%",border:"1px solid "+RULE,background:isAvailable?GOLD_L:"#fff",cursor:interactive?"pointer":undefined}}/>;})}</div></div>);})}
       </div>
     </div>
     <SpellLevelCards sh={sh} spellsByLevel={spellsByLevel} interactive={interactive} spPrep={spPrep} setSpPrep={setSpPrep}/>
     </div>}
     {!hideBackstory&&<div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
-      <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
+      <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
       <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
-        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
-        <div style={{fontSize:9.2,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
+        <div style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
         </>}
       </div>
     </div>}
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page 2 of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
 
@@ -426,13 +426,13 @@ function CreatureCard({name,b,compact}){
   return(<div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:compact?"4px 6px":"6px 8px",breakInside:"avoid"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:compact?2:3}}>
       <span style={{fontSize:compact?8.5:10,fontWeight:700,fontFamily:"serif"}}>{name}</span>
-      <span style={{fontSize:6,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
+      <span style={{fontSize:9.5,color:"#666",fontFamily:"sans-serif"}}>CR {b.cr}</span>
     </div>
     <div style={{fontSize:compact?6.2:7,fontFamily:"sans-serif",color:"#333",marginBottom:2}}>
       <b>AC</b> {b.ac} · <b>HP</b> {b.hp} · <b>{t("Speed")}</b> {b.speed}
     </div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",marginBottom:compact?2:3,background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
-      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:compact?6:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
+      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:9.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:compact?6:7,fontWeight:700}}>{b.stats[i]}</div><div style={{fontSize:9.5,color:"#666"}}>{sgn(mf(b.stats[i]))}</div></div>)}
     </div>
     <div style={{fontSize:compact?5.8:6.6,fontFamily:"sans-serif",color:"#333",lineHeight:1.4}}>
       {b.skills&&<div><b>{t("Skills")}:</b> {b.skills}</div>}
@@ -464,23 +464,23 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
   const normalLines=normalLinesRaw.filter(Boolean);
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {forms.length?t("Creature Forms")+" & "+t("Inventory"):t("Inventory")}</div></div>
     </div>
     <div style={{flex:"0 0 auto",marginBottom:8}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,border:"1px solid "+RULE,borderRadius:4,background:"#fff",padding:"5px 8px"}}>
-        <span style={{fontSize:7,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif"}}>{t("Currency")}</span>
-        <div style={{display:"flex",gap:10}}>{[["cp","CP","#b87333"],["sp","SP","#aaa"],["ep","EP","#8fbc8f"],["gp","GP","#d4af37"],["pp","PP","#e5e4e2"]].map(([k,l,c])=><div key={l} style={{textAlign:"center"}}><CoinCircle value={displayCoins[k]||0} interactive={interactive&&!!setCoins} onChange={v=>setCoins(prev=>({...prev,[k]:v}))} size={24} fontSize={7} bg={c}/><div style={{...capL,textAlign:"center",marginTop:2,fontSize:5.5}}>{l}</div></div>)}</div>
-        {(()=>{const c=displayCoins;const mixed=[c.cp,c.sp,c.ep,c.gp,c.pp].filter(Boolean).length>1;if(!mixed)return null;const totalGp=coinsTotalCP(c)/100;const totalStr=Number.isInteger(totalGp)?String(totalGp):totalGp.toFixed(2);return<span style={{fontSize:7.5,fontWeight:700,fontFamily:"serif",color:INK,whiteSpace:"nowrap"}}>= {totalStr} GP</span>;})()}
+        <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif"}}>{t("Currency")}</span>
+        <div style={{display:"flex",gap:10}}>{[["cp","CP","#b87333"],["sp","SP","#aaa"],["ep","EP","#8fbc8f"],["gp","GP","#d4af37"],["pp","PP","#e5e4e2"]].map(([k,l,c])=><div key={l} style={{textAlign:"center"}}><CoinCircle value={displayCoins[k]||0} interactive={interactive&&!!setCoins} onChange={v=>setCoins(prev=>({...prev,[k]:v}))} size={30} fontSize={9.5} bg={c}/><div style={{...capL,textAlign:"center",marginTop:2,fontSize:9.5}}>{l}</div></div>)}</div>
+        {(()=>{const c=displayCoins;const mixed=[c.cp,c.sp,c.ep,c.gp,c.pp].filter(Boolean).length>1;if(!mixed)return null;const totalGp=coinsTotalCP(c)/100;const totalStr=Number.isInteger(totalGp)?String(totalGp):totalGp.toFixed(2);return<span style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",color:INK,whiteSpace:"nowrap"}}>= {totalStr} GP</span>;})()}
       </div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><span style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif"}}>{t("Inventory")}</span></div>
       <div style={{border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff",height:forms.length?"48mm":"100mm",overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         {interactive&&setInventory?
-        <textarea value={normalLinesRaw.join("\n")} onChange={e=>setInventory([e.target.value,...packLinesRaw].join("\n"))} placeholder={t("Backpack, rope, torches...")} style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",border:"none",outline:"none",resize:"none",width:"100%",height:"100%",minHeight:0,minWidth:0,overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:
-        <div style={{fontSize:8,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
+        <textarea value={normalLinesRaw.join("\n")} onChange={e=>setInventory([e.target.value,...packLinesRaw].join("\n"))} placeholder={t("Backpack, rope, torches...")} style={{fontSize:9.5,lineHeight:1.7,fontFamily:"sans-serif",color:"#222",border:"none",outline:"none",resize:"none",width:"100%",height:"100%",minHeight:0,minWidth:0,overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:
+        <div style={{fontSize:9.5,lineHeight:1.7,fontFamily:"sans-serif",color:"#222"}}>
           {normalLines.map((it,i)=><div key={i} style={{breakInside:"avoid"}}>• {it}</div>)}
           {Array.from({length:forms.length?4:10}).map((_,i)=><div key={"blank"+i} style={{breakInside:"avoid",borderBottom:"0.5px dashed #ccc",height:"5.5mm"}}/>)}
         </div>}
-        <div style={{fontSize:7.4,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",overflow:"auto",minHeight:0,minWidth:0}}>
+        <div style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",overflow:"auto",minHeight:0,minWidth:0}}>
           {packLines.map((p,i)=><div key={i} style={{marginBottom:4,breakInside:"avoid"}}>
             <div style={{fontWeight:700,color:"#a37a1c"}}>{p.name}</div>
             {p.contents.map((c,j)=><div key={j} style={{paddingLeft:5}}>✓ {c}</div>)}
@@ -491,7 +491,7 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
     {forms.length>0&&<div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:forms.length>2?"1fr 1fr":"1fr",gridAutoRows:"min-content",gap:7,alignContent:"start"}}>
       {forms.map(name=><CreatureCard key={name} name={name} b={WILDSHAPE_BEASTS[name]}/>)}
     </div>}
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages||(sh.subclass==="Wild Magic Sorcery"?4:3)}</span></div>
   </div>);
 }
 
@@ -501,39 +501,39 @@ function FormsPage({sh,pageNum,totalPages}){
   const compact=(wildForms.length+familiarForms.length)>6;
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Creature Forms")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {t("Creature Forms")}</div></div>
     </div>
     <div style={{flex:"1 1 0",minHeight:0,overflow:"auto"}}>
       {wildForms.length>0&&<div style={{marginBottom:8}}>
-        <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Wild Shape Forms")}</div>
+        <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Wild Shape Forms")}</div>
         <div style={{display:"grid",gridTemplateColumns:compact?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5}}>
           {wildForms.map(name=><CreatureCard key={"w"+name} name={name} b={WILDSHAPE_BEASTS[name]} compact={compact}/>)}
         </div>
       </div>}
       {familiarForms.length>0&&<div>
-        <div style={{fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Find Familiar Forms")}</div>
+        <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Find Familiar Forms")}</div>
         <div style={{display:"grid",gridTemplateColumns:compact?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5}}>
           {familiarForms.map(name=><CreatureCard key={"f"+name} name={name} b={WILDSHAPE_BEASTS[name]} compact={compact}/>)}
         </div>
       </div>}
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
   </div>);
 }
 
 function Page4({sh,pageNum,totalPages}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
-      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:6}}>{classLevelSubOf(sh)} - {t("Wild Magic Surge")}</div></div>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {t("Wild Magic Surge")}</div></div>
     </div>
-    <div style={{fontSize:7.5,fontFamily:"sans-serif",color:"#555",marginBottom:8,fontStyle:"italic"}}>{t("Roll 1d100 immediately after casting a Sorcerer spell with a spell slot, once per turn, on a 20 rolled for Wild Magic Surge.")}</div>
+    <div style={{fontSize:9.5,fontFamily:"sans-serif",color:"#555",marginBottom:8,fontStyle:"italic"}}>{t("Roll 1d100 immediately after casting a Sorcerer spell with a spell slot, once per turn, on a 20 rolled for Wild Magic Surge.")}</div>
     <div style={{flex:"1 1 0",minHeight:0,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,alignContent:"start"}}>
       {WILD_MAGIC_SURGE.map(([range,txt])=><div key={range} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 7px",breakInside:"avoid"}}>
-        <div style={{fontSize:8.5,fontWeight:700,fontFamily:"serif",color:GOLD,marginBottom:2}}>{range}</div>
-        <div style={{fontSize:7,lineHeight:1.5,color:"#222",fontFamily:"sans-serif"}}>{txt[CURRENT_LANG==="da"?1:0]}</div>
+        <div style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",color:GOLD,marginBottom:2}}>{range}</div>
+        <div style={{fontSize:9.5,lineHeight:1.5,color:"#222",fontFamily:"sans-serif"}}>{txt[CURRENT_LANG==="da"?1:0]}</div>
       </div>)}
     </div>
-    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2, p.150</span><span style={{fontSize:6,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum||4} of {totalPages||4}</span></div>
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2, p.150</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum||4} of {totalPages||4}</span></div>
   </div>);
 }
 
