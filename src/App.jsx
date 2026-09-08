@@ -1,4 +1,4 @@
-import React,{useMemo,useState,useRef,useCallback,useEffect}from"react";
+import React,{useMemo,useState,useRef,useCallback,useEffect,useLayoutEffect}from"react";
 import{Dice5,RotateCcw,Shield,BookOpen,Zap,Printer,ChevronDown,ChevronUp,GripVertical,Package,Lock,Unlock,RefreshCw}from"lucide-react";
 import{SDD,trSchool,trCast,trRange,trDur}from"./spells_da.js";
 import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEATURE_DESC,CLASS_FEATURE_PG}from"./sheet_da.js";
@@ -138,6 +138,22 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
   const displayCoins=coins||sh.coins||{};
   const [portraitFailed,setPortraitFailed]=useState(false);
   const [portraitLoading,setPortraitLoading]=useState(true);
+  // The Resources box is a fixed-size panel (print layout), but resource descriptions vary a lot in
+  // length — rather than clip or overlap when content is too tall, shrink it down just enough to fit.
+  const resPanelRef=useRef(null);
+  const resContentRef=useRef(null);
+  const [resScale,setResScale]=useState(1);
+  useLayoutEffect(()=>{
+    const panel=resPanelRef.current,content=resContentRef.current;
+    if(!panel||!content)return;
+    setResScale(1);
+    const id=requestAnimationFrame(()=>{
+      const avail=panel.clientHeight;
+      const needed=content.scrollHeight;
+      setResScale(needed>avail?Math.max(0.6,avail/needed):1);
+    });
+    return()=>cancelAnimationFrame(id);
+  },[sh.resource,sh.resource2,sh.resource3,sh.features]);
   const stats=sh.finalStats||{};
   const stat=(ab)=>stats[ab]??10;
   const statMod=(ab)=>mf(stat(ab));
@@ -253,7 +269,8 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
   <div style={{minHeight:"7mm",borderBottom:"0.4mm solid rgba(107,75,22,.42)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(70,43,16,.18)",fontSize:"2.6mm",fontWeight:900}}>{t("TEMPORARY HP")}</div>
 </div>}<div className="death"><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Successes")}</div><div>{[0,1,2].map(i=>interactive?<span key={i} onClick={()=>setDeathSaves(d=>({...d,success:d.success>i?i:i+1}))} style={{cursor:"pointer",background:(deathSaves?.success||0)>i?"#4ade80":undefined}}/>:<span key={i}/>)}</div></div><div style={{textAlign:"center"}}><div className="subtle-caption" style={{marginBottom:"1.5mm"}}>{t("Failures")}</div><div>{[0,1,2].map(i=>interactive?<span key={i} onClick={()=>setDeathSaves(d=>({...d,fail:d.fail>i?i:i+1}))} style={{cursor:"pointer",background:(deathSaves?.fail||0)>i?"#f87171":undefined}}/>:<span key={i}/>)}</div></div></div></div>
 
-    <div className="panel traits"><div className="panel-titlebar">{t("Resources")}</div>
+    <div className="panel traits" ref={resPanelRef}><div className="panel-titlebar">{t("Resources")}</div>
+      <div ref={resContentRef} style={{transform:`scale(${resScale})`,transformOrigin:"top left",width:resScale<1?(100/resScale)+"%":"100%"}}>
       {(()=>{const resList=[sh.resource,sh.resource2,sh.resource3?.name==="Action Surge"?sh.resource3:null].filter(Boolean);if(!resList.length)return <div style={{position:"relative",fontSize:"2.6mm",fontStyle:"italic",color:"#6e4a17",marginTop:"2mm"}}>{t("No tracked resource pool")}</div>;
         return resList.map((r,i)=><div key={r.name} style={{position:"relative",marginTop:i?"0.8mm":"0.8mm",paddingTop:i?"0.7mm":0,borderTop:i?".25mm solid rgba(107,75,22,.3)":"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}><b style={{fontSize:"2.9mm"}}>{r.name}</b>{r.note&&<span style={{fontSize:"2.5mm",color:"#6e4a17"}}>{r.note}</span>}</div>
@@ -264,6 +281,7 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
       <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
         <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"2.5mm"}}>{t("Other Notes")}</div>
         <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();const resNames=[sh.resource,sh.resource2,sh.resource3].filter(Boolean).map(r=>r.name.toLowerCase());if(resNames.some(n=>t2.startsWith(n)))return false;if(resNames.includes("psionic energy dice")&&t2.startsWith("psionic power"))return false;return true;}).slice(0,Math.max(0,2-[sh.resource2,sh.resource3].filter(Boolean).length)).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
+      </div>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.5mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
