@@ -34,6 +34,82 @@ function splitSpellsByLevel(spellsByLevel,maxCount){
   }
   return[page1,page2];
 }
+// Same idea as the spell split above, but for the Features & Traits list on page 2 — a character
+// with a lot of feats/subclass features (esp. multiclass) can overflow the fixed-size page once every
+// feature line has to be at least the sheet-wide minimum font size, so spill the excess onto its own
+// continuation page instead of letting it clip.
+const FEATURE_LINE_THRESHOLD=15;
+function parseFeatureLines(featuresTxt){
+  return(featuresTxt||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
+}
+const FEAT_DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
+const FEAT_ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
+const FEAT_ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
+const FEAT_ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom|Giant Ancestry|Kæmpe-afstamning|Adrenaline Rush|Adrenalinsus|Stonecunning|Stenkløgt|Breath Weapon|Åndevåben)\b/;
+function categorizeFeatureLines(featLines){
+  const cardEntries=[],textEntries=[];
+  let forceCard=false;
+  featLines.forEach(line=>{
+    const ci=line.indexOf(":");
+    const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
+    if(isHead){textEntries.push(line);forceCard=FEAT_ALWAYS_CARD_SECTIONS.test(line);return;}
+    const rest=ci>0?line.slice(ci+1):"";
+    (forceCard||FEAT_ALWAYS_CARD_NAMES.test(line)||FEAT_DAMAGE_RE.test(rest)||FEAT_ACTION_RE.test(rest)||FEAT_USE_MOD_RE.test(rest)?cardEntries:textEntries).push(line);
+  });
+  return{cardEntries,textEntries};
+}
+const FEAT_USE_MOD_RE=/(?:Uses|Bruges)\s*=\s*([A-Za-z]{3})[\s-]*mod/i;
+const FEAT_MIN1_RE=/\(min\s*1\)/i;
+function computeFeatureTrackedUses(sh,line,rest){
+  if(FEAT_ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line))return sh.profBonus||0;
+  const m=FEAT_USE_MOD_RE.exec(rest);
+  if(m&&AB.includes(m[1].toUpperCase())){
+    const modVal=mf((sh.finalStats||{})[m[1].toUpperCase()]??10);
+    return FEAT_MIN1_RE.test(rest)?Math.max(1,modVal):Math.max(0,modVal);
+  }
+  return 0;
+}
+// Shared JSX for a block of feature entries (boxed cards + two-column text list), used by both Page2
+// and FeaturesContinuedPage so the two stay visually identical.
+function FeatureEntriesBlock({sh,cardEntries,textEntries,interactive,racialUses,setRacialUses}){
+  return<>
+    {cardEntries.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:5,marginBottom:6}}>{cardEntries.map((line,i)=>{
+      const ci=line.indexOf(":");
+      const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
+      const rest=ci>0?line.slice(ci+1).trim():"";
+      const trackedUses=computeFeatureTrackedUses(sh,line,rest);
+      const resistTypes=sh.resistanceByTrait?.[label]||[];
+      return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
+        <div style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
+        {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:9.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
+        {rest&&<div style={{fontSize:9.5,lineHeight:1.45,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
+        {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
+      </div>;
+    })}</div>}
+    <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:9.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
+  </>;
+}
+function FeaturesContinuedPage({sh,featLines,pageNum,totalPages,interactive,racialUses,setRacialUses,hideBackstory,backstory,setBackstory}){
+  const{cardEntries,textEntries}=categorizeFeatureLines(featLines);
+  return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
+      <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {t("Features & Traits")+" ("+t("cont'd")+")"}</div></div>
+    </div>
+    <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
+      <FeatureEntriesBlock sh={sh} cardEntries={cardEntries} textEntries={textEntries} interactive={interactive} racialUses={racialUses} setRacialUses={setRacialUses}/>
+    </div>
+    {!hideBackstory&&<div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
+      <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
+      <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
+        {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
+        <div style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
+        {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
+        </>}
+      </div>
+    </div>}
+    <div style={{flex:"0 0 auto",marginTop:5,borderTop:"0.5px solid "+RULE,paddingTop:3,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>D&D 2024 SRD 5.2</span><span style={{fontSize:9.5,color:GOLD,fontFamily:"sans-serif"}}>Page {pageNum} of {totalPages}</span></div>
+  </div>);
+}
 function SpellLevelCards({sh,spellsByLevel,interactive,spPrep,setSpPrep}){
   const{spellSlots}=sh;
   return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:9.5,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:5}}>{spells.map((sp,i)=>{
@@ -355,42 +431,12 @@ function Page1({sh}){
   </div>);
 }
 
-function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep,spellsByLevelOverride,hideBackstory,backstory,setBackstory}){
+function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep,spellsByLevelOverride,featLinesOverride,hideBackstory,backstory,setBackstory}){
   const{name,classLevel,subclass,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel:fullSpellsByLevel,isCaster}=sh;
   const spellsByLevel=spellsByLevelOverride||fullSpellsByLevel;
   const classLevelSub=classLevel+(subclass?" ("+subclass+")":"");
-  // Parse the features text into readable entries (bold the label before the colon).
-  const featEntries=(sh.features||"").split("\n").map(l=>l.trim()).filter(l=>l&&l!=="--");
-  const DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
-  // Any feature that costs an Action/Bonus Action/Reaction or spends Movement gets a boxed card,
-  // same as damage-dealing features — these are the ones a player needs to find quickly in play.
-  const ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
-  const ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
-  const ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom|Giant Ancestry|Kæmpe-afstamning|Adrenaline Rush|Adrenalinsus|Stonecunning|Stenkløgt|Breath Weapon|Åndevåben)\b/;
-  // Some subclass/racial features spell out their daily use count in their own description
-  // (e.g. "Uses = WIS mod (min 1), regain all on Long Rest" / "Bruges = WIS-mod (min 1), ...")
-  // rather than being a fixed Proficiency-Bonus pool like the ALWAYS_CARD_NAMES set below —
-  // parse that out so those get a pip tracker too instead of sitting there as plain text.
-  const USE_MOD_RE=/(?:Uses|Bruges)\s*=\s*([A-Za-z]{3})[\s-]*mod/i;
-  const MIN1_RE=/\(min\s*1\)/i;
-  const computeTrackedUses=(line,rest)=>{
-    if(ALWAYS_CARD_NAMES.test(line)&&!/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom)\b/.test(line))return sh.profBonus||0;
-    const m=USE_MOD_RE.exec(rest);
-    if(m&&AB.includes(m[1].toUpperCase())){
-      const modVal=mf((sh.finalStats||{})[m[1].toUpperCase()]??10);
-      return MIN1_RE.test(rest)?Math.max(1,modVal):Math.max(0,modVal);
-    }
-    return 0;
-  };
-  const cardEntries=[],textEntries=[];
-  let forceCard=false;
-  featEntries.forEach(line=>{
-    const ci=line.indexOf(":");
-    const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
-    if(isHead){textEntries.push(line);forceCard=ALWAYS_CARD_SECTIONS.test(line);return;}
-    const rest=ci>0?line.slice(ci+1):"";
-    (forceCard||ALWAYS_CARD_NAMES.test(line)||DAMAGE_RE.test(rest)||ACTION_RE.test(rest)||USE_MOD_RE.test(rest)?cardEntries:textEntries).push(line);
-  });
+  const featLines=featLinesOverride||parseFeatureLines(sh.features);
+  const{cardEntries,textEntries}=categorizeFeatureLines(featLines);
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSub} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
@@ -398,20 +444,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
     </div>
     <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
       <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
-      {cardEntries.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:5,marginBottom:6}}>{cardEntries.map((line,i)=>{
-        const ci=line.indexOf(":");
-        const label=ci>0?line.slice(0,ci).replace(/^•\s*/,""):null;
-        const rest=ci>0?line.slice(ci+1).trim():"";
-        const trackedUses=computeTrackedUses(line,rest);
-        const resistTypes=sh.resistanceByTrait?.[label]||[];
-        return <div key={i} style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"5px 6px"}}>
-          <div style={{fontSize:9.5,fontWeight:700,fontFamily:"serif",lineHeight:1.2,marginBottom:(rest||resistTypes.length)?2:0}}>{label||line}</div>
-          {resistTypes.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:rest?3:0}}>{resistTypes.map(rt=><span key={rt} style={{fontSize:9.5,fontWeight:700,color:"#fde3d3",background:"#7c2d12",borderRadius:6,padding:"1px 5px",display:"inline-flex",alignItems:"center",gap:2,textTransform:"uppercase",letterSpacing:".02em",whiteSpace:"nowrap"}}>{DAMAGE_EMOJI[rt]||"●"}{trDamageType(rt)}</span>)}</div>}
-          {rest&&<div style={{fontSize:9.5,lineHeight:1.45,color:"#333",fontFamily:"sans-serif"}}>{rest}</div>}
-          {trackedUses>0&&<div style={{display:"flex",gap:3,marginTop:3,alignItems:"center"}}>{Array.from({length:trackedUses}).map((_,j)=>{const key=label||line;const used=(racialUses?.[key]||0)>j;return <span key={j} onClick={interactive?()=>setRacialUses(prev=>{const cur=prev[key]||0;return{...prev,[key]:used?j:j+1};}):undefined} style={{width:6,height:6,borderRadius:"50%",border:"0.75px solid "+RULE,display:"inline-block",background:used?RULE:"transparent",cursor:interactive?"pointer":undefined}}/>;})}</div>}
-        </div>;
-      })}</div>}
-      <div style={{columnCount:2,columnGap:14}}>{textEntries.map((line,i)=>{const ci=line.indexOf(":");const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;const label=ci>0?line.slice(0,ci):null;const rest=ci>0?line.slice(ci+1):line;return <div key={i} style={{breakInside:"avoid",fontSize:9.5,lineHeight:1.4,fontFamily:"sans-serif",marginBottom:3,color:"#222"}}>{isHead?<span style={{fontWeight:800,color:GOLD}}>{line}</span>:label?<span><b>{label.replace(/^•\s*/,"")}:</b>{rest}</span>:line}</div>;})}</div>
+      <FeatureEntriesBlock sh={sh} cardEntries={cardEntries} textEntries={textEntries} interactive={interactive} racialUses={racialUses} setRacialUses={setRacialUses}/>
     </div>
     {isCaster&&<div style={{flex:"0 1 auto",overflow:"hidden"}}>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
@@ -1760,9 +1793,14 @@ export default function App(){
     const totalSpellCount=Object.values(sheet.spellsByLevel||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
     const needsSpellOverflow=sheet.isCaster&&totalSpellCount>SPELL_SPLIT_THRESHOLD;
     const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,SPELL_SPLIT_THRESHOLD):[null,null];
-    const overflowOffset=needsSpellOverflow?1:0;
+    const allFeatLines=parseFeatureLines(sheet.features);
+    const needsFeatureOverflow=allFeatLines.length>FEATURE_LINE_THRESHOLD;
+    const page2FeatLines=needsFeatureOverflow?allFeatLines.slice(0,FEATURE_LINE_THRESHOLD):allFeatLines;
+    const overflowFeatLines=needsFeatureOverflow?allFeatLines.slice(FEATURE_LINE_THRESHOLD):[];
+    const featureOverflowOffset=needsFeatureOverflow?1:0;
+    const overflowOffset=featureOverflowOffset+(needsSpellOverflow?1:0);
     const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
-    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
+    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={page2FeatLines} hideBackstory={needsFeatureOverflow||needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsFeatureOverflow&&<FeaturesContinuedPage sh={sheet} featLines={overflowFeatLines} pageNum={3} totalPages={totalPages} interactive={interactiveMode} racialUses={racialUses} setRacialUses={setRacialUses} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3+featureOverflowOffset} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
     const sharedStyle=<style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style>;
     if(!interactiveMode){
       // "Lav karakterark" is the print/export view: plain document flow, scaled down to fit but never
