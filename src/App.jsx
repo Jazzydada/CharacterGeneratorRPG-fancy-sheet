@@ -148,9 +148,13 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
     if(!panel||!content)return;
     setResScale(1);
     const id=requestAnimationFrame(()=>{
-      const avail=panel.clientHeight;
+      // The content box starts below the panel's own padding-top (content.offsetTop) and still has
+      // padding-bottom to clear, so the room actually available is less than the panel's full
+      // clientHeight — using clientHeight alone under-shrinks and the bottom silently clips instead.
+      const paddingBottom=parseFloat(getComputedStyle(panel).paddingBottom)||0;
+      const avail=panel.clientHeight-content.offsetTop-paddingBottom;
       const needed=content.scrollHeight;
-      setResScale(needed>avail?Math.max(0.6,avail/needed):1);
+      setResScale(needed>avail?Math.max(0.55,avail/needed):1);
     });
     return()=>cancelAnimationFrame(id);
   },[sh.resource,sh.resource2,sh.resource3,sh.features]);
