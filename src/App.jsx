@@ -282,10 +282,6 @@ function FancySheet({sh,totalPages,interactive,currentHp,setCurrentHp,tempHp,set
           <div style={{display:"flex",flexWrap:"wrap",gap:"0.8mm",marginTop:"1mm"}}>{Array.from({length:Math.min(r.uses,24)}).map((_,j)=>{const used=(resourceUses?.[r.name]||0)>j;return <span key={j} onClick={interactive?()=>setResourceUses(prev=>{const cur=prev[r.name]||0;return{...prev,[r.name]:used?j:j+1};}):undefined} style={{width:"3mm",height:"3mm",borderRadius:"50%",border:".45mm solid #7b5118",background:used?"#7b5118":"#fff4d3",display:"inline-block",cursor:interactive?"pointer":undefined}}/>;})}</div>
           <div style={{fontSize:"2.5mm",color:"#6e4a17",marginTop:"1mm"}}>{r.recharge}</div>
         </div>);})()}
-      <div style={{position:"relative",marginTop:"1mm",paddingTop:"0.9mm",borderTop:".3mm solid rgba(107,75,22,.35)"}}>
-        <div className="subtle-caption" style={{marginBottom:"0.7mm",fontSize:"2.5mm"}}>{t("Other Notes")}</div>
-        <ul style={{margin:0,padding:"0 0 0 3.6mm"}}>{(sh.features||"").split("\n").filter(l=>/^(Second Wind|Action Surge|Ki|Superiority Dice|Psionic|Metamagic|Weapon Mastery)/i.test(l.trim())).filter(l=>{const t2=l.trim().toLowerCase();const resNames=[sh.resource,sh.resource2,sh.resource3].filter(Boolean).map(r=>r.name.toLowerCase());if(resNames.some(n=>t2.startsWith(n)))return false;if(resNames.includes("psionic energy dice")&&t2.startsWith("psionic power"))return false;return true;}).slice(0,Math.max(0,2-[sh.resource2,sh.resource3].filter(Boolean).length)).map((line,i)=><li key={i} style={{fontSize:"2.5mm",lineHeight:1.15,marginBottom:"0.5mm"}}>{line.length>70?line.slice(0,70)+"…":line}</li>)}</ul>
-      </div>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:"1.5mm",textAlign:"center",fontSize:"2.5mm",fontStyle:"italic",color:"#8a6a2a"}}>{t("Descriptions on page 2")}</div>
     </div>
