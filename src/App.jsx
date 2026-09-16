@@ -1528,6 +1528,11 @@ export default function App(){
   // END PATCH RAND-SPELLS
 
   function rand(){
+    // Randomize builds a brand-new character and should never silently overwrite whichever saved
+    // slot happened to still be "active" — without this, generating a random character while an
+    // earlier saved one was loaded would autosave right over it the moment anything tracked (HP,
+    // inventory, coins, ...) changed, permanently losing the original under the new character's name.
+    setActiveSlotId(null);
     setUploadedPortrait("");setPortraitMode("blank");
     const clsLocked=classLockedRef.current,spLocked=speciesLockedRef.current,lvLocked=levelLockedRef.current;
     const rs=pick(Object.keys(SPECIES)),rc=pick(Object.keys(CLASSES)),rb=pick(Object.keys(BGS));
