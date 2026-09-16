@@ -463,7 +463,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSub} - {isCaster?t("Features & Spells"):t("Features & Traits")}</div></div>
       {isCaster&&<div style={{display:"flex",gap:12}}>{[["Ability",spellAbility],["Spell Attack",spellAtk],["Save DC",spellDC]].map(([l,v])=><div key={l} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{v}</div><div style={{...capL,fontSize:9.5,textAlign:"center"}}>{l}</div></div>)}</div>}
     </div>
-    <div style={{flex:"0 1 auto",overflow:"hidden",marginBottom:6}}>
+    <div style={{flex:"0 0 auto",overflow:"visible",marginBottom:6}}>
       <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
       <FeatureEntriesBlock sh={sh} cardEntries={cardEntries} textEntries={textEntries} interactive={interactive} racialUses={racialUses} setRacialUses={setRacialUses}/>
     </div>
@@ -1817,21 +1817,24 @@ export default function App(){
     const extraFormPages=hasFormsPage?[true]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
     const totalSpellCount=Object.values(sheet.spellsByLevel||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
-    const needsSpellOverflow=sheet.isCaster&&totalSpellCount>SPELL_SPLIT_THRESHOLD;
-    const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,SPELL_SPLIT_THRESHOLD):[null,null];
+    // Features & Traits always render in full on page 2 (never split — a boxed card getting cut in
+    // half across a page break reads badly), so it's Spells that has to give way when a character has
+    // a lot of features eating into the page. The spell-overflow threshold is reduced by how much room
+    // the feature list actually takes (boxed cards run roughly 3x the height of a plain text line),
+    // instead of using one fixed spell count regardless of how packed the features section already is.
     const allFeatLines=parseFeatureLines(sheet.features);
-    const needsFeatureOverflow=allFeatLines.length>FEATURE_LINE_THRESHOLD;
-    const page2FeatLines=needsFeatureOverflow?allFeatLines.slice(0,FEATURE_LINE_THRESHOLD):allFeatLines;
-    const overflowFeatLines=needsFeatureOverflow?allFeatLines.slice(FEATURE_LINE_THRESHOLD):[];
-    const featureOverflowOffset=needsFeatureOverflow?1:0;
-    const hasContinuedPage=needsFeatureOverflow||needsSpellOverflow;
-    // Backstory never shares a page with dense spell/feature continuation content (that's what was
-    // squashing it against the footer) — once either overflow kicks in, it gets its own extra page.
-    const backstoryOffset=hasContinuedPage?1:0;
-    const overflowOffset=featureOverflowOffset+(needsSpellOverflow?1:0)+backstoryOffset;
+    const{cardEntries:page2FeatCards,textEntries:page2FeatText}=categorizeFeatureLines(allFeatLines);
+    const featureWeight=page2FeatCards.length*3+page2FeatText.length;
+    const spellBudget=Math.max(6,SPELL_SPLIT_THRESHOLD-Math.round(featureWeight*0.6));
+    const needsSpellOverflow=sheet.isCaster&&totalSpellCount>spellBudget;
+    const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,spellBudget):[null,null];
+    // Backstory never shares a page with dense spell continuation content (that's what was squashing
+    // it against the footer) — once spells overflow, Backstory gets its own extra page.
+    const backstoryOffset=needsSpellOverflow?1:0;
+    const overflowOffset=(needsSpellOverflow?1:0)+backstoryOffset;
     const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
-    const backstoryPageNum=3+featureOverflowOffset+(needsSpellOverflow?1:0);
-    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={page2FeatLines} hideBackstory={hasContinuedPage} backstory={backstory} setBackstory={setBackstory}/>{needsFeatureOverflow&&<FeaturesContinuedPage sh={sheet} featLines={overflowFeatLines} pageNum={3} totalPages={totalPages} interactive={interactiveMode} racialUses={racialUses} setRacialUses={setRacialUses} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3+featureOverflowOffset} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{hasContinuedPage&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
+    const backstoryPageNum=3+(needsSpellOverflow?1:0);
+    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={allFeatLines} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
     const sharedStyle=<style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style>;
     if(!interactiveMode){
       // "Lav karakterark" is the print/export view: plain document flow, scaled down to fit but never
