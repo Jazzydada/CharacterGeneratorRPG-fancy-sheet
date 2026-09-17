@@ -34,6 +34,17 @@ function splitSpellsByLevel(spellsByLevel,maxCount){
   }
   return[page1,page2];
 }
+// Splits at an exact spell-level boundary (never mid-level) — used once the real DOM measurement
+// (see spellSectionRef below) has determined which level is the first one that doesn't fit on page 2.
+function splitSpellsByLevelAt(spellsByLevel,cutLevel){
+  const page1={},page2={};
+  for(let li=0;li<10;li++){
+    const arr=spellsByLevel[li]||[];
+    if(cutLevel===null||li<cutLevel){page1[li]=arr;page2[li]=[];}
+    else{page1[li]=[];page2[li]=arr;}
+  }
+  return[page1,page2];
+}
 // Same idea as the spell split above, but for the Features & Traits list on page 2 — a character
 // with a lot of feats/subclass features (esp. multiclass) can overflow the fixed-size page once every
 // feature line has to be at least the sheet-wide minimum font size, so spill the excess onto its own
@@ -112,7 +123,7 @@ function FeaturesContinuedPage({sh,featLines,pageNum,totalPages,interactive,raci
 }
 function SpellLevelCards({sh,spellsByLevel,interactive,spPrep,setSpPrep}){
   const{spellSlots}=sh;
-  return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:9.5,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:5}}>{spells.map((sp,i)=>{
+  return <>{LVLL.map((lvl,li)=>{const spells=spellsByLevel[li]||[];if(!spells.length)return null;return <div key={lvl} data-lvl={li} style={{marginBottom:6}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",whiteSpace:"nowrap"}}>{lvl}</div>{li>0&&<div style={{...capL,fontSize:9.5,marginBottom:0}}>{spellSlots[li-1]||0} slots</div>}<div style={{flex:1,height:"0.5px",background:RULE}}/></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:5}}>{spells.map((sp,i)=>{
     const canTogglePrep=interactive&&sh.cn==="Wizard"&&li>0&&!sp.source;
     const unprepared=canTogglePrep?(spPrep?.[sp.name]===false):sp.prepared===false;
     return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:12,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:9.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:9.5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:9.5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:9.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:9.5,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:9.5,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:9.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
@@ -452,7 +463,7 @@ function Page1({sh}){
   </div>);
 }
 
-function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep,spellsByLevelOverride,featLinesOverride,hideBackstory,backstory,setBackstory}){
+function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setRacialUses,spPrep,setSpPrep,spellsByLevelOverride,featLinesOverride,hideBackstory,backstory,setBackstory,spellSectionRef}){
   const{name,classLevel,subclass,spellAbility,spellAtk,spellDC,spellSlots,spellsByLevel:fullSpellsByLevel,isCaster}=sh;
   const spellsByLevel=spellsByLevelOverride||fullSpellsByLevel;
   const classLevelSub=classLevel+(subclass?" ("+subclass+")":"");
@@ -467,7 +478,7 @@ function Page2({sh,totalPages,interactive,usedSlots,setUsedSlots,racialUses,setR
       <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Features & Traits")}</div>
       <FeatureEntriesBlock sh={sh} cardEntries={cardEntries} textEntries={textEntries} interactive={interactive} racialUses={racialUses} setRacialUses={setRacialUses}/>
     </div>
-    {isCaster&&<div style={{flex:"0 1 auto",overflow:"hidden"}}>
+    {isCaster&&<div ref={spellSectionRef} style={{flex:"0 1 auto",overflow:"hidden"}}>
     <div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",marginBottom:6}}>
       <div style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,color:GOLD,fontFamily:"sans-serif",textAlign:"center",borderBottom:"0.5px solid "+RULE,marginBottom:4,paddingBottom:2}}>{t("Spell Slots")}{sh.cn==="Wizard"&&sh.preparedMax>0&&(()=>{
         const preparedCount=[1,2,3,4,5,6,7,8,9].flatMap(l=>fullSpellsByLevel[l]||[]).filter(s=>!s.source).filter(s=>interactive?(spPrep?.[s.name]!==false):s.prepared!==false).length;
@@ -1000,9 +1011,38 @@ export default function App(){
   const [racialUses,setRacialUses]=useState({});
   const [exhaustion,setExhaustion]=useState(0);
   const [hitDiceUsed,setHitDiceUsed]=useState(0);
+  // Real DOM measurement (not a guess) decides where the spell list has to break onto a continuation
+  // page: whatever level's card first extends past the spell section's actual available bottom edge
+  // is the cut point. See the useLayoutEffect below, next to the sheet-view render block.
+  const spellSectionRef=useRef(null);
+  const [spellSplitLevel,setSpellSplitLevel]=useState(null);
+  const lastMeasuredSheetRef=useRef(null);
   const [heroicInspiration,setHeroicInspiration]=useState(false);
   const [interactiveMode,setInteractiveMode]=useState(false);
   const [sheet,setSheet]=useState(null);
+  useLayoutEffect(()=>{
+    if(!sheet)return;
+    if(lastMeasuredSheetRef.current!==sheet){
+      // A new sheet: force a full, unsplit render first (so the measurement below reflects real
+      // content, not a stale split from the previous character) before measuring on the next pass.
+      lastMeasuredSheetRef.current=sheet;
+      if(spellSplitLevel!==null){setSpellSplitLevel(null);return;}
+      // Already null (already showing full content this render) — fall through and measure now
+      // instead of bailing out, otherwise a first-ever overflow with no prior split is missed
+      // entirely (setSpellSplitLevel(null) on an already-null value is a no-op, so nothing would
+      // ever trigger the measurement below).
+    }
+    const el=spellSectionRef.current;
+    if(!el)return;
+    if(el.scrollHeight<=el.clientHeight+1)return;
+    const bottom=el.getBoundingClientRect().bottom;
+    const groups=[...el.querySelectorAll("[data-lvl]")];
+    let cut=null;
+    for(const g of groups){
+      if(g.getBoundingClientRect().bottom>bottom){cut=Number(g.getAttribute("data-lvl"));break;}
+    }
+    if(cut!==null)setSpellSplitLevel(cut);
+  },[sheet,spellSplitLevel]);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState(initChar.gender);
   const [portraitMode,setPortraitMode]=useState("blank");
@@ -1816,25 +1856,21 @@ export default function App(){
     const page3Forms=[];
     const extraFormPages=hasFormsPage?[true]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
-    const totalSpellCount=Object.values(sheet.spellsByLevel||{}).reduce((s,a)=>s+((a&&a.length)||0),0);
     // Features & Traits always render in full on page 2 (never split — a boxed card getting cut in
-    // half across a page break reads badly), so it's Spells that has to give way when a character has
-    // a lot of features eating into the page. The spell-overflow threshold is reduced by how much room
-    // the feature list actually takes (boxed cards run roughly 3x the height of a plain text line),
-    // instead of using one fixed spell count regardless of how packed the features section already is.
+    // half across a page break reads badly). Whether Spells needs to spill onto a continuation page,
+    // and exactly which level to cut at, comes from real DOM measurement (spellSectionRef + the
+    // useLayoutEffect above) rather than a guessed line/spell count — that guess was consistently
+    // wrong (leaving half a page empty on both sides of the cut for feature-heavy casters).
     const allFeatLines=parseFeatureLines(sheet.features);
-    const{cardEntries:page2FeatCards,textEntries:page2FeatText}=categorizeFeatureLines(allFeatLines);
-    const featureWeight=page2FeatCards.length*3+page2FeatText.length;
-    const spellBudget=Math.max(6,SPELL_SPLIT_THRESHOLD-Math.round(featureWeight*0.6));
-    const needsSpellOverflow=sheet.isCaster&&totalSpellCount>spellBudget;
-    const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevel(sheet.spellsByLevel,spellBudget):[null,null];
+    const needsSpellOverflow=sheet.isCaster&&spellSplitLevel!==null;
+    const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevelAt(sheet.spellsByLevel,spellSplitLevel):[null,null];
     // Backstory never shares a page with dense spell continuation content (that's what was squashing
     // it against the footer) — once spells overflow, Backstory gets its own extra page.
     const backstoryOffset=needsSpellOverflow?1:0;
     const overflowOffset=(needsSpellOverflow?1:0)+backstoryOffset;
     const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
     const backstoryPageNum=3+(needsSpellOverflow?1:0);
-    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={allFeatLines} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
+    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={allFeatLines} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory} spellSectionRef={spellSectionRef}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
     const sharedStyle=<style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style>;
     if(!interactiveMode){
       // "Lav karakterark" is the print/export view: plain document flow, scaled down to fit but never
