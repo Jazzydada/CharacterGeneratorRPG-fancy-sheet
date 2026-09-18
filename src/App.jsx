@@ -129,7 +129,7 @@ function SpellLevelCards({sh,spellsByLevel,interactive,spPrep,setSpPrep}){
     return <div key={i} onClick={canTogglePrep?()=>setSpPrep(prev=>({...prev,[sp.name]:!!unprepared})):undefined} style={{background:sp.source?"#fff8e6":"#fff",border:"1px solid "+(sp.source?"#d4a017":RULE),borderRadius:4,padding:"5px 6px",opacity:unprepared?0.55:1,borderStyle:unprepared?"dashed":"solid",cursor:canTogglePrep?"pointer":undefined,position:"relative"}}><div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:2,flexWrap:"wrap"}}><span style={{fontSize:12,fontWeight:700,fontFamily:"serif",lineHeight:1.2}}>{sp.name}</span>{sp.conc&&<span style={{fontSize:9.5,fontWeight:700,color:"#7c2d12",border:"0.5px solid #7c2d12",borderRadius:2,padding:"0 2px",whiteSpace:"nowrap"}}>C</span>}{sp.source&&<span style={{fontSize:9.5,fontWeight:700,color:"#8a5a00",border:"0.5px solid #d4a017",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{sp.source}</span>}{unprepared&&<span style={{fontSize:9.5,fontWeight:700,color:"#666",border:"0.5px solid #999",borderRadius:2,padding:"0 3px",whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.03em"}}>{t("Known")}</span>}</div>{sp.sc&&<div style={{fontSize:9.5,fontWeight:700,color:"#8a5a2b",fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:1}}>{CURRENT_LANG==="da"?trSchool(sp.sc):sp.sc}</div>}<div style={{fontSize:9.5,color:"#666",fontFamily:"sans-serif",lineHeight:1.4,marginBottom:2}}>{[sp.cast,sp.range,sp.dur,sp.comp].filter(Boolean).join(" · ")}</div><div style={{fontSize:9.5,lineHeight:1.55,color:"#333",fontFamily:"sans-serif"}}>{sp.desc}</div>{sp.pg&&<div style={{fontSize:9.5,color:"#999",fontFamily:"sans-serif",marginTop:2}}>PHB p.{sp.pg}</div>}</div>;
   })}</div></div>;})}</>;
 }
-function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,spPrep,setSpPrep,hideBackstory,backstory,setBackstory}){
+function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,spPrep,setSpPrep,hideBackstory,backstory,setBackstory,backstoryBoxRef}){
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:6}}>
       <div><div style={{fontSize:16,fontWeight:700,fontFamily:"serif"}}>{sh.name}</div><div style={{...capL,fontSize:9.5}}>{classLevelSubOf(sh)} - {t("Spells")+" ("+t("cont'd")+")"}</div></div>
@@ -139,7 +139,7 @@ function SpellsContinuedPage({sh,spellsByLevel,pageNum,totalPages,interactive,sp
     </div>
     {!hideBackstory&&<div style={{flex:"1 1 0",minHeight:0,display:"flex",flexDirection:"column",marginTop:2}}>
       <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4,flex:"0 0 auto"}}>{t("Backstory")}</div>
-      <div style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
+      <div ref={backstoryBoxRef} style={{flex:1,minHeight:0,overflow:"hidden",border:"1px solid "+RULE,borderRadius:4,padding:"6px 8px",background:"#fff"}}>
         {interactive&&setBackstory?<textarea value={backstory??sh.backstory??""} onChange={e=>setBackstory(e.target.value)} style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap",width:"100%",height:"100%",minHeight:0,minWidth:0,border:"none",outline:"none",resize:"none",overflow:"auto",boxSizing:"border-box",background:"transparent"}}/>:<>
         <div style={{fontSize:9.5,lineHeight:1.5,fontFamily:"sans-serif",color:"#222",whiteSpace:"pre-wrap"}}>{sh.backstory||""}</div>
         {!sh.backstory&&<div>{Array.from({length:8}).map((_,i)=><div key={i} style={{borderBottom:"0.5px dashed #ddd",height:"5.5mm"}}/>)}</div>}
@@ -1017,6 +1017,10 @@ export default function App(){
   const spellSectionRef=useRef(null);
   const [spellSplitLevel,setSpellSplitLevel]=useState(null);
   const lastMeasuredSheetRef=useRef(null);
+  // Backstory shares the spells-continuation page when there is real room left there; only when that
+  // page is nearly full (measured, see effect below) does it move to a page of its own.
+  const backstoryBoxRef=useRef(null);
+  const [backstoryOwnPage,setBackstoryOwnPage]=useState(false);
   const [heroicInspiration,setHeroicInspiration]=useState(false);
   const [interactiveMode,setInteractiveMode]=useState(false);
   const [sheet,setSheet]=useState(null);
@@ -1043,6 +1047,12 @@ export default function App(){
     }
     if(cut!==null)setSpellSplitLevel(cut);
   },[sheet,spellSplitLevel]);
+  useLayoutEffect(()=>{
+    if(spellSplitLevel===null){if(backstoryOwnPage)setBackstoryOwnPage(false);return;}
+    if(backstoryOwnPage)return;
+    const el=backstoryBoxRef.current;
+    if(el&&el.clientHeight<230)setBackstoryOwnPage(true);
+  },[sheet,spellSplitLevel,backstoryOwnPage]);
   const [portraitSeed,setPortraitSeed]=useState(()=>Math.floor(Math.random()*1000000));
   const [gender,setGender]=useState(initChar.gender);
   const [portraitMode,setPortraitMode]=useState("blank");
@@ -1866,11 +1876,11 @@ export default function App(){
     const[page2Spells,overflowSpells]=needsSpellOverflow?splitSpellsByLevelAt(sheet.spellsByLevel,spellSplitLevel):[null,null];
     // Backstory never shares a page with dense spell continuation content (that's what was squashing
     // it against the footer) — once spells overflow, Backstory gets its own extra page.
-    const backstoryOffset=needsSpellOverflow?1:0;
+    const backstoryOffset=needsSpellOverflow&&backstoryOwnPage?1:0;
     const overflowOffset=(needsSpellOverflow?1:0)+backstoryOffset;
     const totalPages=3+overflowOffset+extraFormPages.length+(wildMagic?1:0);
     const backstoryPageNum=3+(needsSpellOverflow?1:0);
-    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={allFeatLines} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory} spellSectionRef={spellSectionRef}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={true} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
+    const pagesJsx=<><FancySheet sh={sheet} totalPages={totalPages} interactive={interactiveMode} currentHp={currentHp} setCurrentHp={setCurrentHp} tempHp={tempHp} setTempHp={setTempHp} deathSaves={deathSaves} setDeathSaves={setDeathSaves} resourceUses={resourceUses} setResourceUses={setResourceUses} heroicInspiration={heroicInspiration} setHeroicInspiration={setHeroicInspiration} coins={coins} setCoins={setCoins} hitDiceUsed={hitDiceUsed} setHitDiceUsed={setHitDiceUsed}/><Page2 sh={sheet} totalPages={totalPages} interactive={interactiveMode} usedSlots={usedSlots} setUsedSlots={setUsedSlots} racialUses={racialUses} setRacialUses={setRacialUses} spPrep={spPrep} setSpPrep={setSpPrep} spellsByLevelOverride={page2Spells} featLinesOverride={allFeatLines} hideBackstory={needsSpellOverflow} backstory={backstory} setBackstory={setBackstory} spellSectionRef={spellSectionRef}/>{needsSpellOverflow&&<SpellsContinuedPage sh={sheet} spellsByLevel={overflowSpells} pageNum={3} totalPages={totalPages} interactive={interactiveMode} spPrep={spPrep} setSpPrep={setSpPrep} hideBackstory={backstoryOwnPage} backstoryBoxRef={backstoryBoxRef} backstory={backstory} setBackstory={setBackstory}/>}{needsSpellOverflow&&backstoryOwnPage&&<BackstoryPage sh={sheet} pageNum={backstoryPageNum} totalPages={totalPages} interactive={interactiveMode} backstory={backstory} setBackstory={setBackstory}/>}<Page3 sh={sheet} forms={page3Forms} totalPages={totalPages} pageNum={3+overflowOffset} interactive={interactiveMode} coins={coins} setCoins={setCoins} inventory={inventory} setInventory={setInventory}/>{extraFormPages.map((_,i)=><FormsPage key={i} sh={sheet} pageNum={4+overflowOffset+i} totalPages={totalPages}/>)}{wildMagic&&<Page4 sh={sheet} pageNum={4+overflowOffset+extraFormPages.length} totalPages={totalPages}/>}</>;
     const sharedStyle=<style>{`.coin-num::-webkit-inner-spin-button,.coin-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.coin-num{-moz-appearance:textfield}@media print{@page{margin:0;size:A4 portrait}html,body,#root{margin:0!important;padding:0!important;background:white!important;width:210mm!important;min-height:297mm!important}.no-print{display:none!important}.sheet-fit-outer{width:auto!important;height:auto!important;overflow:visible!important}.print-area{display:block!important;position:absolute!important;left:0!important;top:0!important;width:210mm!important}.sheet-fit-inner{transform:none!important}.page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden!important}.page img{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.page *{box-shadow:none!important}}`}</style>;
     if(!interactiveMode){
       // "Lav karakterark" is the print/export view: plain document flow, scaled down to fit but never
