@@ -5,7 +5,7 @@ import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEAT
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
-import{pgLabel,thirdCasterList,syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,upcastText,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,bgStartingGold,bgStartingGear,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{SUMMON_BLOCKS,pgLabel,thirdCasterList,syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,upcastText,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,bgStartingGold,bgStartingGear,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -528,6 +528,24 @@ function CreatureCard({name,b,compact}){
   </div>);
 }
 
+function StatBlockCard({name,b}){
+  const row=(k,v)=>v?<div><b>{k}:</b> {v}</div>:null;
+  const secH=s=><div style={{fontSize:9.5,fontWeight:700,color:GOLD,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.1em",borderBottom:"0.5px solid "+RULE,marginTop:4,marginBottom:2}}>{s}</div>;
+  const ent=([n,d])=><div key={n} style={{fontSize:9.5,lineHeight:1.4,fontFamily:"sans-serif",color:"#222",marginBottom:2}}><b style={{fontStyle:"italic"}}>{n}.</b> {d}</div>;
+  return(<div style={{background:"#fff",border:"1px solid "+RULE,borderRadius:5,padding:"6px 8px",breakInside:"avoid"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderBottom:"0.5px solid "+RULE,paddingBottom:2,marginBottom:3}}><span style={{fontSize:11,fontWeight:700,fontFamily:"serif"}}>{name}</span><span style={{fontSize:9.5,color:"#666",fontFamily:"sans-serif"}}>{pgLabel(b.pg)}</span></div>
+    <div style={{fontSize:9.5,fontStyle:"italic",fontFamily:"sans-serif",color:"#444",marginBottom:2}}>{b.kind}</div>
+    <div style={{fontSize:9.5,fontFamily:"sans-serif",color:"#333",lineHeight:1.4}}>{row("AC",b.ac)}{row("HP",b.hp)}{row(t("Speed"),b.speed)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:2,textAlign:"center",margin:"3px 0",background:"#f7f3e8",borderRadius:3,padding:"2px 0"}}>
+      {CREATURE_ABBR.map((ab,i)=><div key={ab}><div style={{fontSize:9.5,color:GOLD,fontWeight:700}}>{ab}</div><div style={{fontSize:9.5,fontWeight:700}}>{b.st[i][0]}</div><div style={{fontSize:9.5,color:"#666"}}>{sgn(b.st[i][1])} / {sgn(b.st[i][2])}</div></div>)}
+    </div>
+    <div style={{fontSize:9.5,fontFamily:"sans-serif",color:"#333",lineHeight:1.4}}>{row("Vulnerabilities",b.vuln)}{row("Resistances",b.res)}{row("Immunities",b.imm)}{row(t("Senses"),b.senses)}{row(t("Languages"),b.lang)}{row("CR",b.cr)}</div>
+    {b.traits.length>0&&<>{secH("Traits")}{b.traits.map(ent)}</>}
+    {b.actions.length>0&&<>{secH("Actions")}{b.actions.map(ent)}</>}
+    {b.bonus.length>0&&<>{secH("Bonus Actions")}{b.bonus.map(ent)}</>}
+  </div>);
+}
+
 function parsePackLine(line){
   const m=/^(.+?)\s*\((.+)\)$/.exec(line.trim());
   if(!m)return null;
@@ -581,6 +599,7 @@ function Page3({sh,forms,totalPages,pageNum=3,interactive,coins,setCoins,invento
 function FormsPage({sh,pageNum,totalPages}){
   const wildForms=sh.wildShapeForms||[];
   const familiarForms=sh.familiarForms||[];
+  const summons=sh.summonBlocks||[];const da_=CURRENT_LANG==="da";
   const compact=(wildForms.length+familiarForms.length)>6;
   return(<div className="page" style={{...pgStyle,width:"210mm",height:"297mm",display:"flex",flexDirection:"column",overflow:"hidden"}}>
     <div style={{flex:"0 0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderBottom:"1.5px solid "+GOLD_L,paddingBottom:5,marginBottom:8}}>
@@ -592,6 +611,10 @@ function FormsPage({sh,pageNum,totalPages}){
         <div style={{display:"grid",gridTemplateColumns:compact?"1fr 1fr 1fr":"1fr 1fr",gridAutoRows:"min-content",gap:5}}>
           {wildForms.map(name=><CreatureCard key={"w"+name} name={name} b={WILDSHAPE_BEASTS[name]} compact={compact}/>)}
         </div>
+      </div>}
+      {summons.length>0&&<div style={{marginBottom:8}}>
+        <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{da_?"Tilkaldte væsener & ledsagere":"Summons & Companions"}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gridAutoRows:"min-content",gap:5,alignItems:"start"}}>{summons.map(n=>SUMMON_BLOCKS[n]&&<StatBlockCard key={n} name={n} b={SUMMON_BLOCKS[n]}/>)}</div>
       </div>}
       {familiarForms.length>0&&<div>
         <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",color:GOLD,fontFamily:"sans-serif",marginBottom:4}}>{t("Find Familiar Forms")}</div>
@@ -1843,7 +1866,7 @@ export default function App(){
     const sneakAttackDice=rogueLevel>0?Math.ceil(rogueLevel/2):0;
     // Soulknife Psionic Energy Dice (PHB 2024 p.135): number/die-size scale with Rogue level, starting at 3.
     const nextResourcePED=(sub==="Soulknife"&&rogueLevel>=3)?{name:"Psionic Energy Dice",uses:psiEnergyDiceCount(rogueLevel),note:psiEnergyDieSize(rogueLevel),recharge:"1/Short Rest, all/Long Rest",desc:RESOURCE_DESC["Psionic Energy Dice"]}:null;
-    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:[...nonGoldItems(EQUIP[cn]),...bgStartingGear(bg)].join("\n"),equippedGear,acBreakdown,resource:nextResource||nextResourcePED,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
+    const nextSheet={name:dispName,playerName,classLevel:clsLvl,background:bg,species:sp,alignment:align,finalStats:fin,ac,initiative:init,speed,hpMax:hp,hitDice:level+"d"+cls.hd,profBonus:pb,saves,skills:skProfs,passivePerc:passPerc,weapons:[...buildW(),...breathRow],spellAbility:sab,spellAtk:sab?sgn(smod+pb):"",spellDC:sab?String(8+smod+pb):"",isCaster:(isCaster&&!!sab&&Object.values(selSp).flat().length>0)||Object.values(nextSpellsByLevel).flat().length>0,spellSlots:slots,spellsByLevel:nextSpellsByLevel,profLangs:prof,features:featuresTxt,originFeat:bgo.feat,traits:charTraits,ideals:ideals||"—",bonds:bonds||"—",flaws:flaws||"—",backstory,coins,equipment:[...nonGoldItems(EQUIP[cn]),...bgStartingGear(bg)].join("\n"),equippedGear,acBreakdown,resource:nextResource||nextResourcePED,resource2:nextResource2,resource3:nextResourceAS||nextResource3,inventory,portraitSeed:nextPortraitSeed,gender:nextGender,portraitMode,uploadedPortrait,weaponProf:cls.weapons,armorProf:cls.armor,wisSkills:orderWisSkills(cn,classOrder),wisMod:mf(fin.WIS),expertise:selExpertise,jackOfAllTrades:hasJackOfAllTrades,toolProf:allTools,sneakAttackDice,wildShapeForms:cn==="Druid"?[...new Set(selWildShapes)]:[],familiarForms:hasFindFamiliar?FAMILIAR_FORMS:[],summonBlocks:[...(sub==="Vestige Patron"&&level>=3?["Vestige Companion"]:[]),...["Summon Dinosaur","Summon Plant"].filter(n=>Object.values(selSp).flat().includes(n)).map(n=>n==="Summon Dinosaur"?"Dinosaur Spirit":"Plant Spirit")],subclass:sub,cn,preparedMax:cn==="Wizard"?(Number.parseInt(knownStr,10)||0):0,resistances,resistanceByTrait};
     nextSheet.portraitUrl=pollinationsImageUrl(buildPortraitPromptFromSheet(nextSheet),nextPortraitSeed);
     setSheet(nextSheet);
     if(currentHp===null||!activeSlotId)setCurrentHp(nextSheet.hpMax);
@@ -1862,7 +1885,7 @@ export default function App(){
   };
 
   if(view==="sheet"&&sheet){
-    const hasFormsPage=(sheet.wildShapeForms||[]).length>0||(sheet.familiarForms||[]).length>0;
+    const hasFormsPage=(sheet.wildShapeForms||[]).length>0||(sheet.familiarForms||[]).length>0||(sheet.summonBlocks||[]).length>0;
     const page3Forms=[];
     const extraFormPages=hasFormsPage?[true]:[];
     const wildMagic=sheet.subclass==="Wild Magic Sorcery";
