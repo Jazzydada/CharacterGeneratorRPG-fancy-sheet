@@ -3,6 +3,10 @@
 // poison=gift, acid=syre, force=kraft, psychic=psykisk, piercing=stik, bludgeoning=knusning, slashing=flæng.
 // "X save" -> "X save". advantage=fordel, disadvantage=ulempe.
 export const SDD={
+  "Arcane Vigor":"Brug 1-2 Hit Dice; genopret deres slag + spellcasting-mod HP.",
+  "Nystul's Magic Aura":"Skjul et væsens type eller forfalsk en genstands magiske aura.",
+  "Power Word Fortify":"120 midlertidige HP fordelt på op til 6 væsener.",
+  "Summon Undead":"Tilkald en Undead-ånd (Ghostly, Putrid eller Skeletal) som allieret.",
   "Mind Sliver":"INT save eller 1d6 psykisk og -1d4 på næste save.",
   "Sorcerous Burst":"1d8 af en valgt skadetype; kan springe videre ved maks-kast.",
   "Starry Wisp":"DEX save eller 1d8 strålende; målet gløder og kan ikke være usynligt.",

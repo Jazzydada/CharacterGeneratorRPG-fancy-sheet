@@ -228,6 +228,15 @@ export const FEATURE_DESC={
 };
 
 export const SUBCLASS_DESC_DA={
+  "Arcana Domain":"Bland tro med arkan magt (UA).",
+  "Arcane Archer":"Magi-fyldte pile med Arcane Shot-effekter (UA).",
+  "Tattooed Warrior":"Skiftende magiske tatoveringer med fysiske og magiske effekter (UA).",
+  "Ancestral Sorcery":"Bær kraften fra en spellcasting-forfader (UA).",
+  "Hexblade Patron":"Pagt med et levende forbandet våben (UA).",
+  "Conjurer":"Træd gennem rummet og tilkald væsener fra intet (UA).",
+  "Enchanter":"Fortryl og bedrag andre (UA).",
+  "Necromancer":"Kommandér dødens og udødeliggørelsens kræfter (UA).",
+  "Transmuter":"Forvandl energi og materie (UA).",
   // Barbarian
   "Path of the Berserker":"Frenzy for ekstra angreb og frygt.",
   "Path of the Wild Heart":"Dyreånd-kræfter mens du raser.",
