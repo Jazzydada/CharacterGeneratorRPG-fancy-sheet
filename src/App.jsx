@@ -5,7 +5,7 @@ import{FEATURE_DA,TRAIT_DA,TRAIT_DESC,TRAIT_PG,FEATDESC_DA,SUBCLASS_DESC_DA,FEAT
 import{toJpeg}from"html-to-image";
 import jsPDF from"jspdf";
 
-import{SUMMON_BLOCKS,pgLabel,thirdCasterList,syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,upcastText,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,bgStartingGold,bgStartingGear,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
+import{SUMMON_BLOCKS,pgLabel,thirdCasterList,syncLang,CURRENT_LANG,RULES_VERSION,DA,t,setLang,ABIL_INFO,abilTag,abilDesc,SKILL_DESC,skillDesc,featDescL,spellD,upcastText,BG_PERSONALITY,getPersonality,SD,maxSpellLevel,WIZARD_SCHOOL,wizSavantBudget,wizardSpellbookMax,thirdCasterOf,spellsKnown,CANTRIPS_KNOWN,cantripsKnown,PB_COST,PB_BUDGET,pointBuySpent,METAMAGIC_OPTIONS,metamagicKnown,MANEUVER_OPTIONS,maneuversKnown,superiorityDice,superiorityDieSize,psiEnergyDiceCount,psiEnergyDieSize,HUNTER_PREY_OPTIONS,DEFENSIVE_TACTICS_OPTIONS,BEAST_TYPE_OPTIONS,ELDRITCH_INVOCATIONS,INV_KNOWN,invocationsKnown,CLASS_ORDER,defaultOrder,orderOption,orderCantripBonus,orderWisSkills,BLESSED_STRIKES_OPTIONS,blessedStrikesText,EXPERTISE_LEVELS,expertiseSlots,featBaseName,MAGIC_INITIATE_CLASSES,DRACONIC_ANCESTRY,trDamageType,GIANT_ANCESTRY,breathWeaponDice,RITUAL_L1,TOOL_LIST,WILD_MAGIC_SURGE,FAMILIAR_FORMS,WILDSHAPE_BEASTS,wildShapeLimit,wildShapeUses,wildShapeKnownForms,pickWildShapeForms,barbarianRage,clericChannelDivinity,paladinChannelDivinity,sorceryPoints,monkFocusPoints,fighterSecondWindUses,fighterActionSurgeUses,monkUnarmoredMovement,bardicInspirationUses,bardicInspirationDie,RESOURCE_DESC,classResource,weaponMasterySlots,STANDARD_LANGUAGES,RARE_LANGUAGES,AB,AB_FULL,SKILL_LIST,SPECIES,MASTERY_SLOTS,MASTERY_DESC,MASTERY_DESC_DA,CLASS_DEFAULTS,CLASSES,BGS,STD,NAMES,pickName,CASTER_TYPE,CTYPE,SAB,MC_SLOTS,calcCasterLevel,calcMulticlassSlots,MC_PREREQ,mcPrereqMissing,SS,WD,ARMOR_ITEMS,ARMOR_PROF,WEAPON_PROF,BARD_MARTIAL,ROGUE_MARTIAL,isWeaponProficient,CW,PACK_CONTENTS,expandPacks,repairPackLines,WEAPON_COST,ARMOR_COST,SHIELD_COST,startingGearNames,ADVENTURING_GEAR,COIN_TO_CP,coinsTotalCP,canAffordCost,coinsWithDeltaCP,deductCost,addCost,EQUIP,baseStartingGoldFor,bgStartingGold,bgStartingGear,higherLevelGold,ALL_FEATS,FEAT_ASI,TIEFLING_LEGACY,ORIGIN_FEATS,SUBCLASSES,SUBCLASS_SPELLS,subclassSpellsAtLevel,SUBCLASS_FEATURES,SUBCLASS_PG,subclassFeaturesAtLevel,CIRCLE_LAND_SPELLS,circleLandSpellsAtLevel,CS,SPELL_LEVEL_INDEX,spellLevelOf,mf,sgn,pbf,avgHp,pick,r4d6,FALLBACK_ORDER,assignByPriority,assignArr,applyBoosts}from"./data/gameData.js";
 
 // ─── Print styles ─────────────────────────────
 const PA="#f7f0e0",INK="#1a1008",GOLD="#7a5c1e",GOLD_L="#c9a84c",RULE="#c4a96a";
@@ -55,7 +55,7 @@ function parseFeatureLines(featuresTxt){
 }
 const FEAT_DAMAGE_RE=/\d+d\d+|\bdamage\b|\bskade\b/i;
 const FEAT_ACTION_RE=/\b(Bonus Action|Bonus-handling|Reaction|Reaktion|Magic action|Magisk handling|Attack action|Movement)\b/;
-const FEAT_ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)):$/;
+const FEAT_ALWAYS_CARD_SECTIONS=/^(Metamagic|Eldritch Invocations|Maneuvers \(.*\)|Feats):$/;
 const FEAT_ALWAYS_CARD_NAMES=/^(Tides of Chaos|Innate Sorcery|Medfødt trolddom|Giant Ancestry|Kæmpe-afstamning|Adrenaline Rush|Adrenalinsus|Stonecunning|Stenkløgt|Breath Weapon|Åndevåben)\b/;
 function categorizeFeatureLines(featLines){
   const cardEntries=[],textEntries=[];
@@ -63,7 +63,15 @@ function categorizeFeatureLines(featLines){
   featLines.forEach(line=>{
     const ci=line.indexOf(":");
     const isHead=/^[A-Z].*:$/.test(line)&&line.length<40;
-    if(isHead){textEntries.push(line);forceCard=FEAT_ALWAYS_CARD_SECTIONS.test(line);return;}
+    if(isHead){
+      const isSection=FEAT_ALWAYS_CARD_SECTIONS.test(line);
+      // Metamagic/Eldritch Invocations/Maneuvers/Feats headers introduce lines that all become their own
+      // cards below (forceCard), so the header itself has nothing left to sit next to in the plain
+      // text column - drop it instead of leaving an empty-looking heading there.
+      if(!isSection)textEntries.push(line);
+      forceCard=isSection;
+      return;
+    }
     const rest=ci>0?line.slice(ci+1):"";
     (forceCard||FEAT_ALWAYS_CARD_NAMES.test(line)||FEAT_DAMAGE_RE.test(rest)||FEAT_ACTION_RE.test(rest)||FEAT_USE_MOD_RE.test(rest)?cardEntries:textEntries).push(line);
   });
@@ -1311,7 +1319,7 @@ export default function App(){
   const isThird=thirdCasterOf(cn,sub);
   const thirdLvl=isThird?lv1e:0;
   const isCaster=!!CTYPE[cn]||(mc&&!!CTYPE[cn2])||thirdLvl>=3;
-  const isMcCaster=mc&&!!CTYPE[cn2]&&CTYPE[cn2]!=="warlock"&&!!CTYPE[cn]&&CTYPE[cn]!=="warlock";
+  const isMcCaster=mc&&!!CTYPE[cn2]&&CTYPE[cn2]!=="warlock"&&((!!CTYPE[cn]&&CTYPE[cn]!=="warlock")||isThird);
   const sab=SAB[cn]||(thirdLvl>=3?(cn==="Monk"?"WIS":"INT"):(mc?SAB[cn2]:""));
   const smod=sab?mf(fin[sab]):0;
   const ct=CTYPE[cn]||(thirdLvl>=3?"third":undefined);
@@ -1374,9 +1382,14 @@ export default function App(){
     });
   },[level,cn,cn2,mc,lv1e,lv2c,sp,sub,expertiseSlots,wildShapeKnownForms,invLimit,metamagicLimit,maneuverLimit,savantBudget,loreBudget]);
   const ct2=mc?CTYPE[cn2]:null;
-  const warlockPactLevel=ct==="warlock"?Math.min(5,Math.ceil(lv1e/2)):0;
-  const warlockPactSlots=ct==="warlock"?(SS.warlock[lv1e]?SS.warlock[lv1e][0]||0:0):0;
-  const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):ct==="third"?(SS.third[lv1e]||Array(9).fill(0)):Array(9).fill(0);
+  const warlockPactLevel=isWarlock?Math.min(5,Math.ceil(warlockLvl/2)):0;
+  const warlockPactSlots=isWarlock?(SS.warlock[warlockLvl]?SS.warlock[warlockLvl][0]||0:0):0;
+  // If only one of the two classes has a Spellcasting/Pact Magic feature, PHB p.44 says to "follow the
+  // rules for that class" rather than the combined table - so when the primary class (cn) has none (e.g.
+  // a non-Eldritch-Knight Fighter), fall back to the secondary class's own single-class slot table instead
+  // of silently showing zero slots for spells the secondary class clearly grants.
+  const slots=isMcCaster?calcMulticlassSlots(cn,lv1e,cn2,lv2c,sub):ct==="full"?(SS.full[lv1e]||[]):ct==="half"?(SS.half[lv1e]||[]):ct==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):ct==="third"?(SS.third[lv1e]||Array(9).fill(0)):mc&&ct2==="full"?(SS.full[lv2c]||[]):mc&&ct2==="half"?(SS.half[lv2c]||[]):mc&&ct2==="warlock"?Array.from({length:9},(_,i)=>i+1===warlockPactLevel?warlockPactSlots:0):Array(9).fill(0);
+  const isPactDisplay=ct==="warlock"||(!ct&&mc&&ct2==="warlock");
   const autoName=useMemo(()=>pickName(sp,gender),[sp,gender]);
   const dispName=cname||autoName;
   const clsLvl=mc?`${cn} ${lv1e} / ${cn2} ${lv2c}`:`${cn} ${level}`;
@@ -1793,7 +1806,11 @@ export default function App(){
     const orderLine=orderInfo?CLASS_ORDER[cn].label+": "+orderInfo[0]+" — "+orderInfo[1][da?1:0]:"";
     const originWord=da?"Oprindelse":"Origin";
     const originFeatLine=bgo.feat+" ("+originWord+"): "+featDesc(bgo.feat)+featPgTxt(bgo.feat);
-    const featsList=[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return(d?f+": "+d:f)+featPgTxt(f);})].join("\n");
+    // "Feats:" forces every line below it into its own card (see FEAT_ALWAYS_CARD_SECTIONS) - without
+    // it, a feat whose description is just a flat bonus (Tough, Skilled, ...) had no dice/action/resource
+    // keyword to trip the card heuristic and fell back to a lone plain-text line, out of place next to
+    // every other feature on the page rendering as a card.
+    const featsList="Feats:\n"+[originFeatLine,...activeFeats.map(f=>{const d=featDesc(f);return(d?f+": "+d:f)+featPgTxt(f);})].join("\n");
     // Only show class features already unlocked at the character's current level.
     const featureLevel=f=>{const m=f.match(/Lvl(\d+)/);return m?parseInt(m[1],10):1;};
     const subPg=(sub&&SUBCLASS_PG[cn]?.[sub])||null;
@@ -1835,7 +1852,7 @@ export default function App(){
     if((speciesData.traits||[]).includes("Dwarven Resilience"))resistanceByTrait[da?(TRAIT_DA["Dwarven Resilience"]):"Dwarven Resilience"]=["Poison"];
     if((speciesData.traits||[]).includes("Celestial Resistance"))resistanceByTrait[da?(TRAIT_DA["Celestial Resistance"]):"Celestial Resistance"]=["Necrotic","Radiant"];
     if(sp==="Tiefling")resistanceByTrait[da?(TRAIT_DA["Fiendish Legacy"]):"Fiendish Legacy"]=[tieflingLegacyData.resist];
-    const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const d=ELDRITCH_INVOCATIONS[n]?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";return "• "+n+(d?": "+d:"")+extra;}).join("\n"):"";
+    const invLine=(isWarlock&&selInv.length)?selInv.map(n=>{const info=ELDRITCH_INVOCATIONS[n];const d=info?.[da?1:0];const extra=(n==="Lessons of the First Ones"&&lessonsFeat)?" — "+lessonsFeat+": "+featDesc(lessonsFeat):"";const pgSuffix=info?.[3]?" (PHB p."+info[3]+")":"";return "• "+n+(d?": "+d:"")+extra+pgSuffix;}).join("\n"):"";
     const invBlock=invLine?"Eldritch Invocations:\n"+invLine:"";
     const metamagicLine=(isSorcerer&&selMetamagic.length)?selMetamagic.map(n=>{const d=METAMAGIC_OPTIONS[n];return "• "+n+" ("+d[2]+"): "+d[da?1:0];}).join("\n"):"";
     const metamagicBlockTxt=metamagicLine?"Metamagic:\n"+metamagicLine:"";
@@ -2063,6 +2080,18 @@ export default function App(){
         <div style={{marginBottom:"0.85rem",background:G.card,borderRadius:"0.75rem",padding:"0.65rem 0.75rem",border:"1px solid "+(mc?G.gold:G.border)}}>
           <label style={{display:"flex",alignItems:"center",gap:"0.5rem",cursor:"pointer",marginBottom:mc?"0.65rem":"0"}}><input type="checkbox" checked={mc} onChange={e=>setMc(e.target.checked)} style={{accentColor:G.gold,width:15,height:15}}/><span style={{fontSize:"0.8rem",fontWeight:600,color:mc?G.gold:"#e2e8f0"}}>{t("Multiclass")}</span></label>
           {mc&&level>1&&<div className="mob-mc" style={{display:"grid",gridTemplateColumns:"1fr 70px",gap:"0.5rem",alignItems:"end"}}><GFld label={t("Second class")}><select value={cn2} onChange={e=>setCn2(e.target.value)} style={inp}>{Object.keys(CLASSES).filter(c=>c!==cn).map(c=><option key={c}>{c}</option>)}</select></GFld><GFld label={t("Levels")}><select value={lv2c} onChange={e=>setLv2(Number(e.target.value))} style={inp}>{Array.from({length:Math.max(1,level-1)},(_,i)=>i+1).map(l=><option key={l}>{l}</option>)}</select></GFld></div>}
+          {mc&&level>1&&(()=>{
+            const missCn=mcPrereqMissing(cn,fin);
+            const missCn2=mcPrereqMissing(cn2,fin);
+            if(!missCn&&!missCn2)return null;
+            const joiner=CURRENT_LANG==="da"?" eller ":" or ";
+            const andJoiner=CURRENT_LANG==="da"?" og ":" and ";
+            const fmt=p=>p.abs.map(a=>a+" 13+").join(p.any?joiner:andJoiner);
+            const parts=[];
+            if(missCn)parts.push(cn+" ("+fmt(missCn)+")");
+            if(missCn2)parts.push(cn2+" ("+fmt(missCn2)+")");
+            return <div style={{fontSize:"0.7rem",color:"#f87171",padding:"0.3rem 0.6rem",background:"#2d0000",borderRadius:"0.5rem",border:"1px solid #f87171",marginTop:"0.5rem"}}>⚠ {t("Multiclass prerequisite not met")}: {parts.join(" · ")}</div>;
+          })()}
         </div>
         <GFld label={level<3?t("Subclass (available at level 3)"):t("Subclass")}>
           <select value={sub} onChange={e=>setSub(e.target.value)} disabled={level<3} style={{...inp,opacity:level<3?0.45:1}}>
@@ -2334,9 +2363,9 @@ export default function App(){
       <span style={{marginLeft:"auto",fontSize:"0.65rem",color:"#4ade80",fontWeight:700,border:"1px solid #4ade80",borderRadius:"0.4rem",padding:"0.15rem 0.5rem"}}>{RULES_VERSION} Rules</span>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.4rem"}}>
-      <div style={{fontSize:"0.72rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{ct==="warlock"?"Pact Magic Slots":"Spell Slots"}</div>
+      <div style={{fontSize:"0.72rem",color:G.dim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{isPactDisplay?"Pact Magic Slots":"Spell Slots"}</div>
       <button onClick={()=>setUsedSlots({})} style={{fontSize:"0.62rem",color:G.dim,background:"none",border:"1px solid #334155",borderRadius:"0.4rem",padding:"0.1rem 0.4rem",cursor:"pointer"}}>Reset</button>
-      {ct==="warlock"&&<span style={{fontSize:"0.62rem",color:"#a78bfa",border:"1px solid #a78bfa",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>Pact Magic — recharge on Short or Long Rest</span>}
+      {isPactDisplay&&<span style={{fontSize:"0.62rem",color:"#a78bfa",border:"1px solid #a78bfa",borderRadius:"0.4rem",padding:"0.1rem 0.4rem"}}>Pact Magic — recharge on Short or Long Rest</span>}
       {mc&&(ct==="warlock"||ct2==="warlock")&&(ct2!==ct)&&<div style={{fontSize:"0.68rem",color:"#f87171",padding:"0.3rem 0.6rem",background:"#2d0000",borderRadius:"0.5rem",border:"1px solid #f87171",marginTop:"0.25rem",width:"100%"}}>⚠ Warlock Pact Magic slots are tracked separately from Spellcasting slots. This builder shows them together as an approximation.</div>}
     </div>
     <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.max(1,slots.filter(s=>s>0).length)},1fr)`,gap:"0.3rem",marginBottom:"0.75rem"}}>
